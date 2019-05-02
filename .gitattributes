@@ -1,0 +1,5 @@
+# vim-goasm project gitattributes file
+# https://github.com/github/linguist#using-gitattributes
+
+doc linguist-documentation
+testdata linguist-detectable=false
