@@ -19,38 +19,49 @@ setlocal isident   +=%,.,-,_
 
 syntax case ignore
 
-syntax keyword goasmPseudoRegister FP PC SB SP
-hi def link goasmPseudoRegister    Statement
+" Comments; their contents
+syntax keyword     goasmTodo              contained TODO FIXME XXX BUG
+syntax cluster     goasmCommentGroup      contains=goTodo
 
-"" i386
-" syntax keyword goasmSymbol AX BX CX DX BP DI SI
+syntax region      goasmComment           start="//" end="$" contains=@goasmCommentGroup,@Spell
+syntax region      goasmComment           start="/\*" end="\*/" contains=@goasmCommentGroup,@Spell fold
+syntax match       goasmComment           "\v(^\s*//.*\n)+" contains=@goasmCommentGroup,@Spell fold
+
+highlight default link     goasmComment           Comment
+highlight default link     goasmTodo              Todo
 
 " General purpose registers
 "  https://github.com/golang/arch/blob/master/x86/x86asm/inst.go
 "  https://github.com/mmcloughlin/avo/blob/master/reg/x86.go
 
-" low byte
+"" pseudo registers
+syntax keyword  goasmPseudoRegister FP PC SB SP
+
+"" low byte
 syntax keyword goasmRegisterLowByte           AL CL DL BL
 
-" hi byte
+"" hi byte
 syntax keyword goasmRegisterHiByte            AH CH DH BH
 
-" 8-bit
+"" 8-bit
 syntax keyword goasmRegister8bit              SPB BPB SIB DIB R8B R9B R10B R11B R12B R13B R14B R15B
-" 16-bit
+"" 16-bit
 syntax keyword goasmRegister16bit             AX CX DX BX SP BP SI DI R8W R9W R10W R11W R12W R13W R14W R15W
-" 32-bit
+"" 32-bit
 syntax keyword goasmRegister32bit             EAX ECX EDX EBX ESP EBP ESI EDI R8L R9L R10L R11L R12L R13L R14L R15L
-" 64-bit
+"" 64-bit
 syntax keyword goasmRegister64bit             RAX RCX RDX RBX RSP RBP RSI RDI R8 R9 R10 R11 R12 R13 R14 R15
 
-" Vector registers
-" 128-bit
+"" Vector registers
+"" 128-bit
 syntax keyword goasmVectorRegister128bit      X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 X28 X29 X30 X31
-" 256-bit
+"" 256-bit
 syntax keyword goasmVectorRegister256bit      Y0 Y1 Y2 Y3 Y4 Y5 Y6 Y7 Y8 Y9 Y10 Y11 Y12 Y13 Y14 Y15 Y16 Y17 Y18 Y19 Y20 Y21 Y22 Y23 Y24 Y25 Y26 Y27 Y28 Y29 Y30 Y31
-" 512-bit
+"" 512-bit
 syntax keyword goasmVectorRegister512bit      Z0 Z1 Z2 Z3 Z4 Z5 Z6 Z7 Z8 Z9 Z10 Z11 Z12 Z13 Z14 Z15 Z16 Z17 Z18 Z19 Z20 Z21 Z22 Z23 Z24 Z25 Z26 Z27 Z28 Z29 Z30 Z31
+
+"" Opmask registers
+syntax keyword goasmOpmaskRegister            K0 K1 K2 K3 K4 K5 K6 K7
 
 syntax keyword goasmRegisterData              R0 R1 R2 R3 R4 R5 R6 R7
 syntax keyword goasmAegisterAddress           A0 A1 A2 A3 A4 A5 A6 A7
@@ -83,1923 +94,3257 @@ syntax keyword goasmDirective                  TEXT DATA GLOBL FUNCDATA PCDATA
 syntax keyword goasmDirective                  NOPROF DUPOK NOSPLIT RODATA NOPTR WRAPPER NEEDCTXT TLSBSS NOFRAME REFLECTMETHOD TOPFRAME
 syntax keyword goasmDirectiveStore             BYTE
 
-
-" links
-highlight default link goasmRegisterLowByte                  goasmRegister
-highlight default link goasmRegisterHiByte                   goasmRegister
-highlight default link goasmRegister8bit                     goasmRegister
-highlight default link goasmRegister16bit                    goasmRegister
-highlight default link goasmRegister32bit                    goasmRegister
-highlight default link goasmRegister64bit                    goasmRegister
-highlight default link goasmVectorRegister128bit             goasmRegister
-highlight default link goasmRegisterData                     goasmRegister
-highlight default link goasmAegisterAddress                  goasmRegister
-highlight default link goasmFegisterFloating                 goasmRegister
-highlight default link goasmRegisterInstructionPointer16bit  goasmRegister
-highlight default link goasmRegisterInstructionPointer32bit  goasmRegister
-highlight default link goasmRegisterInstructionPointer64bit  goasmRegister
-highlight default link goasmRegisterMMX	                     goasmRegister
-highlight default link goasmRegisterSegment                  goasmRegister
-highlight default link goasmRegisterSystem                   goasmRegister
-highlight default link goasmRegisterDebug                    goasmRegister
-highlight default link goasmRegisterTask                     goasmRegister
-
-hi def link goasmDirectiveStore       goasmDirective
-" hi def link goasmRegisterARM	        goasmRegister
-" hi def link goasmDirectiveMacroARM    goasmDirectiveMacro
-" hi def link goasmDirectiveStoreARM    goasmDirectiveStore
-
-
-syntax keyword goasmDirectiveMacro .altmacro .macro .noaltmacro .endm .endmacro .func .endfunc
-
-" i*86 directives
-syntax keyword goasmDirectiveX86	.att_syntax .intel_syntax .att_mnemonic .intel_mnemonic .code16 .code32 .code64 .lcomm
-
-" i*86 register set
-syntax keyword goasmRegisterX86	%rax %rbx %rcx %rdx %rdi %rsi %rsp %rbp
-syntax keyword goasmRegisterX86	%eax %ebx %ecx %edx %ax %bx %cx %dx %ah %al %bh %bl %ch %cl %dh %dl
-syntax keyword goasmRegisterX86	%edi %esi %esp %ebp %di %si %sp %bp %sph %spl %bph %bpl
-syntax keyword goasmRegisterX86	%cs %ds %es %fs %gs %ss %ip %eip %rip %eflags
-syntax match   goasmRegisterX86	/\<%r\([8-9]\|1[0-5]\)[lwd]\?\>/
-
-" i*86 special registers
-syntax match goasmRegisterX86Cr	/\<%cr[0-8]\>/
-syntax match goasmRegisterX86Dr	/\<%dr[0-8]\>/
-syntax match goasmRegisterX86Tr	/\<%tr[0-8]\>/
-syntax match goasmRegisterX86Fp	/\<%sp\(([0-7])\)\?\>/
-" syn match goasmRegisterX86MMX	/\<%x\?mm[0-7]\>/
-
-" symbols and labels
-
-syntax match   goasmLabel		  /[-_$.A-Za-z0-9]\+\s*:/
-syntax match   goasmSymbols		/\<[^; \t()]\+\>/
-syntax match   goasmSymbolRef	/\$[-_$.A-Za-z][-_$·.A-Za-z0-9]*\>/
-syntax match   goasmSpecial		/\<[$.]\>/
-
-" constants
-syntax region  goasmString		start=/"/  end=/"/ skip=/\\"/
-syntax match   goasmCharacter	/'\(?\|\\?\)/
-syntax match   goasmDecimalNumber	/\$\?-\?\d\+/
-syntax match   goasmBinaryNumber	/\$\?-\?0b[01]\+/
-syntax match   goasmOctalNumber	/\$\?-\?0\d\+/
-syntax match   goasmHexNumber	/\$\?-\?0x\x\+/
-" -- TODO: goasmFloatNumber
-
-" local label needs to be matched *after* numerics
-syntax match   goasmLocalLabel	/\d\{1,2\}[:fb]/
-
-" comments etc.
-syntax match   goasmOperator		/[+-/*=|&~<>]\|<=\|>=\|<>/
-syntax region  goasmComment		start=/\/\*/ end=/\*\//
-syntax region  goasmCommentSingle    start=/#/ end=/$/
-syntax region  goasmCommentSingle    start=/@/ end=/$/
-" if exists('g:goasmCppComments')
-syntax region  goasmCommentSingle start=/\/\// end=/$/
-" endif
-
-" ARM specific directives
-syntax keyword goasmDirectiveStoreARM	.2byte .4byte .8byte
-
-syntax keyword goasmDirectiveARM	.arch .arch_expression .arm .asciiz .cantunwind .code .cpu .dn .qn .eabi_attribute .even .extend .ldouble .fnend .fbstart .force_thumb .fpu .handlerdata .inst .inst.n .inst.w .ltorg .lmovsp .movsp .object_arch .packed .pad .personality .personalityindex .pool .req .save .setfp .secrel32 .syntax .thumb .thumb_func .thumb_set .tlsdescseq .unreq .unwind_raw .vsave
-
-" ARM register set
-" Must be defined after goasmSymbol to have higher precedence
-" syntax keyword goasmRegisterARM	        sp lr pc
-syntax match   goasmRegisterARM	        /\<%\?r\([0-9]\|1[0-5]\)\>/
-
-syntax keyword goasmDirectiveMacroARM	.dn .dq .req .unreq .tlsdescseq
-
 " Opcodes
 
-syntax keyword goasmOpcode        JLS REP
- 
-"-- Section: Willamette MMX instructions (SSE2 SIMD Integer Instructions)
-syntax keyword goasmOpcode_SSE2  MOVD MOVDB MOVDW MOVDL MOVDQ MOVOU
-syntax keyword goasmOpcode_SSE2  MOVDQA
-syntax keyword goasmOpcode_SSE2  MOVDQU
-syntax keyword goasmOpcode_SSE2  MOVDQ2Q
-syntax keyword goasmOpcode_X64_SSE2  MOVQ
-syntax keyword goasmOpcode_SSE2  MOVQ2DQ
-syntax keyword goasmOpcode_SSE2  PACKSSWB PACKSSWBB PACKSSWBW PACKSSWBL PACKSSWBQ
-syntax keyword goasmOpcode_SSE2  PACKSSDW PACKSSDWB PACKSSDWW PACKSSDWL PACKSSDWQ
-syntax keyword goasmOpcode_SSE2  PACKUSWB PACKUSWBB PACKUSWBW PACKUSWBL PACKUSWBQ
-syntax keyword goasmOpcode_SSE2  PADDB PADDBB PADDBW PADDBL PADDBQ
-syntax keyword goasmOpcode_SSE2  PADDW PADDWB PADDWW PADDWL PADDWQ
-syntax keyword goasmOpcode_SSE2  PADDD PADDDB PADDDW PADDDL PADDDQ
-syntax keyword goasmOpcode_SSE2  PADDQ PADDQB PADDQW PADDQL PADDQQ
-syntax keyword goasmOpcode_SSE2  PADDSB PADDSBB PADDSBW PADDSBL PADDSBQ
-syntax keyword goasmOpcode_SSE2  PADDSW PADDSWB PADDSWW PADDSWL PADDSWQ
-syntax keyword goasmOpcode_SSE2  PADDUSB PADDUSBB PADDUSBW PADDUSBL PADDUSBQ
-syntax keyword goasmOpcode_SSE2  PADDUSW PADDUSWB PADDUSWW PADDUSWL PADDUSWQ
-syntax keyword goasmOpcode_SSE2  PAND PANDB PANDW PANDL PANDQ
-syntax keyword goasmOpcode_SSE2  PANDN PANDNB PANDNW PANDNL PANDNQ
-syntax keyword goasmOpcode_SSE2  PAVGB PAVGBB PAVGBW PAVGBL PAVGBQ
-syntax keyword goasmOpcode_SSE2  PAVGW PAVGWB PAVGWW PAVGWL PAVGWQ
-syntax keyword goasmOpcode_SSE2  PCMPEQB PCMPEQBB PCMPEQBW PCMPEQBL PCMPEQBQ
-syntax keyword goasmOpcode_SSE2  PCMPEQW PCMPEQWB PCMPEQWW PCMPEQWL PCMPEQWQ
-syntax keyword goasmOpcode_SSE2  PCMPEQD PCMPEQDB PCMPEQDW PCMPEQDL PCMPEQDQ
-syntax keyword goasmOpcode_SSE2  PCMPGTB PCMPGTBB PCMPGTBW PCMPGTBL PCMPGTBQ
-syntax keyword goasmOpcode_SSE2  PCMPGTW PCMPGTWB PCMPGTWW PCMPGTWL PCMPGTWQ
-syntax keyword goasmOpcode_SSE2  PCMPGTD PCMPGTDB PCMPGTDW PCMPGTDL PCMPGTDQ
-syntax keyword goasmOpcode_SSE2  PEXTRW PEXTRWB PEXTRWW PEXTRWL PEXTRWQ
-syntax keyword goasmOpcode_SSE2  PINSRW PINSRWB PINSRWW PINSRWL PINSRWQ
-syntax keyword goasmOpcode_SSE2  PMADDWD PMADDWDB PMADDWDW PMADDWDL PMADDWDQ
-syntax keyword goasmOpcode_SSE2  PMAXSW PMAXSWB PMAXSWW PMAXSWL PMAXSWQ
-syntax keyword goasmOpcode_SSE2  PMAXUB PMAXUBB PMAXUBW PMAXUBL PMAXUBQ
-syntax keyword goasmOpcode_SSE2  PMINSW PMINSWB PMINSWW PMINSWL PMINSWQ
-syntax keyword goasmOpcode_SSE2  PMINUB PMINUBB PMINUBW PMINUBL PMINUBQ
-syntax keyword goasmOpcode_SSE2  PMOVMSKB
-syntax keyword goasmOpcode_SSE2  PMULHUW PMULHUWB PMULHUWW PMULHUWL PMULHUWQ
-syntax keyword goasmOpcode_SSE2  PMULHW PMULHWB PMULHWW PMULHWL PMULHWQ
-syntax keyword goasmOpcode_SSE2  PMULLW PMULLWB PMULLWW PMULLWL PMULLWQ
-syntax keyword goasmOpcode_SSE2  PMULUDQ PMULUDQB PMULUDQW PMULUDQL PMULUDQQ
-syntax keyword goasmOpcode_SSE2  POR PORB PORW PORL PORQ
-syntax keyword goasmOpcode_SSE2  PSADBW PSADBWB PSADBWW PSADBWL PSADBWQ
-syntax keyword goasmOpcode_Base  PSHUFD PSHUFDB PSHUFDW PSHUFDL PSHUFDQ
-syntax keyword goasmOpcode_Base  PSHUFHW PSHUFHWB PSHUFHWW PSHUFHWL PSHUFHWQ
-syntax keyword goasmOpcode_Base  PSHUFLW PSHUFLWB PSHUFLWW PSHUFLWL PSHUFLWQ
-syntax keyword goasmOpcode_SSE2  PSLLDQ PSLLDQB PSLLDQW PSLLDQL PSLLDQQ
-syntax keyword goasmOpcode_SSE2  PSLLW PSLLWB PSLLWW PSLLWL PSLLWQ
-syntax keyword goasmOpcode_SSE2  PSLLD PSLLDB PSLLDW PSLLDL PSLLDQ
-syntax keyword goasmOpcode_SSE2  PSLLQ PSLLQB PSLLQW PSLLQL PSLLQQ
-syntax keyword goasmOpcode_SSE2  PSRAW PSRAWB PSRAWW PSRAWL PSRAWQ
-syntax keyword goasmOpcode_SSE2  PSRAD PSRADB PSRADW PSRADL PSRADQ
-syntax keyword goasmOpcode_SSE2  PSRLDQ PSRLDQB PSRLDQW PSRLDQL PSRLDQQ
-syntax keyword goasmOpcode_SSE2  PSRLW PSRLWB PSRLWW PSRLWL PSRLWQ
-syntax keyword goasmOpcode_SSE2  PSRLD PSRLDB PSRLDW PSRLDL PSRLDQ
-syntax keyword goasmOpcode_SSE2  PSRLQ PSRLQB PSRLQW PSRLQL PSRLQQ
-syntax keyword goasmOpcode_SSE2  PSUBB PSUBBB PSUBBW PSUBBL PSUBBQ
-syntax keyword goasmOpcode_SSE2  PSUBW PSUBWB PSUBWW PSUBWL PSUBWQ
-syntax keyword goasmOpcode_SSE2  PSUBD PSUBDB PSUBDW PSUBDL PSUBDQ
-syntax keyword goasmOpcode_SSE2  PSUBQ PSUBQB PSUBQW PSUBQL PSUBQQ
-syntax keyword goasmOpcode_SSE2  PSUBSB PSUBSBB PSUBSBW PSUBSBL PSUBSBQ
-syntax keyword goasmOpcode_SSE2  PSUBSW PSUBSWB PSUBSWW PSUBSWL PSUBSWQ
-syntax keyword goasmOpcode_SSE2  PSUBUSB PSUBUSBB PSUBUSBW PSUBUSBL PSUBUSBQ
-syntax keyword goasmOpcode_SSE2  PSUBUSW PSUBUSWB PSUBUSWW PSUBUSWL PSUBUSWQ
-syntax keyword goasmOpcode_SSE2  PUNPCKHBW PUNPCKHBWB PUNPCKHBWW PUNPCKHBWL PUNPCKHBWQ
-syntax keyword goasmOpcode_SSE2  PUNPCKHWD PUNPCKHWDB PUNPCKHWDW PUNPCKHWDL PUNPCKHWDQ
-syntax keyword goasmOpcode_SSE2  PUNPCKHDQ PUNPCKHDQB PUNPCKHDQW PUNPCKHDQL PUNPCKHDQQ
-syntax keyword goasmOpcode_SSE2  PUNPCKHQDQ PUNPCKHQDQB PUNPCKHQDQW PUNPCKHQDQL PUNPCKHQDQQ
-syntax keyword goasmOpcode_SSE2  PUNPCKLBW PUNPCKLBWB PUNPCKLBWW PUNPCKLBWL PUNPCKLBWQ
-syntax keyword goasmOpcode_SSE2  PUNPCKLWD PUNPCKLWDB PUNPCKLWDW PUNPCKLWDL PUNPCKLWDQ
-syntax keyword goasmOpcode_SSE2  PUNPCKLDQ PUNPCKLDQB PUNPCKLDQW PUNPCKLDQL PUNPCKLDQQ
-syntax keyword goasmOpcode_SSE2  PUNPCKLQDQ PUNPCKLQDQB PUNPCKLQDQW PUNPCKLQDQL PUNPCKLQDQQ
-syntax keyword goasmOpcode_SSE2  PXOR PXORB PXORW PXORL PXORQ
+"" X86 opcodes
+"" https://github.com/golang/go/blob/master/src/cmd/internal/obj/x86/anames.go
+syntax keyword goasmOpcodeX86    AAA
+syntax keyword goasmOpcodeX86    AAD
+syntax keyword goasmOpcodeX86    AAM
+syntax keyword goasmOpcodeX86    AAS
+syntax keyword goasmOpcodeX86    ADCB
+syntax keyword goasmOpcodeX86    ADCL
+syntax keyword goasmOpcodeX86    ADCQ
+syntax keyword goasmOpcodeX86    ADCW
+syntax keyword goasmOpcodeX86    ADCXL
+syntax keyword goasmOpcodeX86    ADCXQ
+syntax keyword goasmOpcodeX86    ADDB
+syntax keyword goasmOpcodeX86    ADDL
+syntax keyword goasmOpcodeX86    ADDPD
+syntax keyword goasmOpcodeX86    ADDPS
+syntax keyword goasmOpcodeX86    ADDQ
+syntax keyword goasmOpcodeX86    ADDSD
+syntax keyword goasmOpcodeX86    ADDSS
+syntax keyword goasmOpcodeX86    ADDSUBPD
+syntax keyword goasmOpcodeX86    ADDSUBPS
+syntax keyword goasmOpcodeX86    ADDW
+syntax keyword goasmOpcodeX86    ADJSP
+syntax keyword goasmOpcodeX86    ADOXL
+syntax keyword goasmOpcodeX86    ADOXQ
+syntax keyword goasmOpcodeX86    AESDEC
+syntax keyword goasmOpcodeX86    AESDECLAST
+syntax keyword goasmOpcodeX86    AESENC
+syntax keyword goasmOpcodeX86    AESENCLAST
+syntax keyword goasmOpcodeX86    AESIMC
+syntax keyword goasmOpcodeX86    AESKEYGENASSIST
+syntax keyword goasmOpcodeX86    ANDB
+syntax keyword goasmOpcodeX86    ANDL
+syntax keyword goasmOpcodeX86    ANDNL
+syntax keyword goasmOpcodeX86    ANDNPD
+syntax keyword goasmOpcodeX86    ANDNPS
+syntax keyword goasmOpcodeX86    ANDNQ
+syntax keyword goasmOpcodeX86    ANDPD
+syntax keyword goasmOpcodeX86    ANDPS
+syntax keyword goasmOpcodeX86    ANDQ
+syntax keyword goasmOpcodeX86    ANDW
+syntax keyword goasmOpcodeX86    ARPL
+syntax keyword goasmOpcodeX86    BEXTRL
+syntax keyword goasmOpcodeX86    BEXTRQ
+syntax keyword goasmOpcodeX86    BLENDPD
+syntax keyword goasmOpcodeX86    BLENDPS
+syntax keyword goasmOpcodeX86    BLENDVPD
+syntax keyword goasmOpcodeX86    BLENDVPS
+syntax keyword goasmOpcodeX86    BLSIL
+syntax keyword goasmOpcodeX86    BLSIQ
+syntax keyword goasmOpcodeX86    BLSMSKL
+syntax keyword goasmOpcodeX86    BLSMSKQ
+syntax keyword goasmOpcodeX86    BLSRL
+syntax keyword goasmOpcodeX86    BLSRQ
+syntax keyword goasmOpcodeX86    BOUNDL
+syntax keyword goasmOpcodeX86    BOUNDW
+syntax keyword goasmOpcodeX86    BSFL
+syntax keyword goasmOpcodeX86    BSFQ
+syntax keyword goasmOpcodeX86    BSFW
+syntax keyword goasmOpcodeX86    BSRL
+syntax keyword goasmOpcodeX86    BSRQ
+syntax keyword goasmOpcodeX86    BSRW
+syntax keyword goasmOpcodeX86    BSWAPL
+syntax keyword goasmOpcodeX86    BSWAPQ
+syntax keyword goasmOpcodeX86    BTCL
+syntax keyword goasmOpcodeX86    BTCQ
+syntax keyword goasmOpcodeX86    BTCW
+syntax keyword goasmOpcodeX86    BTL
+syntax keyword goasmOpcodeX86    BTQ
+syntax keyword goasmOpcodeX86    BTRL
+syntax keyword goasmOpcodeX86    BTRQ
+syntax keyword goasmOpcodeX86    BTRW
+syntax keyword goasmOpcodeX86    BTSL
+syntax keyword goasmOpcodeX86    BTSQ
+syntax keyword goasmOpcodeX86    BTSW
+syntax keyword goasmOpcodeX86    BTW
+syntax keyword goasmOpcodeX86    BYTE
+syntax keyword goasmOpcodeX86    BZHIL
+syntax keyword goasmOpcodeX86    BZHIQ
+syntax keyword goasmOpcodeX86    CBW
+syntax keyword goasmOpcodeX86    CDQ
+syntax keyword goasmOpcodeX86    CDQE
+syntax keyword goasmOpcodeX86    CLAC
+syntax keyword goasmOpcodeX86    CLC
+syntax keyword goasmOpcodeX86    CLD
+syntax keyword goasmOpcodeX86    CLDEMOTE
+syntax keyword goasmOpcodeX86    CLFLUSH
+syntax keyword goasmOpcodeX86    CLFLUSHOPT
+syntax keyword goasmOpcodeX86    CLI
+syntax keyword goasmOpcodeX86    CLTS
+syntax keyword goasmOpcodeX86    CLWB
+syntax keyword goasmOpcodeX86    CMC
+syntax keyword goasmOpcodeX86    CMOVLCC
+syntax keyword goasmOpcodeX86    CMOVLCS
+syntax keyword goasmOpcodeX86    CMOVLEQ
+syntax keyword goasmOpcodeX86    CMOVLGE
+syntax keyword goasmOpcodeX86    CMOVLGT
+syntax keyword goasmOpcodeX86    CMOVLHI
+syntax keyword goasmOpcodeX86    CMOVLLE
+syntax keyword goasmOpcodeX86    CMOVLLS
+syntax keyword goasmOpcodeX86    CMOVLLT
+syntax keyword goasmOpcodeX86    CMOVLMI
+syntax keyword goasmOpcodeX86    CMOVLNE
+syntax keyword goasmOpcodeX86    CMOVLOC
+syntax keyword goasmOpcodeX86    CMOVLOS
+syntax keyword goasmOpcodeX86    CMOVLPC
+syntax keyword goasmOpcodeX86    CMOVLPL
+syntax keyword goasmOpcodeX86    CMOVLPS
+syntax keyword goasmOpcodeX86    CMOVQCC
+syntax keyword goasmOpcodeX86    CMOVQCS
+syntax keyword goasmOpcodeX86    CMOVQEQ
+syntax keyword goasmOpcodeX86    CMOVQGE
+syntax keyword goasmOpcodeX86    CMOVQGT
+syntax keyword goasmOpcodeX86    CMOVQHI
+syntax keyword goasmOpcodeX86    CMOVQLE
+syntax keyword goasmOpcodeX86    CMOVQLS
+syntax keyword goasmOpcodeX86    CMOVQLT
+syntax keyword goasmOpcodeX86    CMOVQMI
+syntax keyword goasmOpcodeX86    CMOVQNE
+syntax keyword goasmOpcodeX86    CMOVQOC
+syntax keyword goasmOpcodeX86    CMOVQOS
+syntax keyword goasmOpcodeX86    CMOVQPC
+syntax keyword goasmOpcodeX86    CMOVQPL
+syntax keyword goasmOpcodeX86    CMOVQPS
+syntax keyword goasmOpcodeX86    CMOVWCC
+syntax keyword goasmOpcodeX86    CMOVWCS
+syntax keyword goasmOpcodeX86    CMOVWEQ
+syntax keyword goasmOpcodeX86    CMOVWGE
+syntax keyword goasmOpcodeX86    CMOVWGT
+syntax keyword goasmOpcodeX86    CMOVWHI
+syntax keyword goasmOpcodeX86    CMOVWLE
+syntax keyword goasmOpcodeX86    CMOVWLS
+syntax keyword goasmOpcodeX86    CMOVWLT
+syntax keyword goasmOpcodeX86    CMOVWMI
+syntax keyword goasmOpcodeX86    CMOVWNE
+syntax keyword goasmOpcodeX86    CMOVWOC
+syntax keyword goasmOpcodeX86    CMOVWOS
+syntax keyword goasmOpcodeX86    CMOVWPC
+syntax keyword goasmOpcodeX86    CMOVWPL
+syntax keyword goasmOpcodeX86    CMOVWPS
+syntax keyword goasmOpcodeX86    CMPB
+syntax keyword goasmOpcodeX86    CMPL
+syntax keyword goasmOpcodeX86    CMPPD
+syntax keyword goasmOpcodeX86    CMPPS
+syntax keyword goasmOpcodeX86    CMPQ
+syntax keyword goasmOpcodeX86    CMPSB
+syntax keyword goasmOpcodeX86    CMPSD
+syntax keyword goasmOpcodeX86    CMPSL
+syntax keyword goasmOpcodeX86    CMPSQ
+syntax keyword goasmOpcodeX86    CMPSS
+syntax keyword goasmOpcodeX86    CMPSW
+syntax keyword goasmOpcodeX86    CMPW
+syntax keyword goasmOpcodeX86    CMPXCHG16B
+syntax keyword goasmOpcodeX86    CMPXCHG8B
+syntax keyword goasmOpcodeX86    CMPXCHGB
+syntax keyword goasmOpcodeX86    CMPXCHGL
+syntax keyword goasmOpcodeX86    CMPXCHGQ
+syntax keyword goasmOpcodeX86    CMPXCHGW
+syntax keyword goasmOpcodeX86    COMISD
+syntax keyword goasmOpcodeX86    COMISS
+syntax keyword goasmOpcodeX86    CPUID
+syntax keyword goasmOpcodeX86    CQO
+syntax keyword goasmOpcodeX86    CRC32B
+syntax keyword goasmOpcodeX86    CRC32L
+syntax keyword goasmOpcodeX86    CRC32Q
+syntax keyword goasmOpcodeX86    CRC32W
+syntax keyword goasmOpcodeX86    CVTPD2PL
+syntax keyword goasmOpcodeX86    CVTPD2PS
+syntax keyword goasmOpcodeX86    CVTPL2PD
+syntax keyword goasmOpcodeX86    CVTPL2PS
+syntax keyword goasmOpcodeX86    CVTPS2PD
+syntax keyword goasmOpcodeX86    CVTPS2PL
+syntax keyword goasmOpcodeX86    CVTSD2SL
+syntax keyword goasmOpcodeX86    CVTSD2SQ
+syntax keyword goasmOpcodeX86    CVTSD2SS
+syntax keyword goasmOpcodeX86    CVTSL2SD
+syntax keyword goasmOpcodeX86    CVTSL2SS
+syntax keyword goasmOpcodeX86    CVTSQ2SD
+syntax keyword goasmOpcodeX86    CVTSQ2SS
+syntax keyword goasmOpcodeX86    CVTSS2SD
+syntax keyword goasmOpcodeX86    CVTSS2SL
+syntax keyword goasmOpcodeX86    CVTSS2SQ
+syntax keyword goasmOpcodeX86    CVTTPD2PL
+syntax keyword goasmOpcodeX86    CVTTPS2PL
+syntax keyword goasmOpcodeX86    CVTTSD2SL
+syntax keyword goasmOpcodeX86    CVTTSD2SQ
+syntax keyword goasmOpcodeX86    CVTTSS2SL
+syntax keyword goasmOpcodeX86    CVTTSS2SQ
+syntax keyword goasmOpcodeX86    CWD
+syntax keyword goasmOpcodeX86    CWDE
+syntax keyword goasmOpcodeX86    DAA
+syntax keyword goasmOpcodeX86    DAS
+syntax keyword goasmOpcodeX86    DECB
+syntax keyword goasmOpcodeX86    DECL
+syntax keyword goasmOpcodeX86    DECQ
+syntax keyword goasmOpcodeX86    DECW
+syntax keyword goasmOpcodeX86    DIVB
+syntax keyword goasmOpcodeX86    DIVL
+syntax keyword goasmOpcodeX86    DIVPD
+syntax keyword goasmOpcodeX86    DIVPS
+syntax keyword goasmOpcodeX86    DIVQ
+syntax keyword goasmOpcodeX86    DIVSD
+syntax keyword goasmOpcodeX86    DIVSS
+syntax keyword goasmOpcodeX86    DIVW
+syntax keyword goasmOpcodeX86    DPPD
+syntax keyword goasmOpcodeX86    DPPS
+syntax keyword goasmOpcodeX86    EMMS
+syntax keyword goasmOpcodeX86    ENTER
+syntax keyword goasmOpcodeX86    EXTRACTPS
+syntax keyword goasmOpcodeX86    F2XM1
+syntax keyword goasmOpcodeX86    FABS
+syntax keyword goasmOpcodeX86    FADDD
+syntax keyword goasmOpcodeX86    FADDDP
+syntax keyword goasmOpcodeX86    FADDF
+syntax keyword goasmOpcodeX86    FADDL
+syntax keyword goasmOpcodeX86    FADDW
+syntax keyword goasmOpcodeX86    FBLD
+syntax keyword goasmOpcodeX86    FBSTP
+syntax keyword goasmOpcodeX86    FCHS
+syntax keyword goasmOpcodeX86    FCLEX
+syntax keyword goasmOpcodeX86    FCMOVB
+syntax keyword goasmOpcodeX86    FCMOVBE
+syntax keyword goasmOpcodeX86    FCMOVCC
+syntax keyword goasmOpcodeX86    FCMOVCS
+syntax keyword goasmOpcodeX86    FCMOVE
+syntax keyword goasmOpcodeX86    FCMOVEQ
+syntax keyword goasmOpcodeX86    FCMOVHI
+syntax keyword goasmOpcodeX86    FCMOVLS
+syntax keyword goasmOpcodeX86    FCMOVNB
+syntax keyword goasmOpcodeX86    FCMOVNBE
+syntax keyword goasmOpcodeX86    FCMOVNE
+syntax keyword goasmOpcodeX86    FCMOVNU
+syntax keyword goasmOpcodeX86    FCMOVU
+syntax keyword goasmOpcodeX86    FCMOVUN
+syntax keyword goasmOpcodeX86    FCOMD
+syntax keyword goasmOpcodeX86    FCOMDP
+syntax keyword goasmOpcodeX86    FCOMDPP
+syntax keyword goasmOpcodeX86    FCOMF
+syntax keyword goasmOpcodeX86    FCOMFP
+syntax keyword goasmOpcodeX86    FCOMI
+syntax keyword goasmOpcodeX86    FCOMIP
+syntax keyword goasmOpcodeX86    FCOML
+syntax keyword goasmOpcodeX86    FCOMLP
+syntax keyword goasmOpcodeX86    FCOMW
+syntax keyword goasmOpcodeX86    FCOMWP
+syntax keyword goasmOpcodeX86    FCOS
+syntax keyword goasmOpcodeX86    FDECSTP
+syntax keyword goasmOpcodeX86    FDIVD
+syntax keyword goasmOpcodeX86    FDIVDP
+syntax keyword goasmOpcodeX86    FDIVF
+syntax keyword goasmOpcodeX86    FDIVL
+syntax keyword goasmOpcodeX86    FDIVRD
+syntax keyword goasmOpcodeX86    FDIVRDP
+syntax keyword goasmOpcodeX86    FDIVRF
+syntax keyword goasmOpcodeX86    FDIVRL
+syntax keyword goasmOpcodeX86    FDIVRW
+syntax keyword goasmOpcodeX86    FDIVW
+syntax keyword goasmOpcodeX86    FFREE
+syntax keyword goasmOpcodeX86    FINCSTP
+syntax keyword goasmOpcodeX86    FINIT
+syntax keyword goasmOpcodeX86    FLD1
+syntax keyword goasmOpcodeX86    FLDCW
+syntax keyword goasmOpcodeX86    FLDENV
+syntax keyword goasmOpcodeX86    FLDL2E
+syntax keyword goasmOpcodeX86    FLDL2T
+syntax keyword goasmOpcodeX86    FLDLG2
+syntax keyword goasmOpcodeX86    FLDLN2
+syntax keyword goasmOpcodeX86    FLDPI
+syntax keyword goasmOpcodeX86    FLDZ
+syntax keyword goasmOpcodeX86    FMOVB
+syntax keyword goasmOpcodeX86    FMOVBP
+syntax keyword goasmOpcodeX86    FMOVD
+syntax keyword goasmOpcodeX86    FMOVDP
+syntax keyword goasmOpcodeX86    FMOVF
+syntax keyword goasmOpcodeX86    FMOVFP
+syntax keyword goasmOpcodeX86    FMOVL
+syntax keyword goasmOpcodeX86    FMOVLP
+syntax keyword goasmOpcodeX86    FMOVV
+syntax keyword goasmOpcodeX86    FMOVVP
+syntax keyword goasmOpcodeX86    FMOVW
+syntax keyword goasmOpcodeX86    FMOVWP
+syntax keyword goasmOpcodeX86    FMOVX
+syntax keyword goasmOpcodeX86    FMOVXP
+syntax keyword goasmOpcodeX86    FMULD
+syntax keyword goasmOpcodeX86    FMULDP
+syntax keyword goasmOpcodeX86    FMULF
+syntax keyword goasmOpcodeX86    FMULL
+syntax keyword goasmOpcodeX86    FMULW
+syntax keyword goasmOpcodeX86    FNOP
+syntax keyword goasmOpcodeX86    FPATAN
+syntax keyword goasmOpcodeX86    FPREM
+syntax keyword goasmOpcodeX86    FPREM1
+syntax keyword goasmOpcodeX86    FPTAN
+syntax keyword goasmOpcodeX86    FRNDINT
+syntax keyword goasmOpcodeX86    FRSTOR
+syntax keyword goasmOpcodeX86    FSAVE
+syntax keyword goasmOpcodeX86    FSCALE
+syntax keyword goasmOpcodeX86    FSIN
+syntax keyword goasmOpcodeX86    FSINCOS
+syntax keyword goasmOpcodeX86    FSQRT
+syntax keyword goasmOpcodeX86    FSTCW
+syntax keyword goasmOpcodeX86    FSTENV
+syntax keyword goasmOpcodeX86    FSTSW
+syntax keyword goasmOpcodeX86    FSUBD
+syntax keyword goasmOpcodeX86    FSUBDP
+syntax keyword goasmOpcodeX86    FSUBF
+syntax keyword goasmOpcodeX86    FSUBL
+syntax keyword goasmOpcodeX86    FSUBRD
+syntax keyword goasmOpcodeX86    FSUBRDP
+syntax keyword goasmOpcodeX86    FSUBRF
+syntax keyword goasmOpcodeX86    FSUBRL
+syntax keyword goasmOpcodeX86    FSUBRW
+syntax keyword goasmOpcodeX86    FSUBW
+syntax keyword goasmOpcodeX86    FTST
+syntax keyword goasmOpcodeX86    FUCOM
+syntax keyword goasmOpcodeX86    FUCOMI
+syntax keyword goasmOpcodeX86    FUCOMIP
+syntax keyword goasmOpcodeX86    FUCOMP
+syntax keyword goasmOpcodeX86    FUCOMPP
+syntax keyword goasmOpcodeX86    FXAM
+syntax keyword goasmOpcodeX86    FXCHD
+syntax keyword goasmOpcodeX86    FXRSTOR
+syntax keyword goasmOpcodeX86    FXRSTOR64
+syntax keyword goasmOpcodeX86    FXSAVE
+syntax keyword goasmOpcodeX86    FXSAVE64
+syntax keyword goasmOpcodeX86    FXTRACT
+syntax keyword goasmOpcodeX86    FYL2X
+syntax keyword goasmOpcodeX86    FYL2XP1
+syntax keyword goasmOpcodeX86    HADDPD
+syntax keyword goasmOpcodeX86    HADDPS
+syntax keyword goasmOpcodeX86    HLT
+syntax keyword goasmOpcodeX86    HSUBPD
+syntax keyword goasmOpcodeX86    HSUBPS
+syntax keyword goasmOpcodeX86    ICEBP
+syntax keyword goasmOpcodeX86    IDIVB
+syntax keyword goasmOpcodeX86    IDIVL
+syntax keyword goasmOpcodeX86    IDIVQ
+syntax keyword goasmOpcodeX86    IDIVW
+syntax keyword goasmOpcodeX86    IMUL3L
+syntax keyword goasmOpcodeX86    IMUL3Q
+syntax keyword goasmOpcodeX86    IMUL3W
+syntax keyword goasmOpcodeX86    IMULB
+syntax keyword goasmOpcodeX86    IMULL
+syntax keyword goasmOpcodeX86    IMULQ
+syntax keyword goasmOpcodeX86    IMULW
+syntax keyword goasmOpcodeX86    INB
+syntax keyword goasmOpcodeX86    INCB
+syntax keyword goasmOpcodeX86    INCL
+syntax keyword goasmOpcodeX86    INCQ
+syntax keyword goasmOpcodeX86    INCW
+syntax keyword goasmOpcodeX86    INL
+syntax keyword goasmOpcodeX86    INSB
+syntax keyword goasmOpcodeX86    INSERTPS
+syntax keyword goasmOpcodeX86    INSL
+syntax keyword goasmOpcodeX86    INSW
+syntax keyword goasmOpcodeX86    INT
+syntax keyword goasmOpcodeX86    INTO
+syntax keyword goasmOpcodeX86    INVD
+syntax keyword goasmOpcodeX86    INVLPG
+syntax keyword goasmOpcodeX86    INVPCID
+syntax keyword goasmOpcodeX86    INW
+syntax keyword goasmOpcodeX86    IRETL
+syntax keyword goasmOpcodeX86    IRETQ
+syntax keyword goasmOpcodeX86    IRETW
+syntax keyword goasmOpcodeX86    JCC
+syntax keyword goasmOpcodeX86    JCS
+syntax keyword goasmOpcodeX86    JCXZL
+syntax keyword goasmOpcodeX86    JCXZQ
+syntax keyword goasmOpcodeX86    JCXZW
+syntax keyword goasmOpcodeX86    JEQ
+syntax keyword goasmOpcodeX86    JGE
+syntax keyword goasmOpcodeX86    JGT
+syntax keyword goasmOpcodeX86    JHI
+syntax keyword goasmOpcodeX86    JLE
+syntax keyword goasmOpcodeX86    JLS
+syntax keyword goasmOpcodeX86    JLT
+syntax keyword goasmOpcodeX86    JMI
+syntax keyword goasmOpcodeX86    JNE
+syntax keyword goasmOpcodeX86    JOC
+syntax keyword goasmOpcodeX86    JOS
+syntax keyword goasmOpcodeX86    JPC
+syntax keyword goasmOpcodeX86    JPL
+syntax keyword goasmOpcodeX86    JPS
+syntax keyword goasmOpcodeX86    KADDB
+syntax keyword goasmOpcodeX86    KADDD
+syntax keyword goasmOpcodeX86    KADDQ
+syntax keyword goasmOpcodeX86    KADDW
+syntax keyword goasmOpcodeX86    KANDB
+syntax keyword goasmOpcodeX86    KANDD
+syntax keyword goasmOpcodeX86    KANDNB
+syntax keyword goasmOpcodeX86    KANDND
+syntax keyword goasmOpcodeX86    KANDNQ
+syntax keyword goasmOpcodeX86    KANDNW
+syntax keyword goasmOpcodeX86    KANDQ
+syntax keyword goasmOpcodeX86    KANDW
+syntax keyword goasmOpcodeX86    KMOVB
+syntax keyword goasmOpcodeX86    KMOVD
+syntax keyword goasmOpcodeX86    KMOVQ
+syntax keyword goasmOpcodeX86    KMOVW
+syntax keyword goasmOpcodeX86    KNOTB
+syntax keyword goasmOpcodeX86    KNOTD
+syntax keyword goasmOpcodeX86    KNOTQ
+syntax keyword goasmOpcodeX86    KNOTW
+syntax keyword goasmOpcodeX86    KORB
+syntax keyword goasmOpcodeX86    KORD
+syntax keyword goasmOpcodeX86    KORQ
+syntax keyword goasmOpcodeX86    KORTESTB
+syntax keyword goasmOpcodeX86    KORTESTD
+syntax keyword goasmOpcodeX86    KORTESTQ
+syntax keyword goasmOpcodeX86    KORTESTW
+syntax keyword goasmOpcodeX86    KORW
+syntax keyword goasmOpcodeX86    KSHIFTLB
+syntax keyword goasmOpcodeX86    KSHIFTLD
+syntax keyword goasmOpcodeX86    KSHIFTLQ
+syntax keyword goasmOpcodeX86    KSHIFTLW
+syntax keyword goasmOpcodeX86    KSHIFTRB
+syntax keyword goasmOpcodeX86    KSHIFTRD
+syntax keyword goasmOpcodeX86    KSHIFTRQ
+syntax keyword goasmOpcodeX86    KSHIFTRW
+syntax keyword goasmOpcodeX86    KTESTB
+syntax keyword goasmOpcodeX86    KTESTD
+syntax keyword goasmOpcodeX86    KTESTQ
+syntax keyword goasmOpcodeX86    KTESTW
+syntax keyword goasmOpcodeX86    KUNPCKBW
+syntax keyword goasmOpcodeX86    KUNPCKDQ
+syntax keyword goasmOpcodeX86    KUNPCKWD
+syntax keyword goasmOpcodeX86    KXNORB
+syntax keyword goasmOpcodeX86    KXNORD
+syntax keyword goasmOpcodeX86    KXNORQ
+syntax keyword goasmOpcodeX86    KXNORW
+syntax keyword goasmOpcodeX86    KXORB
+syntax keyword goasmOpcodeX86    KXORD
+syntax keyword goasmOpcodeX86    KXORQ
+syntax keyword goasmOpcodeX86    KXORW
+syntax keyword goasmOpcodeX86    LAHF
+syntax keyword goasmOpcodeX86    LARL
+syntax keyword goasmOpcodeX86    LARQ
+syntax keyword goasmOpcodeX86    LARW
+syntax keyword goasmOpcodeX86    LDDQU
+syntax keyword goasmOpcodeX86    LDMXCSR
+syntax keyword goasmOpcodeX86    LEAL
+syntax keyword goasmOpcodeX86    LEAQ
+syntax keyword goasmOpcodeX86    LEAVEL
+syntax keyword goasmOpcodeX86    LEAVEQ
+syntax keyword goasmOpcodeX86    LEAVEW
+syntax keyword goasmOpcodeX86    LEAW
+syntax keyword goasmOpcodeX86    LFENCE
+syntax keyword goasmOpcodeX86    LFSL
+syntax keyword goasmOpcodeX86    LFSQ
+syntax keyword goasmOpcodeX86    LFSW
+syntax keyword goasmOpcodeX86    LGDT
+syntax keyword goasmOpcodeX86    LGSL
+syntax keyword goasmOpcodeX86    LGSQ
+syntax keyword goasmOpcodeX86    LGSW
+syntax keyword goasmOpcodeX86    LIDT
+syntax keyword goasmOpcodeX86    LLDT
+syntax keyword goasmOpcodeX86    LMSW
+syntax keyword goasmOpcodeX86    LOCK
+syntax keyword goasmOpcodeX86    LODSB
+syntax keyword goasmOpcodeX86    LODSL
+syntax keyword goasmOpcodeX86    LODSQ
+syntax keyword goasmOpcodeX86    LODSW
+syntax keyword goasmOpcodeX86    LONG
+syntax keyword goasmOpcodeX86    LOOP
+syntax keyword goasmOpcodeX86    LOOPEQ
+syntax keyword goasmOpcodeX86    LOOPNE
+syntax keyword goasmOpcodeX86    LSLL
+syntax keyword goasmOpcodeX86    LSLQ
+syntax keyword goasmOpcodeX86    LSLW
+syntax keyword goasmOpcodeX86    LSSL
+syntax keyword goasmOpcodeX86    LSSQ
+syntax keyword goasmOpcodeX86    LSSW
+syntax keyword goasmOpcodeX86    LTR
+syntax keyword goasmOpcodeX86    LZCNTL
+syntax keyword goasmOpcodeX86    LZCNTQ
+syntax keyword goasmOpcodeX86    LZCNTW
+syntax keyword goasmOpcodeX86    MASKMOVOU
+syntax keyword goasmOpcodeX86    MASKMOVQ
+syntax keyword goasmOpcodeX86    MAXPD
+syntax keyword goasmOpcodeX86    MAXPS
+syntax keyword goasmOpcodeX86    MAXSD
+syntax keyword goasmOpcodeX86    MAXSS
+syntax keyword goasmOpcodeX86    MFENCE
+syntax keyword goasmOpcodeX86    MINPD
+syntax keyword goasmOpcodeX86    MINPS
+syntax keyword goasmOpcodeX86    MINSD
+syntax keyword goasmOpcodeX86    MINSS
+syntax keyword goasmOpcodeX86    MONITOR
+syntax keyword goasmOpcodeX86    MOVAPD
+syntax keyword goasmOpcodeX86    MOVAPS
+syntax keyword goasmOpcodeX86    MOVB
+syntax keyword goasmOpcodeX86    MOVBEL
+syntax keyword goasmOpcodeX86    MOVBEQ
+syntax keyword goasmOpcodeX86    MOVBEW
+syntax keyword goasmOpcodeX86    MOVBLSX
+syntax keyword goasmOpcodeX86    MOVBLZX
+syntax keyword goasmOpcodeX86    MOVBQSX
+syntax keyword goasmOpcodeX86    MOVBQZX
+syntax keyword goasmOpcodeX86    MOVBWSX
+syntax keyword goasmOpcodeX86    MOVBWZX
+syntax keyword goasmOpcodeX86    MOVDDUP
+syntax keyword goasmOpcodeX86    MOVHLPS
+syntax keyword goasmOpcodeX86    MOVHPD
+syntax keyword goasmOpcodeX86    MOVHPS
+syntax keyword goasmOpcodeX86    MOVL
+syntax keyword goasmOpcodeX86    MOVLHPS
+syntax keyword goasmOpcodeX86    MOVLPD
+syntax keyword goasmOpcodeX86    MOVLPS
+syntax keyword goasmOpcodeX86    MOVLQSX
+syntax keyword goasmOpcodeX86    MOVLQZX
+syntax keyword goasmOpcodeX86    MOVMSKPD
+syntax keyword goasmOpcodeX86    MOVMSKPS
+syntax keyword goasmOpcodeX86    MOVNTDQA
+syntax keyword goasmOpcodeX86    MOVNTIL
+syntax keyword goasmOpcodeX86    MOVNTIQ
+syntax keyword goasmOpcodeX86    MOVNTO
+syntax keyword goasmOpcodeX86    MOVNTPD
+syntax keyword goasmOpcodeX86    MOVNTPS
+syntax keyword goasmOpcodeX86    MOVNTQ
+syntax keyword goasmOpcodeX86    MOVO
+syntax keyword goasmOpcodeX86    MOVOU
+syntax keyword goasmOpcodeX86    MOVQ
+syntax keyword goasmOpcodeX86    MOVQL
+syntax keyword goasmOpcodeX86    MOVQOZX
+syntax keyword goasmOpcodeX86    MOVSB
+syntax keyword goasmOpcodeX86    MOVSD
+syntax keyword goasmOpcodeX86    MOVSHDUP
+syntax keyword goasmOpcodeX86    MOVSL
+syntax keyword goasmOpcodeX86    MOVSLDUP
+syntax keyword goasmOpcodeX86    MOVSQ
+syntax keyword goasmOpcodeX86    MOVSS
+syntax keyword goasmOpcodeX86    MOVSW
+syntax keyword goasmOpcodeX86    MOVSWW
+syntax keyword goasmOpcodeX86    MOVUPD
+syntax keyword goasmOpcodeX86    MOVUPS
+syntax keyword goasmOpcodeX86    MOVW
+syntax keyword goasmOpcodeX86    MOVWLSX
+syntax keyword goasmOpcodeX86    MOVWLZX
+syntax keyword goasmOpcodeX86    MOVWQSX
+syntax keyword goasmOpcodeX86    MOVWQZX
+syntax keyword goasmOpcodeX86    MOVZWW
+syntax keyword goasmOpcodeX86    MPSADBW
+syntax keyword goasmOpcodeX86    MULB
+syntax keyword goasmOpcodeX86    MULL
+syntax keyword goasmOpcodeX86    MULPD
+syntax keyword goasmOpcodeX86    MULPS
+syntax keyword goasmOpcodeX86    MULQ
+syntax keyword goasmOpcodeX86    MULSD
+syntax keyword goasmOpcodeX86    MULSS
+syntax keyword goasmOpcodeX86    MULW
+syntax keyword goasmOpcodeX86    MULXL
+syntax keyword goasmOpcodeX86    MULXQ
+syntax keyword goasmOpcodeX86    MWAIT
+syntax keyword goasmOpcodeX86    NEGB
+syntax keyword goasmOpcodeX86    NEGL
+syntax keyword goasmOpcodeX86    NEGQ
+syntax keyword goasmOpcodeX86    NEGW
+syntax keyword goasmOpcodeX86    NOPL
+syntax keyword goasmOpcodeX86    NOPW
+syntax keyword goasmOpcodeX86    NOTB
+syntax keyword goasmOpcodeX86    NOTL
+syntax keyword goasmOpcodeX86    NOTQ
+syntax keyword goasmOpcodeX86    NOTW
+syntax keyword goasmOpcodeX86    ORB
+syntax keyword goasmOpcodeX86    ORL
+syntax keyword goasmOpcodeX86    ORPD
+syntax keyword goasmOpcodeX86    ORPS
+syntax keyword goasmOpcodeX86    ORQ
+syntax keyword goasmOpcodeX86    ORW
+syntax keyword goasmOpcodeX86    OUTB
+syntax keyword goasmOpcodeX86    OUTL
+syntax keyword goasmOpcodeX86    OUTSB
+syntax keyword goasmOpcodeX86    OUTSL
+syntax keyword goasmOpcodeX86    OUTSW
+syntax keyword goasmOpcodeX86    OUTW
+syntax keyword goasmOpcodeX86    PABSB
+syntax keyword goasmOpcodeX86    PABSD
+syntax keyword goasmOpcodeX86    PABSW
+syntax keyword goasmOpcodeX86    PACKSSLW
+syntax keyword goasmOpcodeX86    PACKSSWB
+syntax keyword goasmOpcodeX86    PACKUSDW
+syntax keyword goasmOpcodeX86    PACKUSWB
+syntax keyword goasmOpcodeX86    PADDB
+syntax keyword goasmOpcodeX86    PADDL
+syntax keyword goasmOpcodeX86    PADDQ
+syntax keyword goasmOpcodeX86    PADDSB
+syntax keyword goasmOpcodeX86    PADDSW
+syntax keyword goasmOpcodeX86    PADDUSB
+syntax keyword goasmOpcodeX86    PADDUSW
+syntax keyword goasmOpcodeX86    PADDW
+syntax keyword goasmOpcodeX86    PALIGNR
+syntax keyword goasmOpcodeX86    PAND
+syntax keyword goasmOpcodeX86    PANDN
+syntax keyword goasmOpcodeX86    PAUSE
+syntax keyword goasmOpcodeX86    PAVGB
+syntax keyword goasmOpcodeX86    PAVGW
+syntax keyword goasmOpcodeX86    PBLENDVB
+syntax keyword goasmOpcodeX86    PBLENDW
+syntax keyword goasmOpcodeX86    PCLMULQDQ
+syntax keyword goasmOpcodeX86    PCMPEQB
+syntax keyword goasmOpcodeX86    PCMPEQL
+syntax keyword goasmOpcodeX86    PCMPEQQ
+syntax keyword goasmOpcodeX86    PCMPEQW
+syntax keyword goasmOpcodeX86    PCMPESTRI
+syntax keyword goasmOpcodeX86    PCMPESTRM
+syntax keyword goasmOpcodeX86    PCMPGTB
+syntax keyword goasmOpcodeX86    PCMPGTL
+syntax keyword goasmOpcodeX86    PCMPGTQ
+syntax keyword goasmOpcodeX86    PCMPGTW
+syntax keyword goasmOpcodeX86    PCMPISTRI
+syntax keyword goasmOpcodeX86    PCMPISTRM
+syntax keyword goasmOpcodeX86    PDEPL
+syntax keyword goasmOpcodeX86    PDEPQ
+syntax keyword goasmOpcodeX86    PEXTL
+syntax keyword goasmOpcodeX86    PEXTQ
+syntax keyword goasmOpcodeX86    PEXTRB
+syntax keyword goasmOpcodeX86    PEXTRD
+syntax keyword goasmOpcodeX86    PEXTRQ
+syntax keyword goasmOpcodeX86    PEXTRW
+syntax keyword goasmOpcodeX86    PHADDD
+syntax keyword goasmOpcodeX86    PHADDSW
+syntax keyword goasmOpcodeX86    PHADDW
+syntax keyword goasmOpcodeX86    PHMINPOSUW
+syntax keyword goasmOpcodeX86    PHSUBD
+syntax keyword goasmOpcodeX86    PHSUBSW
+syntax keyword goasmOpcodeX86    PHSUBW
+syntax keyword goasmOpcodeX86    PINSRB
+syntax keyword goasmOpcodeX86    PINSRD
+syntax keyword goasmOpcodeX86    PINSRQ
+syntax keyword goasmOpcodeX86    PINSRW
+syntax keyword goasmOpcodeX86    PMADDUBSW
+syntax keyword goasmOpcodeX86    PMADDWL
+syntax keyword goasmOpcodeX86    PMAXSB
+syntax keyword goasmOpcodeX86    PMAXSD
+syntax keyword goasmOpcodeX86    PMAXSW
+syntax keyword goasmOpcodeX86    PMAXUB
+syntax keyword goasmOpcodeX86    PMAXUD
+syntax keyword goasmOpcodeX86    PMAXUW
+syntax keyword goasmOpcodeX86    PMINSB
+syntax keyword goasmOpcodeX86    PMINSD
+syntax keyword goasmOpcodeX86    PMINSW
+syntax keyword goasmOpcodeX86    PMINUB
+syntax keyword goasmOpcodeX86    PMINUD
+syntax keyword goasmOpcodeX86    PMINUW
+syntax keyword goasmOpcodeX86    PMOVMSKB
+syntax keyword goasmOpcodeX86    PMOVSXBD
+syntax keyword goasmOpcodeX86    PMOVSXBQ
+syntax keyword goasmOpcodeX86    PMOVSXBW
+syntax keyword goasmOpcodeX86    PMOVSXDQ
+syntax keyword goasmOpcodeX86    PMOVSXWD
+syntax keyword goasmOpcodeX86    PMOVSXWQ
+syntax keyword goasmOpcodeX86    PMOVZXBD
+syntax keyword goasmOpcodeX86    PMOVZXBQ
+syntax keyword goasmOpcodeX86    PMOVZXBW
+syntax keyword goasmOpcodeX86    PMOVZXDQ
+syntax keyword goasmOpcodeX86    PMOVZXWD
+syntax keyword goasmOpcodeX86    PMOVZXWQ
+syntax keyword goasmOpcodeX86    PMULDQ
+syntax keyword goasmOpcodeX86    PMULHRSW
+syntax keyword goasmOpcodeX86    PMULHUW
+syntax keyword goasmOpcodeX86    PMULHW
+syntax keyword goasmOpcodeX86    PMULLD
+syntax keyword goasmOpcodeX86    PMULLW
+syntax keyword goasmOpcodeX86    PMULULQ
+syntax keyword goasmOpcodeX86    POPAL
+syntax keyword goasmOpcodeX86    POPAW
+syntax keyword goasmOpcodeX86    POPCNTL
+syntax keyword goasmOpcodeX86    POPCNTQ
+syntax keyword goasmOpcodeX86    POPCNTW
+syntax keyword goasmOpcodeX86    POPFL
+syntax keyword goasmOpcodeX86    POPFQ
+syntax keyword goasmOpcodeX86    POPFW
+syntax keyword goasmOpcodeX86    POPL
+syntax keyword goasmOpcodeX86    POPQ
+syntax keyword goasmOpcodeX86    POPW
+syntax keyword goasmOpcodeX86    POR
+syntax keyword goasmOpcodeX86    PREFETCHNTA
+syntax keyword goasmOpcodeX86    PREFETCHT0
+syntax keyword goasmOpcodeX86    PREFETCHT1
+syntax keyword goasmOpcodeX86    PREFETCHT2
+syntax keyword goasmOpcodeX86    PSADBW
+syntax keyword goasmOpcodeX86    PSHUFB
+syntax keyword goasmOpcodeX86    PSHUFD
+syntax keyword goasmOpcodeX86    PSHUFHW
+syntax keyword goasmOpcodeX86    PSHUFL
+syntax keyword goasmOpcodeX86    PSHUFLW
+syntax keyword goasmOpcodeX86    PSHUFW
+syntax keyword goasmOpcodeX86    PSIGNB
+syntax keyword goasmOpcodeX86    PSIGND
+syntax keyword goasmOpcodeX86    PSIGNW
+syntax keyword goasmOpcodeX86    PSLLL
+syntax keyword goasmOpcodeX86    PSLLO
+syntax keyword goasmOpcodeX86    PSLLQ
+syntax keyword goasmOpcodeX86    PSLLW
+syntax keyword goasmOpcodeX86    PSRAL
+syntax keyword goasmOpcodeX86    PSRAW
+syntax keyword goasmOpcodeX86    PSRLL
+syntax keyword goasmOpcodeX86    PSRLO
+syntax keyword goasmOpcodeX86    PSRLQ
+syntax keyword goasmOpcodeX86    PSRLW
+syntax keyword goasmOpcodeX86    PSUBB
+syntax keyword goasmOpcodeX86    PSUBL
+syntax keyword goasmOpcodeX86    PSUBQ
+syntax keyword goasmOpcodeX86    PSUBSB
+syntax keyword goasmOpcodeX86    PSUBSW
+syntax keyword goasmOpcodeX86    PSUBUSB
+syntax keyword goasmOpcodeX86    PSUBUSW
+syntax keyword goasmOpcodeX86    PSUBW
+syntax keyword goasmOpcodeX86    PTEST
+syntax keyword goasmOpcodeX86    PUNPCKHBW
+syntax keyword goasmOpcodeX86    PUNPCKHLQ
+syntax keyword goasmOpcodeX86    PUNPCKHQDQ
+syntax keyword goasmOpcodeX86    PUNPCKHWL
+syntax keyword goasmOpcodeX86    PUNPCKLBW
+syntax keyword goasmOpcodeX86    PUNPCKLLQ
+syntax keyword goasmOpcodeX86    PUNPCKLQDQ
+syntax keyword goasmOpcodeX86    PUNPCKLWL
+syntax keyword goasmOpcodeX86    PUSHAL
+syntax keyword goasmOpcodeX86    PUSHAW
+syntax keyword goasmOpcodeX86    PUSHFL
+syntax keyword goasmOpcodeX86    PUSHFQ
+syntax keyword goasmOpcodeX86    PUSHFW
+syntax keyword goasmOpcodeX86    PUSHL
+syntax keyword goasmOpcodeX86    PUSHQ
+syntax keyword goasmOpcodeX86    PUSHW
+syntax keyword goasmOpcodeX86    PXOR
+syntax keyword goasmOpcodeX86    QUAD
+syntax keyword goasmOpcodeX86    RCLB
+syntax keyword goasmOpcodeX86    RCLL
+syntax keyword goasmOpcodeX86    RCLQ
+syntax keyword goasmOpcodeX86    RCLW
+syntax keyword goasmOpcodeX86    RCPPS
+syntax keyword goasmOpcodeX86    RCPSS
+syntax keyword goasmOpcodeX86    RCRB
+syntax keyword goasmOpcodeX86    RCRL
+syntax keyword goasmOpcodeX86    RCRQ
+syntax keyword goasmOpcodeX86    RCRW
+syntax keyword goasmOpcodeX86    RDFSBASEL
+syntax keyword goasmOpcodeX86    RDFSBASEQ
+syntax keyword goasmOpcodeX86    RDGSBASEL
+syntax keyword goasmOpcodeX86    RDGSBASEQ
+syntax keyword goasmOpcodeX86    RDMSR
+syntax keyword goasmOpcodeX86    RDPKRU
+syntax keyword goasmOpcodeX86    RDPMC
+syntax keyword goasmOpcodeX86    RDRANDL
+syntax keyword goasmOpcodeX86    RDRANDQ
+syntax keyword goasmOpcodeX86    RDRANDW
+syntax keyword goasmOpcodeX86    RDSEEDL
+syntax keyword goasmOpcodeX86    RDSEEDQ
+syntax keyword goasmOpcodeX86    RDSEEDW
+syntax keyword goasmOpcodeX86    RDTSC
+syntax keyword goasmOpcodeX86    RDTSCP
+syntax keyword goasmOpcodeX86    REP
+syntax keyword goasmOpcodeX86    REPN
+syntax keyword goasmOpcodeX86    RETFL
+syntax keyword goasmOpcodeX86    RETFQ
+syntax keyword goasmOpcodeX86    RETFW
+syntax keyword goasmOpcodeX86    ROLB
+syntax keyword goasmOpcodeX86    ROLL
+syntax keyword goasmOpcodeX86    ROLQ
+syntax keyword goasmOpcodeX86    ROLW
+syntax keyword goasmOpcodeX86    RORB
+syntax keyword goasmOpcodeX86    RORL
+syntax keyword goasmOpcodeX86    RORQ
+syntax keyword goasmOpcodeX86    RORW
+syntax keyword goasmOpcodeX86    RORXL
+syntax keyword goasmOpcodeX86    RORXQ
+syntax keyword goasmOpcodeX86    ROUNDPD
+syntax keyword goasmOpcodeX86    ROUNDPS
+syntax keyword goasmOpcodeX86    ROUNDSD
+syntax keyword goasmOpcodeX86    ROUNDSS
+syntax keyword goasmOpcodeX86    RSM
+syntax keyword goasmOpcodeX86    RSQRTPS
+syntax keyword goasmOpcodeX86    RSQRTSS
+syntax keyword goasmOpcodeX86    SAHF
+syntax keyword goasmOpcodeX86    SALB
+syntax keyword goasmOpcodeX86    SALL
+syntax keyword goasmOpcodeX86    SALQ
+syntax keyword goasmOpcodeX86    SALW
+syntax keyword goasmOpcodeX86    SARB
+syntax keyword goasmOpcodeX86    SARL
+syntax keyword goasmOpcodeX86    SARQ
+syntax keyword goasmOpcodeX86    SARW
+syntax keyword goasmOpcodeX86    SARXL
+syntax keyword goasmOpcodeX86    SARXQ
+syntax keyword goasmOpcodeX86    SBBB
+syntax keyword goasmOpcodeX86    SBBL
+syntax keyword goasmOpcodeX86    SBBQ
+syntax keyword goasmOpcodeX86    SBBW
+syntax keyword goasmOpcodeX86    SCASB
+syntax keyword goasmOpcodeX86    SCASL
+syntax keyword goasmOpcodeX86    SCASQ
+syntax keyword goasmOpcodeX86    SCASW
+syntax keyword goasmOpcodeX86    SETCC
+syntax keyword goasmOpcodeX86    SETCS
+syntax keyword goasmOpcodeX86    SETEQ
+syntax keyword goasmOpcodeX86    SETGE
+syntax keyword goasmOpcodeX86    SETGT
+syntax keyword goasmOpcodeX86    SETHI
+syntax keyword goasmOpcodeX86    SETLE
+syntax keyword goasmOpcodeX86    SETLS
+syntax keyword goasmOpcodeX86    SETLT
+syntax keyword goasmOpcodeX86    SETMI
+syntax keyword goasmOpcodeX86    SETNE
+syntax keyword goasmOpcodeX86    SETOC
+syntax keyword goasmOpcodeX86    SETOS
+syntax keyword goasmOpcodeX86    SETPC
+syntax keyword goasmOpcodeX86    SETPL
+syntax keyword goasmOpcodeX86    SETPS
+syntax keyword goasmOpcodeX86    SFENCE
+syntax keyword goasmOpcodeX86    SGDT
+syntax keyword goasmOpcodeX86    SHA1MSG1
+syntax keyword goasmOpcodeX86    SHA1MSG2
+syntax keyword goasmOpcodeX86    SHA1NEXTE
+syntax keyword goasmOpcodeX86    SHA1RNDS4
+syntax keyword goasmOpcodeX86    SHA256MSG1
+syntax keyword goasmOpcodeX86    SHA256MSG2
+syntax keyword goasmOpcodeX86    SHA256RNDS2
+syntax keyword goasmOpcodeX86    SHLB
+syntax keyword goasmOpcodeX86    SHLL
+syntax keyword goasmOpcodeX86    SHLQ
+syntax keyword goasmOpcodeX86    SHLW
+syntax keyword goasmOpcodeX86    SHLXL
+syntax keyword goasmOpcodeX86    SHLXQ
+syntax keyword goasmOpcodeX86    SHRB
+syntax keyword goasmOpcodeX86    SHRL
+syntax keyword goasmOpcodeX86    SHRQ
+syntax keyword goasmOpcodeX86    SHRW
+syntax keyword goasmOpcodeX86    SHRXL
+syntax keyword goasmOpcodeX86    SHRXQ
+syntax keyword goasmOpcodeX86    SHUFPD
+syntax keyword goasmOpcodeX86    SHUFPS
+syntax keyword goasmOpcodeX86    SIDT
+syntax keyword goasmOpcodeX86    SLDTL
+syntax keyword goasmOpcodeX86    SLDTQ
+syntax keyword goasmOpcodeX86    SLDTW
+syntax keyword goasmOpcodeX86    SMSWL
+syntax keyword goasmOpcodeX86    SMSWQ
+syntax keyword goasmOpcodeX86    SMSWW
+syntax keyword goasmOpcodeX86    SQRTPD
+syntax keyword goasmOpcodeX86    SQRTPS
+syntax keyword goasmOpcodeX86    SQRTSD
+syntax keyword goasmOpcodeX86    SQRTSS
+syntax keyword goasmOpcodeX86    STAC
+syntax keyword goasmOpcodeX86    STC
+syntax keyword goasmOpcodeX86    STD
+syntax keyword goasmOpcodeX86    STI
+syntax keyword goasmOpcodeX86    STMXCSR
+syntax keyword goasmOpcodeX86    STOSB
+syntax keyword goasmOpcodeX86    STOSL
+syntax keyword goasmOpcodeX86    STOSQ
+syntax keyword goasmOpcodeX86    STOSW
+syntax keyword goasmOpcodeX86    STRL
+syntax keyword goasmOpcodeX86    STRQ
+syntax keyword goasmOpcodeX86    STRW
+syntax keyword goasmOpcodeX86    SUBB
+syntax keyword goasmOpcodeX86    SUBL
+syntax keyword goasmOpcodeX86    SUBPD
+syntax keyword goasmOpcodeX86    SUBPS
+syntax keyword goasmOpcodeX86    SUBQ
+syntax keyword goasmOpcodeX86    SUBSD
+syntax keyword goasmOpcodeX86    SUBSS
+syntax keyword goasmOpcodeX86    SUBW
+syntax keyword goasmOpcodeX86    SWAPGS
+syntax keyword goasmOpcodeX86    SYSCALL
+syntax keyword goasmOpcodeX86    SYSENTER
+syntax keyword goasmOpcodeX86    SYSENTER64
+syntax keyword goasmOpcodeX86    SYSEXIT
+syntax keyword goasmOpcodeX86    SYSEXIT64
+syntax keyword goasmOpcodeX86    SYSRET
+syntax keyword goasmOpcodeX86    TESTB
+syntax keyword goasmOpcodeX86    TESTL
+syntax keyword goasmOpcodeX86    TESTQ
+syntax keyword goasmOpcodeX86    TESTW
+syntax keyword goasmOpcodeX86    TPAUSE
+syntax keyword goasmOpcodeX86    TZCNTL
+syntax keyword goasmOpcodeX86    TZCNTQ
+syntax keyword goasmOpcodeX86    TZCNTW
+syntax keyword goasmOpcodeX86    UCOMISD
+syntax keyword goasmOpcodeX86    UCOMISS
+syntax keyword goasmOpcodeX86    UD1
+syntax keyword goasmOpcodeX86    UD2
+syntax keyword goasmOpcodeX86    UMWAIT
+syntax keyword goasmOpcodeX86    UNPCKHPD
+syntax keyword goasmOpcodeX86    UNPCKHPS
+syntax keyword goasmOpcodeX86    UNPCKLPD
+syntax keyword goasmOpcodeX86    UNPCKLPS
+syntax keyword goasmOpcodeX86    UMONITOR
+syntax keyword goasmOpcodeX86    V4FMADDPS
+syntax keyword goasmOpcodeX86    V4FMADDSS
+syntax keyword goasmOpcodeX86    V4FNMADDPS
+syntax keyword goasmOpcodeX86    V4FNMADDSS
+syntax keyword goasmOpcodeX86    VADDPD
+syntax keyword goasmOpcodeX86    VADDPS
+syntax keyword goasmOpcodeX86    VADDSD
+syntax keyword goasmOpcodeX86    VADDSS
+syntax keyword goasmOpcodeX86    VADDSUBPD
+syntax keyword goasmOpcodeX86    VADDSUBPS
+syntax keyword goasmOpcodeX86    VAESDEC
+syntax keyword goasmOpcodeX86    VAESDECLAST
+syntax keyword goasmOpcodeX86    VAESENC
+syntax keyword goasmOpcodeX86    VAESENCLAST
+syntax keyword goasmOpcodeX86    VAESIMC
+syntax keyword goasmOpcodeX86    VAESKEYGENASSIST
+syntax keyword goasmOpcodeX86    VALIGND
+syntax keyword goasmOpcodeX86    VALIGNQ
+syntax keyword goasmOpcodeX86    VANDNPD
+syntax keyword goasmOpcodeX86    VANDNPS
+syntax keyword goasmOpcodeX86    VANDPD
+syntax keyword goasmOpcodeX86    VANDPS
+syntax keyword goasmOpcodeX86    VBLENDMPD
+syntax keyword goasmOpcodeX86    VBLENDMPS
+syntax keyword goasmOpcodeX86    VBLENDPD
+syntax keyword goasmOpcodeX86    VBLENDPS
+syntax keyword goasmOpcodeX86    VBLENDVPD
+syntax keyword goasmOpcodeX86    VBLENDVPS
+syntax keyword goasmOpcodeX86    VBROADCASTF128
+syntax keyword goasmOpcodeX86    VBROADCASTF32X2
+syntax keyword goasmOpcodeX86    VBROADCASTF32X4
+syntax keyword goasmOpcodeX86    VBROADCASTF32X8
+syntax keyword goasmOpcodeX86    VBROADCASTF64X2
+syntax keyword goasmOpcodeX86    VBROADCASTF64X4
+syntax keyword goasmOpcodeX86    VBROADCASTI128
+syntax keyword goasmOpcodeX86    VBROADCASTI32X2
+syntax keyword goasmOpcodeX86    VBROADCASTI32X4
+syntax keyword goasmOpcodeX86    VBROADCASTI32X8
+syntax keyword goasmOpcodeX86    VBROADCASTI64X2
+syntax keyword goasmOpcodeX86    VBROADCASTI64X4
+syntax keyword goasmOpcodeX86    VBROADCASTSD
+syntax keyword goasmOpcodeX86    VBROADCASTSS
+syntax keyword goasmOpcodeX86    VCMPPD
+syntax keyword goasmOpcodeX86    VCMPPS
+syntax keyword goasmOpcodeX86    VCMPSD
+syntax keyword goasmOpcodeX86    VCMPSS
+syntax keyword goasmOpcodeX86    VCOMISD
+syntax keyword goasmOpcodeX86    VCOMISS
+syntax keyword goasmOpcodeX86    VCOMPRESSPD
+syntax keyword goasmOpcodeX86    VCOMPRESSPS
+syntax keyword goasmOpcodeX86    VCVTDQ2PD
+syntax keyword goasmOpcodeX86    VCVTDQ2PS
+syntax keyword goasmOpcodeX86    VCVTPD2DQ
+syntax keyword goasmOpcodeX86    VCVTPD2DQX
+syntax keyword goasmOpcodeX86    VCVTPD2DQY
+syntax keyword goasmOpcodeX86    VCVTPD2PS
+syntax keyword goasmOpcodeX86    VCVTPD2PSX
+syntax keyword goasmOpcodeX86    VCVTPD2PSY
+syntax keyword goasmOpcodeX86    VCVTPD2QQ
+syntax keyword goasmOpcodeX86    VCVTPD2UDQ
+syntax keyword goasmOpcodeX86    VCVTPD2UDQX
+syntax keyword goasmOpcodeX86    VCVTPD2UDQY
+syntax keyword goasmOpcodeX86    VCVTPD2UQQ
+syntax keyword goasmOpcodeX86    VCVTPH2PS
+syntax keyword goasmOpcodeX86    VCVTPS2DQ
+syntax keyword goasmOpcodeX86    VCVTPS2PD
+syntax keyword goasmOpcodeX86    VCVTPS2PH
+syntax keyword goasmOpcodeX86    VCVTPS2QQ
+syntax keyword goasmOpcodeX86    VCVTPS2UDQ
+syntax keyword goasmOpcodeX86    VCVTPS2UQQ
+syntax keyword goasmOpcodeX86    VCVTQQ2PD
+syntax keyword goasmOpcodeX86    VCVTQQ2PS
+syntax keyword goasmOpcodeX86    VCVTQQ2PSX
+syntax keyword goasmOpcodeX86    VCVTQQ2PSY
+syntax keyword goasmOpcodeX86    VCVTSD2SI
+syntax keyword goasmOpcodeX86    VCVTSD2SIQ
+syntax keyword goasmOpcodeX86    VCVTSD2SS
+syntax keyword goasmOpcodeX86    VCVTSD2USI
+syntax keyword goasmOpcodeX86    VCVTSD2USIL
+syntax keyword goasmOpcodeX86    VCVTSD2USIQ
+syntax keyword goasmOpcodeX86    VCVTSI2SDL
+syntax keyword goasmOpcodeX86    VCVTSI2SDQ
+syntax keyword goasmOpcodeX86    VCVTSI2SSL
+syntax keyword goasmOpcodeX86    VCVTSI2SSQ
+syntax keyword goasmOpcodeX86    VCVTSS2SD
+syntax keyword goasmOpcodeX86    VCVTSS2SI
+syntax keyword goasmOpcodeX86    VCVTSS2SIQ
+syntax keyword goasmOpcodeX86    VCVTSS2USI
+syntax keyword goasmOpcodeX86    VCVTSS2USIL
+syntax keyword goasmOpcodeX86    VCVTSS2USIQ
+syntax keyword goasmOpcodeX86    VCVTTPD2DQ
+syntax keyword goasmOpcodeX86    VCVTTPD2DQX
+syntax keyword goasmOpcodeX86    VCVTTPD2DQY
+syntax keyword goasmOpcodeX86    VCVTTPD2QQ
+syntax keyword goasmOpcodeX86    VCVTTPD2UDQ
+syntax keyword goasmOpcodeX86    VCVTTPD2UDQX
+syntax keyword goasmOpcodeX86    VCVTTPD2UDQY
+syntax keyword goasmOpcodeX86    VCVTTPD2UQQ
+syntax keyword goasmOpcodeX86    VCVTTPS2DQ
+syntax keyword goasmOpcodeX86    VCVTTPS2QQ
+syntax keyword goasmOpcodeX86    VCVTTPS2UDQ
+syntax keyword goasmOpcodeX86    VCVTTPS2UQQ
+syntax keyword goasmOpcodeX86    VCVTTSD2SI
+syntax keyword goasmOpcodeX86    VCVTTSD2SIQ
+syntax keyword goasmOpcodeX86    VCVTTSD2USI
+syntax keyword goasmOpcodeX86    VCVTTSD2USIL
+syntax keyword goasmOpcodeX86    VCVTTSD2USIQ
+syntax keyword goasmOpcodeX86    VCVTTSS2SI
+syntax keyword goasmOpcodeX86    VCVTTSS2SIQ
+syntax keyword goasmOpcodeX86    VCVTTSS2USI
+syntax keyword goasmOpcodeX86    VCVTTSS2USIL
+syntax keyword goasmOpcodeX86    VCVTTSS2USIQ
+syntax keyword goasmOpcodeX86    VCVTUDQ2PD
+syntax keyword goasmOpcodeX86    VCVTUDQ2PS
+syntax keyword goasmOpcodeX86    VCVTUQQ2PD
+syntax keyword goasmOpcodeX86    VCVTUQQ2PS
+syntax keyword goasmOpcodeX86    VCVTUQQ2PSX
+syntax keyword goasmOpcodeX86    VCVTUQQ2PSY
+syntax keyword goasmOpcodeX86    VCVTUSI2SD
+syntax keyword goasmOpcodeX86    VCVTUSI2SDL
+syntax keyword goasmOpcodeX86    VCVTUSI2SDQ
+syntax keyword goasmOpcodeX86    VCVTUSI2SS
+syntax keyword goasmOpcodeX86    VCVTUSI2SSL
+syntax keyword goasmOpcodeX86    VCVTUSI2SSQ
+syntax keyword goasmOpcodeX86    VDBPSADBW
+syntax keyword goasmOpcodeX86    VDIVPD
+syntax keyword goasmOpcodeX86    VDIVPS
+syntax keyword goasmOpcodeX86    VDIVSD
+syntax keyword goasmOpcodeX86    VDIVSS
+syntax keyword goasmOpcodeX86    VDPPD
+syntax keyword goasmOpcodeX86    VDPPS
+syntax keyword goasmOpcodeX86    VERR
+syntax keyword goasmOpcodeX86    VERW
+syntax keyword goasmOpcodeX86    VEXP2PD
+syntax keyword goasmOpcodeX86    VEXP2PS
+syntax keyword goasmOpcodeX86    VEXPANDPD
+syntax keyword goasmOpcodeX86    VEXPANDPS
+syntax keyword goasmOpcodeX86    VEXTRACTF128
+syntax keyword goasmOpcodeX86    VEXTRACTF32X4
+syntax keyword goasmOpcodeX86    VEXTRACTF32X8
+syntax keyword goasmOpcodeX86    VEXTRACTF64X2
+syntax keyword goasmOpcodeX86    VEXTRACTF64X4
+syntax keyword goasmOpcodeX86    VEXTRACTI128
+syntax keyword goasmOpcodeX86    VEXTRACTI32X4
+syntax keyword goasmOpcodeX86    VEXTRACTI32X8
+syntax keyword goasmOpcodeX86    VEXTRACTI64X2
+syntax keyword goasmOpcodeX86    VEXTRACTI64X4
+syntax keyword goasmOpcodeX86    VEXTRACTPS
+syntax keyword goasmOpcodeX86    VFIXUPIMMPD
+syntax keyword goasmOpcodeX86    VFIXUPIMMPS
+syntax keyword goasmOpcodeX86    VFIXUPIMMSD
+syntax keyword goasmOpcodeX86    VFIXUPIMMSS
+syntax keyword goasmOpcodeX86    VFMADD132PD
+syntax keyword goasmOpcodeX86    VFMADD132PS
+syntax keyword goasmOpcodeX86    VFMADD132SD
+syntax keyword goasmOpcodeX86    VFMADD132SS
+syntax keyword goasmOpcodeX86    VFMADD213PD
+syntax keyword goasmOpcodeX86    VFMADD213PS
+syntax keyword goasmOpcodeX86    VFMADD213SD
+syntax keyword goasmOpcodeX86    VFMADD213SS
+syntax keyword goasmOpcodeX86    VFMADD231PD
+syntax keyword goasmOpcodeX86    VFMADD231PS
+syntax keyword goasmOpcodeX86    VFMADD231SD
+syntax keyword goasmOpcodeX86    VFMADD231SS
+syntax keyword goasmOpcodeX86    VFMADDSUB132PD
+syntax keyword goasmOpcodeX86    VFMADDSUB132PS
+syntax keyword goasmOpcodeX86    VFMADDSUB213PD
+syntax keyword goasmOpcodeX86    VFMADDSUB213PS
+syntax keyword goasmOpcodeX86    VFMADDSUB231PD
+syntax keyword goasmOpcodeX86    VFMADDSUB231PS
+syntax keyword goasmOpcodeX86    VFMSUB132PD
+syntax keyword goasmOpcodeX86    VFMSUB132PS
+syntax keyword goasmOpcodeX86    VFMSUB132SD
+syntax keyword goasmOpcodeX86    VFMSUB132SS
+syntax keyword goasmOpcodeX86    VFMSUB213PD
+syntax keyword goasmOpcodeX86    VFMSUB213PS
+syntax keyword goasmOpcodeX86    VFMSUB213SD
+syntax keyword goasmOpcodeX86    VFMSUB213SS
+syntax keyword goasmOpcodeX86    VFMSUB231PD
+syntax keyword goasmOpcodeX86    VFMSUB231PS
+syntax keyword goasmOpcodeX86    VFMSUB231SD
+syntax keyword goasmOpcodeX86    VFMSUB231SS
+syntax keyword goasmOpcodeX86    VFMSUBADD132PD
+syntax keyword goasmOpcodeX86    VFMSUBADD132PS
+syntax keyword goasmOpcodeX86    VFMSUBADD213PD
+syntax keyword goasmOpcodeX86    VFMSUBADD213PS
+syntax keyword goasmOpcodeX86    VFMSUBADD231PD
+syntax keyword goasmOpcodeX86    VFMSUBADD231PS
+syntax keyword goasmOpcodeX86    VFNMADD132PD
+syntax keyword goasmOpcodeX86    VFNMADD132PS
+syntax keyword goasmOpcodeX86    VFNMADD132SD
+syntax keyword goasmOpcodeX86    VFNMADD132SS
+syntax keyword goasmOpcodeX86    VFNMADD213PD
+syntax keyword goasmOpcodeX86    VFNMADD213PS
+syntax keyword goasmOpcodeX86    VFNMADD213SD
+syntax keyword goasmOpcodeX86    VFNMADD213SS
+syntax keyword goasmOpcodeX86    VFNMADD231PD
+syntax keyword goasmOpcodeX86    VFNMADD231PS
+syntax keyword goasmOpcodeX86    VFNMADD231SD
+syntax keyword goasmOpcodeX86    VFNMADD231SS
+syntax keyword goasmOpcodeX86    VFNMSUB132PD
+syntax keyword goasmOpcodeX86    VFNMSUB132PS
+syntax keyword goasmOpcodeX86    VFNMSUB132SD
+syntax keyword goasmOpcodeX86    VFNMSUB132SS
+syntax keyword goasmOpcodeX86    VFNMSUB213PD
+syntax keyword goasmOpcodeX86    VFNMSUB213PS
+syntax keyword goasmOpcodeX86    VFNMSUB213SD
+syntax keyword goasmOpcodeX86    VFNMSUB213SS
+syntax keyword goasmOpcodeX86    VFNMSUB231PD
+syntax keyword goasmOpcodeX86    VFNMSUB231PS
+syntax keyword goasmOpcodeX86    VFNMSUB231SD
+syntax keyword goasmOpcodeX86    VFNMSUB231SS
+syntax keyword goasmOpcodeX86    VFPCLASSPD
+syntax keyword goasmOpcodeX86    VFPCLASSPDX
+syntax keyword goasmOpcodeX86    VFPCLASSPDY
+syntax keyword goasmOpcodeX86    VFPCLASSPDZ
+syntax keyword goasmOpcodeX86    VFPCLASSPS
+syntax keyword goasmOpcodeX86    VFPCLASSPSX
+syntax keyword goasmOpcodeX86    VFPCLASSPSY
+syntax keyword goasmOpcodeX86    VFPCLASSPSZ
+syntax keyword goasmOpcodeX86    VFPCLASSSD
+syntax keyword goasmOpcodeX86    VFPCLASSSS
+syntax keyword goasmOpcodeX86    VGATHERDPD
+syntax keyword goasmOpcodeX86    VGATHERDPS
+syntax keyword goasmOpcodeX86    VGATHERPF0DPD
+syntax keyword goasmOpcodeX86    VGATHERPF0DPS
+syntax keyword goasmOpcodeX86    VGATHERPF0QPD
+syntax keyword goasmOpcodeX86    VGATHERPF0QPS
+syntax keyword goasmOpcodeX86    VGATHERPF1DPD
+syntax keyword goasmOpcodeX86    VGATHERPF1DPS
+syntax keyword goasmOpcodeX86    VGATHERPF1QPD
+syntax keyword goasmOpcodeX86    VGATHERPF1QPS
+syntax keyword goasmOpcodeX86    VGATHERQPD
+syntax keyword goasmOpcodeX86    VGATHERQPS
+syntax keyword goasmOpcodeX86    VGETEXPPD
+syntax keyword goasmOpcodeX86    VGETEXPPS
+syntax keyword goasmOpcodeX86    VGETEXPSD
+syntax keyword goasmOpcodeX86    VGETEXPSS
+syntax keyword goasmOpcodeX86    VGETMANTPD
+syntax keyword goasmOpcodeX86    VGETMANTPS
+syntax keyword goasmOpcodeX86    VGETMANTSD
+syntax keyword goasmOpcodeX86    VGETMANTSS
+syntax keyword goasmOpcodeX86    VGF2P8AFFINEINVQB
+syntax keyword goasmOpcodeX86    VGF2P8AFFINEQB
+syntax keyword goasmOpcodeX86    VGF2P8MULB
+syntax keyword goasmOpcodeX86    VHADDPD
+syntax keyword goasmOpcodeX86    VHADDPS
+syntax keyword goasmOpcodeX86    VHSUBPD
+syntax keyword goasmOpcodeX86    VHSUBPS
+syntax keyword goasmOpcodeX86    VINSERTF128
+syntax keyword goasmOpcodeX86    VINSERTF32X4
+syntax keyword goasmOpcodeX86    VINSERTF32X8
+syntax keyword goasmOpcodeX86    VINSERTF64X2
+syntax keyword goasmOpcodeX86    VINSERTF64X4
+syntax keyword goasmOpcodeX86    VINSERTI128
+syntax keyword goasmOpcodeX86    VINSERTI32X4
+syntax keyword goasmOpcodeX86    VINSERTI32X8
+syntax keyword goasmOpcodeX86    VINSERTI64X2
+syntax keyword goasmOpcodeX86    VINSERTI64X4
+syntax keyword goasmOpcodeX86    VINSERTPS
+syntax keyword goasmOpcodeX86    VLDDQU
+syntax keyword goasmOpcodeX86    VLDMXCSR
+syntax keyword goasmOpcodeX86    VMASKMOVDQU
+syntax keyword goasmOpcodeX86    VMASKMOVPD
+syntax keyword goasmOpcodeX86    VMASKMOVPS
+syntax keyword goasmOpcodeX86    VMAXPD
+syntax keyword goasmOpcodeX86    VMAXPS
+syntax keyword goasmOpcodeX86    VMAXSD
+syntax keyword goasmOpcodeX86    VMAXSS
+syntax keyword goasmOpcodeX86    VMINPD
+syntax keyword goasmOpcodeX86    VMINPS
+syntax keyword goasmOpcodeX86    VMINSD
+syntax keyword goasmOpcodeX86    VMINSS
+syntax keyword goasmOpcodeX86    VMOVAPD
+syntax keyword goasmOpcodeX86    VMOVAPS
+syntax keyword goasmOpcodeX86    VMOVD
+syntax keyword goasmOpcodeX86    VMOVDDUP
+syntax keyword goasmOpcodeX86    VMOVDQA
+syntax keyword goasmOpcodeX86    VMOVDQA32
+syntax keyword goasmOpcodeX86    VMOVDQA64
+syntax keyword goasmOpcodeX86    VMOVDQU
+syntax keyword goasmOpcodeX86    VMOVDQU16
+syntax keyword goasmOpcodeX86    VMOVDQU32
+syntax keyword goasmOpcodeX86    VMOVDQU64
+syntax keyword goasmOpcodeX86    VMOVDQU8
+syntax keyword goasmOpcodeX86    VMOVHLPS
+syntax keyword goasmOpcodeX86    VMOVHPD
+syntax keyword goasmOpcodeX86    VMOVHPS
+syntax keyword goasmOpcodeX86    VMOVLHPS
+syntax keyword goasmOpcodeX86    VMOVLPD
+syntax keyword goasmOpcodeX86    VMOVLPS
+syntax keyword goasmOpcodeX86    VMOVMSKPD
+syntax keyword goasmOpcodeX86    VMOVMSKPS
+syntax keyword goasmOpcodeX86    VMOVNTDQ
+syntax keyword goasmOpcodeX86    VMOVNTDQA
+syntax keyword goasmOpcodeX86    VMOVNTPD
+syntax keyword goasmOpcodeX86    VMOVNTPS
+syntax keyword goasmOpcodeX86    VMOVQ
+syntax keyword goasmOpcodeX86    VMOVSD
+syntax keyword goasmOpcodeX86    VMOVSHDUP
+syntax keyword goasmOpcodeX86    VMOVSLDUP
+syntax keyword goasmOpcodeX86    VMOVSS
+syntax keyword goasmOpcodeX86    VMOVUPD
+syntax keyword goasmOpcodeX86    VMOVUPS
+syntax keyword goasmOpcodeX86    VMPSADBW
+syntax keyword goasmOpcodeX86    VMULPD
+syntax keyword goasmOpcodeX86    VMULPS
+syntax keyword goasmOpcodeX86    VMULSD
+syntax keyword goasmOpcodeX86    VMULSS
+syntax keyword goasmOpcodeX86    VORPD
+syntax keyword goasmOpcodeX86    VORPS
+syntax keyword goasmOpcodeX86    VP4DPWSSD
+syntax keyword goasmOpcodeX86    VP4DPWSSDS
+syntax keyword goasmOpcodeX86    VPABSB
+syntax keyword goasmOpcodeX86    VPABSD
+syntax keyword goasmOpcodeX86    VPABSQ
+syntax keyword goasmOpcodeX86    VPABSW
+syntax keyword goasmOpcodeX86    VPACKSSDW
+syntax keyword goasmOpcodeX86    VPACKSSWB
+syntax keyword goasmOpcodeX86    VPACKUSDW
+syntax keyword goasmOpcodeX86    VPACKUSWB
+syntax keyword goasmOpcodeX86    VPADDB
+syntax keyword goasmOpcodeX86    VPADDD
+syntax keyword goasmOpcodeX86    VPADDQ
+syntax keyword goasmOpcodeX86    VPADDSB
+syntax keyword goasmOpcodeX86    VPADDSW
+syntax keyword goasmOpcodeX86    VPADDUSB
+syntax keyword goasmOpcodeX86    VPADDUSW
+syntax keyword goasmOpcodeX86    VPADDW
+syntax keyword goasmOpcodeX86    VPALIGNR
+syntax keyword goasmOpcodeX86    VPAND
+syntax keyword goasmOpcodeX86    VPANDD
+syntax keyword goasmOpcodeX86    VPANDN
+syntax keyword goasmOpcodeX86    VPANDND
+syntax keyword goasmOpcodeX86    VPANDNQ
+syntax keyword goasmOpcodeX86    VPANDQ
+syntax keyword goasmOpcodeX86    VPAVGB
+syntax keyword goasmOpcodeX86    VPAVGW
+syntax keyword goasmOpcodeX86    VPBLENDD
+syntax keyword goasmOpcodeX86    VPBLENDMB
+syntax keyword goasmOpcodeX86    VPBLENDMD
+syntax keyword goasmOpcodeX86    VPBLENDMQ
+syntax keyword goasmOpcodeX86    VPBLENDMW
+syntax keyword goasmOpcodeX86    VPBLENDVB
+syntax keyword goasmOpcodeX86    VPBLENDW
+syntax keyword goasmOpcodeX86    VPBROADCASTB
+syntax keyword goasmOpcodeX86    VPBROADCASTD
+syntax keyword goasmOpcodeX86    VPBROADCASTMB2Q
+syntax keyword goasmOpcodeX86    VPBROADCASTMW2D
+syntax keyword goasmOpcodeX86    VPBROADCASTQ
+syntax keyword goasmOpcodeX86    VPBROADCASTW
+syntax keyword goasmOpcodeX86    VPCLMULQDQ
+syntax keyword goasmOpcodeX86    VPCMPB
+syntax keyword goasmOpcodeX86    VPCMPD
+syntax keyword goasmOpcodeX86    VPCMPEQB
+syntax keyword goasmOpcodeX86    VPCMPEQD
+syntax keyword goasmOpcodeX86    VPCMPEQQ
+syntax keyword goasmOpcodeX86    VPCMPEQW
+syntax keyword goasmOpcodeX86    VPCMPESTRI
+syntax keyword goasmOpcodeX86    VPCMPESTRM
+syntax keyword goasmOpcodeX86    VPCMPGTB
+syntax keyword goasmOpcodeX86    VPCMPGTD
+syntax keyword goasmOpcodeX86    VPCMPGTQ
+syntax keyword goasmOpcodeX86    VPCMPGTW
+syntax keyword goasmOpcodeX86    VPCMPISTRI
+syntax keyword goasmOpcodeX86    VPCMPISTRM
+syntax keyword goasmOpcodeX86    VPCMPQ
+syntax keyword goasmOpcodeX86    VPCMPUB
+syntax keyword goasmOpcodeX86    VPCMPUD
+syntax keyword goasmOpcodeX86    VPCMPUQ
+syntax keyword goasmOpcodeX86    VPCMPUW
+syntax keyword goasmOpcodeX86    VPCMPW
+syntax keyword goasmOpcodeX86    VPCOMPRESSB
+syntax keyword goasmOpcodeX86    VPCOMPRESSD
+syntax keyword goasmOpcodeX86    VPCOMPRESSQ
+syntax keyword goasmOpcodeX86    VPCOMPRESSW
+syntax keyword goasmOpcodeX86    VPCONFLICTD
+syntax keyword goasmOpcodeX86    VPCONFLICTQ
+syntax keyword goasmOpcodeX86    VPDPBUSD
+syntax keyword goasmOpcodeX86    VPDPBUSDS
+syntax keyword goasmOpcodeX86    VPDPWSSD
+syntax keyword goasmOpcodeX86    VPDPWSSDS
+syntax keyword goasmOpcodeX86    VPERM2F128
+syntax keyword goasmOpcodeX86    VPERM2I128
+syntax keyword goasmOpcodeX86    VPERMB
+syntax keyword goasmOpcodeX86    VPERMD
+syntax keyword goasmOpcodeX86    VPERMI2B
+syntax keyword goasmOpcodeX86    VPERMI2D
+syntax keyword goasmOpcodeX86    VPERMI2PD
+syntax keyword goasmOpcodeX86    VPERMI2PS
+syntax keyword goasmOpcodeX86    VPERMI2Q
+syntax keyword goasmOpcodeX86    VPERMI2W
+syntax keyword goasmOpcodeX86    VPERMILPD
+syntax keyword goasmOpcodeX86    VPERMILPS
+syntax keyword goasmOpcodeX86    VPERMPD
+syntax keyword goasmOpcodeX86    VPERMPS
+syntax keyword goasmOpcodeX86    VPERMQ
+syntax keyword goasmOpcodeX86    VPERMT2B
+syntax keyword goasmOpcodeX86    VPERMT2D
+syntax keyword goasmOpcodeX86    VPERMT2PD
+syntax keyword goasmOpcodeX86    VPERMT2PS
+syntax keyword goasmOpcodeX86    VPERMT2Q
+syntax keyword goasmOpcodeX86    VPERMT2W
+syntax keyword goasmOpcodeX86    VPERMW
+syntax keyword goasmOpcodeX86    VPEXPANDB
+syntax keyword goasmOpcodeX86    VPEXPANDD
+syntax keyword goasmOpcodeX86    VPEXPANDQ
+syntax keyword goasmOpcodeX86    VPEXPANDW
+syntax keyword goasmOpcodeX86    VPEXTRB
+syntax keyword goasmOpcodeX86    VPEXTRD
+syntax keyword goasmOpcodeX86    VPEXTRQ
+syntax keyword goasmOpcodeX86    VPEXTRW
+syntax keyword goasmOpcodeX86    VPGATHERDD
+syntax keyword goasmOpcodeX86    VPGATHERDQ
+syntax keyword goasmOpcodeX86    VPGATHERQD
+syntax keyword goasmOpcodeX86    VPGATHERQQ
+syntax keyword goasmOpcodeX86    VPHADDD
+syntax keyword goasmOpcodeX86    VPHADDSW
+syntax keyword goasmOpcodeX86    VPHADDW
+syntax keyword goasmOpcodeX86    VPHMINPOSUW
+syntax keyword goasmOpcodeX86    VPHSUBD
+syntax keyword goasmOpcodeX86    VPHSUBSW
+syntax keyword goasmOpcodeX86    VPHSUBW
+syntax keyword goasmOpcodeX86    VPINSRB
+syntax keyword goasmOpcodeX86    VPINSRD
+syntax keyword goasmOpcodeX86    VPINSRQ
+syntax keyword goasmOpcodeX86    VPINSRW
+syntax keyword goasmOpcodeX86    VPLZCNTD
+syntax keyword goasmOpcodeX86    VPLZCNTQ
+syntax keyword goasmOpcodeX86    VPMADD52HUQ
+syntax keyword goasmOpcodeX86    VPMADD52LUQ
+syntax keyword goasmOpcodeX86    VPMADDUBSW
+syntax keyword goasmOpcodeX86    VPMADDWD
+syntax keyword goasmOpcodeX86    VPMASKMOVD
+syntax keyword goasmOpcodeX86    VPMASKMOVQ
+syntax keyword goasmOpcodeX86    VPMAXSB
+syntax keyword goasmOpcodeX86    VPMAXSD
+syntax keyword goasmOpcodeX86    VPMAXSQ
+syntax keyword goasmOpcodeX86    VPMAXSW
+syntax keyword goasmOpcodeX86    VPMAXUB
+syntax keyword goasmOpcodeX86    VPMAXUD
+syntax keyword goasmOpcodeX86    VPMAXUQ
+syntax keyword goasmOpcodeX86    VPMAXUW
+syntax keyword goasmOpcodeX86    VPMINSB
+syntax keyword goasmOpcodeX86    VPMINSD
+syntax keyword goasmOpcodeX86    VPMINSQ
+syntax keyword goasmOpcodeX86    VPMINSW
+syntax keyword goasmOpcodeX86    VPMINUB
+syntax keyword goasmOpcodeX86    VPMINUD
+syntax keyword goasmOpcodeX86    VPMINUQ
+syntax keyword goasmOpcodeX86    VPMINUW
+syntax keyword goasmOpcodeX86    VPMOVB2M
+syntax keyword goasmOpcodeX86    VPMOVD2M
+syntax keyword goasmOpcodeX86    VPMOVDB
+syntax keyword goasmOpcodeX86    VPMOVDW
+syntax keyword goasmOpcodeX86    VPMOVM2B
+syntax keyword goasmOpcodeX86    VPMOVM2D
+syntax keyword goasmOpcodeX86    VPMOVM2Q
+syntax keyword goasmOpcodeX86    VPMOVM2W
+syntax keyword goasmOpcodeX86    VPMOVMSKB
+syntax keyword goasmOpcodeX86    VPMOVQ2M
+syntax keyword goasmOpcodeX86    VPMOVQB
+syntax keyword goasmOpcodeX86    VPMOVQD
+syntax keyword goasmOpcodeX86    VPMOVQW
+syntax keyword goasmOpcodeX86    VPMOVSDB
+syntax keyword goasmOpcodeX86    VPMOVSDW
+syntax keyword goasmOpcodeX86    VPMOVSQB
+syntax keyword goasmOpcodeX86    VPMOVSQD
+syntax keyword goasmOpcodeX86    VPMOVSQW
+syntax keyword goasmOpcodeX86    VPMOVSWB
+syntax keyword goasmOpcodeX86    VPMOVSXBD
+syntax keyword goasmOpcodeX86    VPMOVSXBQ
+syntax keyword goasmOpcodeX86    VPMOVSXBW
+syntax keyword goasmOpcodeX86    VPMOVSXDQ
+syntax keyword goasmOpcodeX86    VPMOVSXWD
+syntax keyword goasmOpcodeX86    VPMOVSXWQ
+syntax keyword goasmOpcodeX86    VPMOVUSDB
+syntax keyword goasmOpcodeX86    VPMOVUSDW
+syntax keyword goasmOpcodeX86    VPMOVUSQB
+syntax keyword goasmOpcodeX86    VPMOVUSQD
+syntax keyword goasmOpcodeX86    VPMOVUSQW
+syntax keyword goasmOpcodeX86    VPMOVUSWB
+syntax keyword goasmOpcodeX86    VPMOVW2M
+syntax keyword goasmOpcodeX86    VPMOVWB
+syntax keyword goasmOpcodeX86    VPMOVZXBD
+syntax keyword goasmOpcodeX86    VPMOVZXBQ
+syntax keyword goasmOpcodeX86    VPMOVZXBW
+syntax keyword goasmOpcodeX86    VPMOVZXDQ
+syntax keyword goasmOpcodeX86    VPMOVZXWD
+syntax keyword goasmOpcodeX86    VPMOVZXWQ
+syntax keyword goasmOpcodeX86    VPMULDQ
+syntax keyword goasmOpcodeX86    VPMULHRSW
+syntax keyword goasmOpcodeX86    VPMULHUW
+syntax keyword goasmOpcodeX86    VPMULHW
+syntax keyword goasmOpcodeX86    VPMULLD
+syntax keyword goasmOpcodeX86    VPMULLQ
+syntax keyword goasmOpcodeX86    VPMULLW
+syntax keyword goasmOpcodeX86    VPMULTISHIFTQB
+syntax keyword goasmOpcodeX86    VPMULUDQ
+syntax keyword goasmOpcodeX86    VPOPCNTB
+syntax keyword goasmOpcodeX86    VPOPCNTD
+syntax keyword goasmOpcodeX86    VPOPCNTQ
+syntax keyword goasmOpcodeX86    VPOPCNTW
+syntax keyword goasmOpcodeX86    VPOR
+syntax keyword goasmOpcodeX86    VPORD
+syntax keyword goasmOpcodeX86    VPORQ
+syntax keyword goasmOpcodeX86    VPROLD
+syntax keyword goasmOpcodeX86    VPROLQ
+syntax keyword goasmOpcodeX86    VPROLVD
+syntax keyword goasmOpcodeX86    VPROLVQ
+syntax keyword goasmOpcodeX86    VPRORD
+syntax keyword goasmOpcodeX86    VPRORQ
+syntax keyword goasmOpcodeX86    VPRORVD
+syntax keyword goasmOpcodeX86    VPRORVQ
+syntax keyword goasmOpcodeX86    VPSADBW
+syntax keyword goasmOpcodeX86    VPSCATTERDD
+syntax keyword goasmOpcodeX86    VPSCATTERDQ
+syntax keyword goasmOpcodeX86    VPSCATTERQD
+syntax keyword goasmOpcodeX86    VPSCATTERQQ
+syntax keyword goasmOpcodeX86    VPSHLDD
+syntax keyword goasmOpcodeX86    VPSHLDQ
+syntax keyword goasmOpcodeX86    VPSHLDVD
+syntax keyword goasmOpcodeX86    VPSHLDVQ
+syntax keyword goasmOpcodeX86    VPSHLDVW
+syntax keyword goasmOpcodeX86    VPSHLDW
+syntax keyword goasmOpcodeX86    VPSHRDD
+syntax keyword goasmOpcodeX86    VPSHRDQ
+syntax keyword goasmOpcodeX86    VPSHRDVD
+syntax keyword goasmOpcodeX86    VPSHRDVQ
+syntax keyword goasmOpcodeX86    VPSHRDVW
+syntax keyword goasmOpcodeX86    VPSHRDW
+syntax keyword goasmOpcodeX86    VPSHUFB
+syntax keyword goasmOpcodeX86    VPSHUFBITQMB
+syntax keyword goasmOpcodeX86    VPSHUFD
+syntax keyword goasmOpcodeX86    VPSHUFHW
+syntax keyword goasmOpcodeX86    VPSHUFLW
+syntax keyword goasmOpcodeX86    VPSIGNB
+syntax keyword goasmOpcodeX86    VPSIGND
+syntax keyword goasmOpcodeX86    VPSIGNW
+syntax keyword goasmOpcodeX86    VPSLLD
+syntax keyword goasmOpcodeX86    VPSLLDQ
+syntax keyword goasmOpcodeX86    VPSLLQ
+syntax keyword goasmOpcodeX86    VPSLLVD
+syntax keyword goasmOpcodeX86    VPSLLVQ
+syntax keyword goasmOpcodeX86    VPSLLVW
+syntax keyword goasmOpcodeX86    VPSLLW
+syntax keyword goasmOpcodeX86    VPSRAD
+syntax keyword goasmOpcodeX86    VPSRAQ
+syntax keyword goasmOpcodeX86    VPSRAVD
+syntax keyword goasmOpcodeX86    VPSRAVQ
+syntax keyword goasmOpcodeX86    VPSRAVW
+syntax keyword goasmOpcodeX86    VPSRAW
+syntax keyword goasmOpcodeX86    VPSRLD
+syntax keyword goasmOpcodeX86    VPSRLDQ
+syntax keyword goasmOpcodeX86    VPSRLQ
+syntax keyword goasmOpcodeX86    VPSRLVD
+syntax keyword goasmOpcodeX86    VPSRLVQ
+syntax keyword goasmOpcodeX86    VPSRLVW
+syntax keyword goasmOpcodeX86    VPSRLW
+syntax keyword goasmOpcodeX86    VPSUBB
+syntax keyword goasmOpcodeX86    VPSUBD
+syntax keyword goasmOpcodeX86    VPSUBQ
+syntax keyword goasmOpcodeX86    VPSUBSB
+syntax keyword goasmOpcodeX86    VPSUBSW
+syntax keyword goasmOpcodeX86    VPSUBUSB
+syntax keyword goasmOpcodeX86    VPSUBUSW
+syntax keyword goasmOpcodeX86    VPSUBW
+syntax keyword goasmOpcodeX86    VPTERNLOGD
+syntax keyword goasmOpcodeX86    VPTERNLOGQ
+syntax keyword goasmOpcodeX86    VPTEST
+syntax keyword goasmOpcodeX86    VPTESTMB
+syntax keyword goasmOpcodeX86    VPTESTMD
+syntax keyword goasmOpcodeX86    VPTESTMQ
+syntax keyword goasmOpcodeX86    VPTESTMW
+syntax keyword goasmOpcodeX86    VPTESTNMB
+syntax keyword goasmOpcodeX86    VPTESTNMD
+syntax keyword goasmOpcodeX86    VPTESTNMQ
+syntax keyword goasmOpcodeX86    VPTESTNMW
+syntax keyword goasmOpcodeX86    VPUNPCKHBW
+syntax keyword goasmOpcodeX86    VPUNPCKHDQ
+syntax keyword goasmOpcodeX86    VPUNPCKHQDQ
+syntax keyword goasmOpcodeX86    VPUNPCKHWD
+syntax keyword goasmOpcodeX86    VPUNPCKLBW
+syntax keyword goasmOpcodeX86    VPUNPCKLDQ
+syntax keyword goasmOpcodeX86    VPUNPCKLQDQ
+syntax keyword goasmOpcodeX86    VPUNPCKLWD
+syntax keyword goasmOpcodeX86    VPXOR
+syntax keyword goasmOpcodeX86    VPXORD
+syntax keyword goasmOpcodeX86    VPXORQ
+syntax keyword goasmOpcodeX86    VRANGEPD
+syntax keyword goasmOpcodeX86    VRANGEPS
+syntax keyword goasmOpcodeX86    VRANGESD
+syntax keyword goasmOpcodeX86    VRANGESS
+syntax keyword goasmOpcodeX86    VRCP14PD
+syntax keyword goasmOpcodeX86    VRCP14PS
+syntax keyword goasmOpcodeX86    VRCP14SD
+syntax keyword goasmOpcodeX86    VRCP14SS
+syntax keyword goasmOpcodeX86    VRCP28PD
+syntax keyword goasmOpcodeX86    VRCP28PS
+syntax keyword goasmOpcodeX86    VRCP28SD
+syntax keyword goasmOpcodeX86    VRCP28SS
+syntax keyword goasmOpcodeX86    VRCPPS
+syntax keyword goasmOpcodeX86    VRCPSS
+syntax keyword goasmOpcodeX86    VREDUCEPD
+syntax keyword goasmOpcodeX86    VREDUCEPS
+syntax keyword goasmOpcodeX86    VREDUCESD
+syntax keyword goasmOpcodeX86    VREDUCESS
+syntax keyword goasmOpcodeX86    VRNDSCALEPD
+syntax keyword goasmOpcodeX86    VRNDSCALEPS
+syntax keyword goasmOpcodeX86    VRNDSCALESD
+syntax keyword goasmOpcodeX86    VRNDSCALESS
+syntax keyword goasmOpcodeX86    VROUNDPD
+syntax keyword goasmOpcodeX86    VROUNDPS
+syntax keyword goasmOpcodeX86    VROUNDSD
+syntax keyword goasmOpcodeX86    VROUNDSS
+syntax keyword goasmOpcodeX86    VRSQRT14PD
+syntax keyword goasmOpcodeX86    VRSQRT14PS
+syntax keyword goasmOpcodeX86    VRSQRT14SD
+syntax keyword goasmOpcodeX86    VRSQRT14SS
+syntax keyword goasmOpcodeX86    VRSQRT28PD
+syntax keyword goasmOpcodeX86    VRSQRT28PS
+syntax keyword goasmOpcodeX86    VRSQRT28SD
+syntax keyword goasmOpcodeX86    VRSQRT28SS
+syntax keyword goasmOpcodeX86    VRSQRTPS
+syntax keyword goasmOpcodeX86    VRSQRTSS
+syntax keyword goasmOpcodeX86    VSCALEFPD
+syntax keyword goasmOpcodeX86    VSCALEFPS
+syntax keyword goasmOpcodeX86    VSCALEFSD
+syntax keyword goasmOpcodeX86    VSCALEFSS
+syntax keyword goasmOpcodeX86    VSCATTERDPD
+syntax keyword goasmOpcodeX86    VSCATTERDPS
+syntax keyword goasmOpcodeX86    VSCATTERPF0DPD
+syntax keyword goasmOpcodeX86    VSCATTERPF0DPS
+syntax keyword goasmOpcodeX86    VSCATTERPF0QPD
+syntax keyword goasmOpcodeX86    VSCATTERPF0QPS
+syntax keyword goasmOpcodeX86    VSCATTERPF1DPD
+syntax keyword goasmOpcodeX86    VSCATTERPF1DPS
+syntax keyword goasmOpcodeX86    VSCATTERPF1QPD
+syntax keyword goasmOpcodeX86    VSCATTERPF1QPS
+syntax keyword goasmOpcodeX86    VSCATTERQPD
+syntax keyword goasmOpcodeX86    VSCATTERQPS
+syntax keyword goasmOpcodeX86    VSHUFF32X4
+syntax keyword goasmOpcodeX86    VSHUFF64X2
+syntax keyword goasmOpcodeX86    VSHUFI32X4
+syntax keyword goasmOpcodeX86    VSHUFI64X2
+syntax keyword goasmOpcodeX86    VSHUFPD
+syntax keyword goasmOpcodeX86    VSHUFPS
+syntax keyword goasmOpcodeX86    VSQRTPD
+syntax keyword goasmOpcodeX86    VSQRTPS
+syntax keyword goasmOpcodeX86    VSQRTSD
+syntax keyword goasmOpcodeX86    VSQRTSS
+syntax keyword goasmOpcodeX86    VSTMXCSR
+syntax keyword goasmOpcodeX86    VSUBPD
+syntax keyword goasmOpcodeX86    VSUBPS
+syntax keyword goasmOpcodeX86    VSUBSD
+syntax keyword goasmOpcodeX86    VSUBSS
+syntax keyword goasmOpcodeX86    VTESTPD
+syntax keyword goasmOpcodeX86    VTESTPS
+syntax keyword goasmOpcodeX86    VUCOMISD
+syntax keyword goasmOpcodeX86    VUCOMISS
+syntax keyword goasmOpcodeX86    VUNPCKHPD
+syntax keyword goasmOpcodeX86    VUNPCKHPS
+syntax keyword goasmOpcodeX86    VUNPCKLPD
+syntax keyword goasmOpcodeX86    VUNPCKLPS
+syntax keyword goasmOpcodeX86    VXORPD
+syntax keyword goasmOpcodeX86    VXORPS
+syntax keyword goasmOpcodeX86    VZEROALL
+syntax keyword goasmOpcodeX86    VZEROUPPER
+syntax keyword goasmOpcodeX86    WAIT
+syntax keyword goasmOpcodeX86    WBINVD
+syntax keyword goasmOpcodeX86    WORD
+syntax keyword goasmOpcodeX86    WRFSBASEL
+syntax keyword goasmOpcodeX86    WRFSBASEQ
+syntax keyword goasmOpcodeX86    WRGSBASEL
+syntax keyword goasmOpcodeX86    WRGSBASEQ
+syntax keyword goasmOpcodeX86    WRMSR
+syntax keyword goasmOpcodeX86    WRPKRU
+syntax keyword goasmOpcodeX86    XABORT
+syntax keyword goasmOpcodeX86    XACQUIRE
+syntax keyword goasmOpcodeX86    XADDB
+syntax keyword goasmOpcodeX86    XADDL
+syntax keyword goasmOpcodeX86    XADDQ
+syntax keyword goasmOpcodeX86    XADDW
+syntax keyword goasmOpcodeX86    XBEGIN
+syntax keyword goasmOpcodeX86    XCHGB
+syntax keyword goasmOpcodeX86    XCHGL
+syntax keyword goasmOpcodeX86    XCHGQ
+syntax keyword goasmOpcodeX86    XCHGW
+syntax keyword goasmOpcodeX86    XEND
+syntax keyword goasmOpcodeX86    XGETBV
+syntax keyword goasmOpcodeX86    XLAT
+syntax keyword goasmOpcodeX86    XORB
+syntax keyword goasmOpcodeX86    XORL
+syntax keyword goasmOpcodeX86    XORPD
+syntax keyword goasmOpcodeX86    XORPS
+syntax keyword goasmOpcodeX86    XORQ
+syntax keyword goasmOpcodeX86    XORW
+syntax keyword goasmOpcodeX86    XRELEASE
+syntax keyword goasmOpcodeX86    XRSTOR
+syntax keyword goasmOpcodeX86    XRSTOR64
+syntax keyword goasmOpcodeX86    XRSTORS
+syntax keyword goasmOpcodeX86    XRSTORS64
+syntax keyword goasmOpcodeX86    XSAVE
+syntax keyword goasmOpcodeX86    XSAVE64
+syntax keyword goasmOpcodeX86    XSAVEC
+syntax keyword goasmOpcodeX86    XSAVEC64
+syntax keyword goasmOpcodeX86    XSAVEOPT
+syntax keyword goasmOpcodeX86    XSAVEOPT64
+syntax keyword goasmOpcodeX86    XSAVES
+syntax keyword goasmOpcodeX86    XSAVES64
+syntax keyword goasmOpcodeX86    XSETBV
+syntax keyword goasmOpcodeX86    XTEST
+syntax keyword goasmOpcodeX86    LAST
 
-"-- Section: Nehalem New Instructions (SSE4.2)
-syntax keyword goasmOpcode_X64_SSE42  CRC32
-syntax keyword goasmOpcode_SSE42  PCMPESTRI PCMPESTRIB PCMPESTRIW PCMPESTRIL PCMPESTRIQ
-syntax keyword goasmOpcode_SSE42  PCMPESTRM PCMPESTRMB PCMPESTRMW PCMPESTRML PCMPESTRMQ
-syntax keyword goasmOpcode_SSE42  PCMPISTRI PCMPISTRIB PCMPISTRIW PCMPISTRIL PCMPISTRIQ
-syntax keyword goasmOpcode_SSE42  PCMPISTRM PCMPISTRMB PCMPISTRMW PCMPISTRML PCMPISTRMQ
-syntax keyword goasmOpcode_SSE42  PCMPGTQ PCMPGTQB PCMPGTQW PCMPGTQL PCMPGTQQ
-syntax keyword goasmOpcode_NEHALEM_Base POPCNT
-
-"-- Section: Intel new instructions in ???
-syntax keyword goasmOpcode_NEHALEM_Base MOVBE MOVBEB MOVBEW MOVBEL MOVBEQ
-
-"-- Section: AMD XOP, FMA4 and CVT16 instructions (SSE5)
-syntax keyword goasmOpcode_AMD_SSE5  VCVTPH2PS VCVTPH2PSB VCVTPH2PSW VCVTPH2PSL VCVTPH2PSQ
-syntax keyword goasmOpcode_AMD_SSE5  VCVTPS2PH VCVTPS2PHB VCVTPS2PHW VCVTPS2PHL VCVTPS2PHQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMADDPD VFMADDPDB VFMADDPDW VFMADDPDL VFMADDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMADDPS VFMADDPSB VFMADDPSW VFMADDPSL VFMADDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMADDSD VFMADDSDB VFMADDSDW VFMADDSDL VFMADDSDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMADDSS VFMADDSSB VFMADDSSW VFMADDSSL VFMADDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMADDSUBPD VFMADDSUBPDB VFMADDSUBPDW VFMADDSUBPDL VFMADDSUBPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMADDSUBPS VFMADDSUBPSB VFMADDSUBPSW VFMADDSUBPSL VFMADDSUBPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMSUBADDPD VFMSUBADDPDB VFMSUBADDPDW VFMSUBADDPDL VFMSUBADDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMSUBADDPS VFMSUBADDPSB VFMSUBADDPSW VFMSUBADDPSL VFMSUBADDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMSUBPD VFMSUBPDB VFMSUBPDW VFMSUBPDL VFMSUBPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMSUBPS VFMSUBPSB VFMSUBPSW VFMSUBPSL VFMSUBPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMSUBSD VFMSUBSDB VFMSUBSDW VFMSUBSDL VFMSUBSDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFMSUBSS VFMSUBSSB VFMSUBSSW VFMSUBSSL VFMSUBSSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMADDPD VFNMADDPDB VFNMADDPDW VFNMADDPDL VFNMADDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMADDPS VFNMADDPSB VFNMADDPSW VFNMADDPSL VFNMADDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMADDSD VFNMADDSDB VFNMADDSDW VFNMADDSDL VFNMADDSDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMADDSS VFNMADDSSB VFNMADDSSW VFNMADDSSL VFNMADDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMSUBPD VFNMSUBPDB VFNMSUBPDW VFNMSUBPDL VFNMSUBPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMSUBPS VFNMSUBPSB VFNMSUBPSW VFNMSUBPSL VFNMSUBPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMSUBSD VFNMSUBSDB VFNMSUBSDW VFNMSUBSDL VFNMSUBSDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFNMSUBSS VFNMSUBSSB VFNMSUBSSW VFNMSUBSSL VFNMSUBSSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFRCZPD VFRCZPDB VFRCZPDW VFRCZPDL VFRCZPDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFRCZPS VFRCZPSB VFRCZPSW VFRCZPSL VFRCZPSQ
-syntax keyword goasmOpcode_AMD_SSE5  VFRCZSD VFRCZSDB VFRCZSDW VFRCZSDL VFRCZSDQ
-syntax keyword goasmOpcode_AMD_SSE5  VFRCZSS VFRCZSSB VFRCZSSW VFRCZSSL VFRCZSSQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCMOV VPCMOVB VPCMOVW VPCMOVL VPCMOVQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMB VPCOMBB VPCOMBW VPCOMBL VPCOMBQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMD VPCOMDB VPCOMDW VPCOMDL VPCOMDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMQ VPCOMQB VPCOMQW VPCOMQL VPCOMQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMUB VPCOMUBB VPCOMUBW VPCOMUBL VPCOMUBQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMUD VPCOMUDB VPCOMUDW VPCOMUDL VPCOMUDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMUQ VPCOMUQB VPCOMUQW VPCOMUQL VPCOMUQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMUW VPCOMUWB VPCOMUWW VPCOMUWL VPCOMUWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPCOMW VPCOMWB VPCOMWW VPCOMWL VPCOMWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDBD VPHADDBDB VPHADDBDW VPHADDBDL VPHADDBDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDBQ VPHADDBQB VPHADDBQW VPHADDBQL VPHADDBQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDBW VPHADDBWB VPHADDBWW VPHADDBWL VPHADDBWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDDQ VPHADDDQB VPHADDDQW VPHADDDQL VPHADDDQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDUBD VPHADDUBDB VPHADDUBDW VPHADDUBDL VPHADDUBDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDUBQ VPHADDUBQB VPHADDUBQW VPHADDUBQL VPHADDUBQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDUBWD VPHADDUBWDB VPHADDUBWDW VPHADDUBWDL VPHADDUBWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDUDQ VPHADDUDQB VPHADDUDQW VPHADDUDQL VPHADDUDQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDUWD VPHADDUWDB VPHADDUWDW VPHADDUWDL VPHADDUWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDUWQ VPHADDUWQB VPHADDUWQW VPHADDUWQL VPHADDUWQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDWD VPHADDWDB VPHADDWDW VPHADDWDL VPHADDWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHADDWQ VPHADDWQB VPHADDWQW VPHADDWQL VPHADDWQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHSUBBW VPHSUBBWB VPHSUBBWW VPHSUBBWL VPHSUBBWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHSUBDQ VPHSUBDQB VPHSUBDQW VPHSUBDQL VPHSUBDQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPHSUBWD VPHSUBWDB VPHSUBWDW VPHSUBWDL VPHSUBWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSDD VPMACSDDB VPMACSDDW VPMACSDDL VPMACSDDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSDQH VPMACSDQHB VPMACSDQHW VPMACSDQHL VPMACSDQHQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSDQL VPMACSDQLB VPMACSDQLW VPMACSDQLL VPMACSDQLQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSSDD VPMACSSDDB VPMACSSDDW VPMACSSDDL VPMACSSDDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSSDQH VPMACSSDQHB VPMACSSDQHW VPMACSSDQHL VPMACSSDQHQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSSDQL VPMACSSDQLB VPMACSSDQLW VPMACSSDQLL VPMACSSDQLQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSSWD VPMACSSWDB VPMACSSWDW VPMACSSWDL VPMACSSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSSWW VPMACSSWWB VPMACSSWWW VPMACSSWWL VPMACSSWWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSWD VPMACSWDB VPMACSWDW VPMACSWDL VPMACSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMACSWW VPMACSWWB VPMACSWWW VPMACSWWL VPMACSWWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMADCSSWD VPMADCSSWDB VPMADCSSWDW VPMADCSSWDL VPMADCSSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPMADCSWD VPMADCSWDB VPMADCSWDW VPMADCSWDL VPMADCSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPPERM VPPERMB VPPERMW VPPERML VPPERMQ
-syntax keyword goasmOpcode_AMD_SSE5  VPROTB VPROTBB VPROTBW VPROTBL VPROTBQ
-syntax keyword goasmOpcode_AMD_SSE5  VPROTD VPROTDB VPROTDW VPROTDL VPROTDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPROTQ VPROTQB VPROTQW VPROTQL VPROTQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPROTW VPROTWB VPROTWW VPROTWL VPROTWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHAB VPSHABB VPSHABW VPSHABL VPSHABQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHAD VPSHADB VPSHADW VPSHADL VPSHADQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHAQ VPSHAQB VPSHAQW VPSHAQL VPSHAQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHAW VPSHAWB VPSHAWW VPSHAWL VPSHAWQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHLB VPSHLBB VPSHLBW VPSHLBL VPSHLBQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHLD VPSHLDB VPSHLDW VPSHLDL VPSHLDQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHLQ VPSHLQB VPSHLQW VPSHLQL VPSHLQQ
-syntax keyword goasmOpcode_AMD_SSE5  VPSHLW VPSHLWB VPSHLWW VPSHLWL VPSHLWQ
-
-"-- Section: Generic memory operations
-syntax keyword goasmOpcode_KATMAI_Base PREFETCHNTA PREFETCHNTAB PREFETCHNTAW PREFETCHNTAL PREFETCHNTAQ
-syntax keyword goasmOpcode_KATMAI_Base PREFETCHT0 PREFETCHT0B PREFETCHT0W PREFETCHT0L PREFETCHT0Q
-syntax keyword goasmOpcode_KATMAI_Base PREFETCHT1 PREFETCHT1B PREFETCHT1W PREFETCHT1L PREFETCHT1Q
-syntax keyword goasmOpcode_KATMAI_Base PREFETCHT2 PREFETCHT2B PREFETCHT2W PREFETCHT2L PREFETCHT2Q
-syntax keyword goasmOpcode_KATMAI_Base SFENCE
-
-"-- Section: Tejas New Instructions (SSSE3)
-syntax keyword goasmOpcode_Base  PABSB PABSBB PABSBW PABSBL PABSBQ
-syntax keyword goasmOpcode_Base  PABSW PABSWB PABSWW PABSWL PABSWQ
-syntax keyword goasmOpcode_Base  PABSD PABSDB PABSDW PABSDL PABSDQ
-syntax keyword goasmOpcode_Base  PALIGNR PALIGNRB PALIGNRW PALIGNRL PALIGNRQ
-syntax keyword goasmOpcode_Base  PHADDW PHADDWB PHADDWW PHADDWL PHADDWQ
-syntax keyword goasmOpcode_Base  PHADDD PHADDDB PHADDDW PHADDDL PHADDDQ
-syntax keyword goasmOpcode_Base  PHADDSW PHADDSWB PHADDSWW PHADDSWL PHADDSWQ
-syntax keyword goasmOpcode_Base  PHSUBW PHSUBWB PHSUBWW PHSUBWL PHSUBWQ
-syntax keyword goasmOpcode_Base  PHSUBD PHSUBDB PHSUBDW PHSUBDL PHSUBDQ
-syntax keyword goasmOpcode_Base  PHSUBSW PHSUBSWB PHSUBSWW PHSUBSWL PHSUBSWQ
-syntax keyword goasmOpcode_Base  PMADDUBSW PMADDUBSWB PMADDUBSWW PMADDUBSWL PMADDUBSWQ
-syntax keyword goasmOpcode_Base  PMULHRSW PMULHRSWB PMULHRSWW PMULHRSWL PMULHRSWQ
-syntax keyword goasmOpcode_Base  PSHUFB PSHUFBB PSHUFBW PSHUFBL PSHUFBQ
-syntax keyword goasmOpcode_Base  PSIGNB PSIGNBB PSIGNBW PSIGNBL PSIGNBQ
-syntax keyword goasmOpcode_Base  PSIGNW PSIGNWB PSIGNWW PSIGNWL PSIGNWQ
-syntax keyword goasmOpcode_Base  PSIGND PSIGNDB PSIGNDW PSIGNDL PSIGNDQ
-
-"-- Section: Intel Fused Multiply-Add instructions (FMA)
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD132PS VFMADD132PSB VFMADD132PSW VFMADD132PSL VFMADD132PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD132PD VFMADD132PDB VFMADD132PDW VFMADD132PDL VFMADD132PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD312PS VFMADD312PSB VFMADD312PSW VFMADD312PSL VFMADD312PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD312PD VFMADD312PDB VFMADD312PDW VFMADD312PDL VFMADD312PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD213PS VFMADD213PSB VFMADD213PSW VFMADD213PSL VFMADD213PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD213PD VFMADD213PDB VFMADD213PDW VFMADD213PDL VFMADD213PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD123PS VFMADD123PSB VFMADD123PSW VFMADD123PSL VFMADD123PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD123PD VFMADD123PDB VFMADD123PDW VFMADD123PDL VFMADD123PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD231PS VFMADD231PSB VFMADD231PSW VFMADD231PSL VFMADD231PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD231PD VFMADD231PDB VFMADD231PDW VFMADD231PDL VFMADD231PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD321PS VFMADD321PSB VFMADD321PSW VFMADD321PSL VFMADD321PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD321PD VFMADD321PDB VFMADD321PDW VFMADD321PDL VFMADD321PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB132PS VFMADDSUB132PSB VFMADDSUB132PSW VFMADDSUB132PSL VFMADDSUB132PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB132PD VFMADDSUB132PDB VFMADDSUB132PDW VFMADDSUB132PDL VFMADDSUB132PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB312PS VFMADDSUB312PSB VFMADDSUB312PSW VFMADDSUB312PSL VFMADDSUB312PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB312PD VFMADDSUB312PDB VFMADDSUB312PDW VFMADDSUB312PDL VFMADDSUB312PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB213PS VFMADDSUB213PSB VFMADDSUB213PSW VFMADDSUB213PSL VFMADDSUB213PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB213PD VFMADDSUB213PDB VFMADDSUB213PDW VFMADDSUB213PDL VFMADDSUB213PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB123PS VFMADDSUB123PSB VFMADDSUB123PSW VFMADDSUB123PSL VFMADDSUB123PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB123PD VFMADDSUB123PDB VFMADDSUB123PDW VFMADDSUB123PDL VFMADDSUB123PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB231PS VFMADDSUB231PSB VFMADDSUB231PSW VFMADDSUB231PSL VFMADDSUB231PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB231PD VFMADDSUB231PDB VFMADDSUB231PDW VFMADDSUB231PDL VFMADDSUB231PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB321PS VFMADDSUB321PSB VFMADDSUB321PSW VFMADDSUB321PSL VFMADDSUB321PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADDSUB321PD VFMADDSUB321PDB VFMADDSUB321PDW VFMADDSUB321PDL VFMADDSUB321PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB132PS VFMSUB132PSB VFMSUB132PSW VFMSUB132PSL VFMSUB132PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB132PD VFMSUB132PDB VFMSUB132PDW VFMSUB132PDL VFMSUB132PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB312PS VFMSUB312PSB VFMSUB312PSW VFMSUB312PSL VFMSUB312PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB312PD VFMSUB312PDB VFMSUB312PDW VFMSUB312PDL VFMSUB312PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB213PS VFMSUB213PSB VFMSUB213PSW VFMSUB213PSL VFMSUB213PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB213PD VFMSUB213PDB VFMSUB213PDW VFMSUB213PDL VFMSUB213PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB123PS VFMSUB123PSB VFMSUB123PSW VFMSUB123PSL VFMSUB123PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB123PD VFMSUB123PDB VFMSUB123PDW VFMSUB123PDL VFMSUB123PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB231PS VFMSUB231PSB VFMSUB231PSW VFMSUB231PSL VFMSUB231PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB231PD VFMSUB231PDB VFMSUB231PDW VFMSUB231PDL VFMSUB231PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB321PS VFMSUB321PSB VFMSUB321PSW VFMSUB321PSL VFMSUB321PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB321PD VFMSUB321PDB VFMSUB321PDW VFMSUB321PDL VFMSUB321PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD132PS VFMSUBADD132PSB VFMSUBADD132PSW VFMSUBADD132PSL VFMSUBADD132PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD132PD VFMSUBADD132PDB VFMSUBADD132PDW VFMSUBADD132PDL VFMSUBADD132PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD312PS VFMSUBADD312PSB VFMSUBADD312PSW VFMSUBADD312PSL VFMSUBADD312PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD312PD VFMSUBADD312PDB VFMSUBADD312PDW VFMSUBADD312PDL VFMSUBADD312PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD213PS VFMSUBADD213PSB VFMSUBADD213PSW VFMSUBADD213PSL VFMSUBADD213PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD213PD VFMSUBADD213PDB VFMSUBADD213PDW VFMSUBADD213PDL VFMSUBADD213PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD123PS VFMSUBADD123PSB VFMSUBADD123PSW VFMSUBADD123PSL VFMSUBADD123PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD123PD VFMSUBADD123PDB VFMSUBADD123PDW VFMSUBADD123PDL VFMSUBADD123PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD231PS VFMSUBADD231PSB VFMSUBADD231PSW VFMSUBADD231PSL VFMSUBADD231PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD231PD VFMSUBADD231PDB VFMSUBADD231PDW VFMSUBADD231PDL VFMSUBADD231PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD321PS VFMSUBADD321PSB VFMSUBADD321PSW VFMSUBADD321PSL VFMSUBADD321PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUBADD321PD VFMSUBADD321PDB VFMSUBADD321PDW VFMSUBADD321PDL VFMSUBADD321PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD132PS VFNMADD132PSB VFNMADD132PSW VFNMADD132PSL VFNMADD132PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD132PD VFNMADD132PDB VFNMADD132PDW VFNMADD132PDL VFNMADD132PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD312PS VFNMADD312PSB VFNMADD312PSW VFNMADD312PSL VFNMADD312PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD312PD VFNMADD312PDB VFNMADD312PDW VFNMADD312PDL VFNMADD312PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD213PS VFNMADD213PSB VFNMADD213PSW VFNMADD213PSL VFNMADD213PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD213PD VFNMADD213PDB VFNMADD213PDW VFNMADD213PDL VFNMADD213PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD123PS VFNMADD123PSB VFNMADD123PSW VFNMADD123PSL VFNMADD123PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD123PD VFNMADD123PDB VFNMADD123PDW VFNMADD123PDL VFNMADD123PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD231PS VFNMADD231PSB VFNMADD231PSW VFNMADD231PSL VFNMADD231PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD231PD VFNMADD231PDB VFNMADD231PDW VFNMADD231PDL VFNMADD231PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD321PS VFNMADD321PSB VFNMADD321PSW VFNMADD321PSL VFNMADD321PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD321PD VFNMADD321PDB VFNMADD321PDW VFNMADD321PDL VFNMADD321PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB132PS VFNMSUB132PSB VFNMSUB132PSW VFNMSUB132PSL VFNMSUB132PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB132PD VFNMSUB132PDB VFNMSUB132PDW VFNMSUB132PDL VFNMSUB132PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB312PS VFNMSUB312PSB VFNMSUB312PSW VFNMSUB312PSL VFNMSUB312PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB312PD VFNMSUB312PDB VFNMSUB312PDW VFNMSUB312PDL VFNMSUB312PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB213PS VFNMSUB213PSB VFNMSUB213PSW VFNMSUB213PSL VFNMSUB213PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB213PD VFNMSUB213PDB VFNMSUB213PDW VFNMSUB213PDL VFNMSUB213PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB123PS VFNMSUB123PSB VFNMSUB123PSW VFNMSUB123PSL VFNMSUB123PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB123PD VFNMSUB123PDB VFNMSUB123PDW VFNMSUB123PDL VFNMSUB123PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB231PS VFNMSUB231PSB VFNMSUB231PSW VFNMSUB231PSL VFNMSUB231PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB231PD VFNMSUB231PDB VFNMSUB231PDW VFNMSUB231PDL VFNMSUB231PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB321PS VFNMSUB321PSB VFNMSUB321PSW VFNMSUB321PSL VFNMSUB321PSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB321PD VFNMSUB321PDB VFNMSUB321PDW VFNMSUB321PDL VFNMSUB321PDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD132SS VFMADD132SSB VFMADD132SSW VFMADD132SSL VFMADD132SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD132SD VFMADD132SDB VFMADD132SDW VFMADD132SDL VFMADD132SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD312SS VFMADD312SSB VFMADD312SSW VFMADD312SSL VFMADD312SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD312SD VFMADD312SDB VFMADD312SDW VFMADD312SDL VFMADD312SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD213SS VFMADD213SSB VFMADD213SSW VFMADD213SSL VFMADD213SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD213SD VFMADD213SDB VFMADD213SDW VFMADD213SDL VFMADD213SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD123SS VFMADD123SSB VFMADD123SSW VFMADD123SSL VFMADD123SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD123SD VFMADD123SDB VFMADD123SDW VFMADD123SDL VFMADD123SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD231SS VFMADD231SSB VFMADD231SSW VFMADD231SSL VFMADD231SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD231SD VFMADD231SDB VFMADD231SDW VFMADD231SDL VFMADD231SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD321SS VFMADD321SSB VFMADD321SSW VFMADD321SSL VFMADD321SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMADD321SD VFMADD321SDB VFMADD321SDW VFMADD321SDL VFMADD321SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB132SS VFMSUB132SSB VFMSUB132SSW VFMSUB132SSL VFMSUB132SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB132SD VFMSUB132SDB VFMSUB132SDW VFMSUB132SDL VFMSUB132SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB312SS VFMSUB312SSB VFMSUB312SSW VFMSUB312SSL VFMSUB312SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB312SD VFMSUB312SDB VFMSUB312SDW VFMSUB312SDL VFMSUB312SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB213SS VFMSUB213SSB VFMSUB213SSW VFMSUB213SSL VFMSUB213SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB213SD VFMSUB213SDB VFMSUB213SDW VFMSUB213SDL VFMSUB213SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB123SS VFMSUB123SSB VFMSUB123SSW VFMSUB123SSL VFMSUB123SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB123SD VFMSUB123SDB VFMSUB123SDW VFMSUB123SDL VFMSUB123SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB231SS VFMSUB231SSB VFMSUB231SSW VFMSUB231SSL VFMSUB231SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB231SD VFMSUB231SDB VFMSUB231SDW VFMSUB231SDL VFMSUB231SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB321SS VFMSUB321SSB VFMSUB321SSW VFMSUB321SSL VFMSUB321SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFMSUB321SD VFMSUB321SDB VFMSUB321SDW VFMSUB321SDL VFMSUB321SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD132SS VFNMADD132SSB VFNMADD132SSW VFNMADD132SSL VFNMADD132SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD132SD VFNMADD132SDB VFNMADD132SDW VFNMADD132SDL VFNMADD132SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD312SS VFNMADD312SSB VFNMADD312SSW VFNMADD312SSL VFNMADD312SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD312SD VFNMADD312SDB VFNMADD312SDW VFNMADD312SDL VFNMADD312SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD213SS VFNMADD213SSB VFNMADD213SSW VFNMADD213SSL VFNMADD213SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD213SD VFNMADD213SDB VFNMADD213SDW VFNMADD213SDL VFNMADD213SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD123SS VFNMADD123SSB VFNMADD123SSW VFNMADD123SSL VFNMADD123SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD123SD VFNMADD123SDB VFNMADD123SDW VFNMADD123SDL VFNMADD123SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD231SS VFNMADD231SSB VFNMADD231SSW VFNMADD231SSL VFNMADD231SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD231SD VFNMADD231SDB VFNMADD231SDW VFNMADD231SDL VFNMADD231SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD321SS VFNMADD321SSB VFNMADD321SSW VFNMADD321SSL VFNMADD321SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMADD321SD VFNMADD321SDB VFNMADD321SDW VFNMADD321SDL VFNMADD321SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB132SS VFNMSUB132SSB VFNMSUB132SSW VFNMSUB132SSL VFNMSUB132SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB132SD VFNMSUB132SDB VFNMSUB132SDW VFNMSUB132SDL VFNMSUB132SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB312SS VFNMSUB312SSB VFNMSUB312SSW VFNMSUB312SSL VFNMSUB312SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB312SD VFNMSUB312SDB VFNMSUB312SDW VFNMSUB312SDL VFNMSUB312SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB213SS VFNMSUB213SSB VFNMSUB213SSW VFNMSUB213SSL VFNMSUB213SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB213SD VFNMSUB213SDB VFNMSUB213SDW VFNMSUB213SDL VFNMSUB213SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB123SS VFNMSUB123SSB VFNMSUB123SSW VFNMSUB123SSL VFNMSUB123SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB123SD VFNMSUB123SDB VFNMSUB123SDW VFNMSUB123SDL VFNMSUB123SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB231SS VFNMSUB231SSB VFNMSUB231SSW VFNMSUB231SSL VFNMSUB231SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB231SD VFNMSUB231SDB VFNMSUB231SDW VFNMSUB231SDL VFNMSUB231SDQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB321SS VFNMSUB321SSB VFNMSUB321SSW VFNMSUB321SSL VFNMSUB321SSQ
-syntax keyword goasmOpcode_FUTURE_FMA VFNMSUB321SD VFNMSUB321SDB VFNMSUB321SDW VFNMSUB321SDL VFNMSUB321SDQ
-
-"-- Section: Willamette SSE2 Cacheability Instructions
-syntax keyword goasmOpcode_SSE2  MASKMOVDQU
-syntax keyword goasmOpcode_SSE2  CLFLUSH CLFLUSHB CLFLUSHW CLFLUSHL CLFLUSHQ
-syntax keyword goasmOpcode_SSE2  MOVNTDQ MOVNTDQB MOVNTDQW MOVNTDQL MOVNTDQQ
-syntax keyword goasmOpcode_X64_Base  MOVNTI MOVNTIB MOVNTIW MOVNTIL MOVNTIQ
-syntax keyword goasmOpcode_SSE2  MOVNTPD MOVNTPDB MOVNTPDW MOVNTPDL MOVNTPDQ
-syntax keyword goasmOpcode_SSE2  LFENCE
-syntax keyword goasmOpcode_SSE2  MFENCE
-
-"-- Section: Systematic names for the hinting nop instructions
-syntax keyword goasmOpcode_X64_Base  HINT_NOP0
-syntax keyword goasmOpcode_X64_Base  HINT_NOP1
-syntax keyword goasmOpcode_X64_Base  HINT_NOP2
-syntax keyword goasmOpcode_X64_Base  HINT_NOP3
-syntax keyword goasmOpcode_X64_Base  HINT_NOP4
-syntax keyword goasmOpcode_X64_Base  HINT_NOP5
-syntax keyword goasmOpcode_X64_Base  HINT_NOP6
-syntax keyword goasmOpcode_X64_Base  HINT_NOP7
-syntax keyword goasmOpcode_X64_Base  HINT_NOP8
-syntax keyword goasmOpcode_X64_Base  HINT_NOP9
-syntax keyword goasmOpcode_X64_Base  HINT_NOP10
-syntax keyword goasmOpcode_X64_Base  HINT_NOP11
-syntax keyword goasmOpcode_X64_Base  HINT_NOP12
-syntax keyword goasmOpcode_X64_Base  HINT_NOP13
-syntax keyword goasmOpcode_X64_Base  HINT_NOP14
-syntax keyword goasmOpcode_X64_Base  HINT_NOP15
-syntax keyword goasmOpcode_X64_Base  HINT_NOP16
-syntax keyword goasmOpcode_X64_Base  HINT_NOP17
-syntax keyword goasmOpcode_X64_Base  HINT_NOP18
-syntax keyword goasmOpcode_X64_Base  HINT_NOP19
-syntax keyword goasmOpcode_X64_Base  HINT_NOP20
-syntax keyword goasmOpcode_X64_Base  HINT_NOP21
-syntax keyword goasmOpcode_X64_Base  HINT_NOP22
-syntax keyword goasmOpcode_X64_Base  HINT_NOP23
-syntax keyword goasmOpcode_X64_Base  HINT_NOP24
-syntax keyword goasmOpcode_X64_Base  HINT_NOP25
-syntax keyword goasmOpcode_X64_Base  HINT_NOP26
-syntax keyword goasmOpcode_X64_Base  HINT_NOP27
-syntax keyword goasmOpcode_X64_Base  HINT_NOP28
-syntax keyword goasmOpcode_X64_Base  HINT_NOP29
-syntax keyword goasmOpcode_X64_Base  HINT_NOP30
-syntax keyword goasmOpcode_X64_Base  HINT_NOP31
-syntax keyword goasmOpcode_X64_Base  HINT_NOP32
-syntax keyword goasmOpcode_X64_Base  HINT_NOP33
-syntax keyword goasmOpcode_X64_Base  HINT_NOP34
-syntax keyword goasmOpcode_X64_Base  HINT_NOP35
-syntax keyword goasmOpcode_X64_Base  HINT_NOP36
-syntax keyword goasmOpcode_X64_Base  HINT_NOP37
-syntax keyword goasmOpcode_X64_Base  HINT_NOP38
-syntax keyword goasmOpcode_X64_Base  HINT_NOP39
-syntax keyword goasmOpcode_X64_Base  HINT_NOP40
-syntax keyword goasmOpcode_X64_Base  HINT_NOP41
-syntax keyword goasmOpcode_X64_Base  HINT_NOP42
-syntax keyword goasmOpcode_X64_Base  HINT_NOP43
-syntax keyword goasmOpcode_X64_Base  HINT_NOP44
-syntax keyword goasmOpcode_X64_Base  HINT_NOP45
-syntax keyword goasmOpcode_X64_Base  HINT_NOP46
-syntax keyword goasmOpcode_X64_Base  HINT_NOP47
-syntax keyword goasmOpcode_X64_Base  HINT_NOP48
-syntax keyword goasmOpcode_X64_Base  HINT_NOP49
-syntax keyword goasmOpcode_X64_Base  HINT_NOP50
-syntax keyword goasmOpcode_X64_Base  HINT_NOP51
-syntax keyword goasmOpcode_X64_Base  HINT_NOP52
-syntax keyword goasmOpcode_X64_Base  HINT_NOP53
-syntax keyword goasmOpcode_X64_Base  HINT_NOP54
-syntax keyword goasmOpcode_X64_Base  HINT_NOP55
-syntax keyword goasmOpcode_X64_Base  HINT_NOP56
-syntax keyword goasmOpcode_X64_Base  HINT_NOP57
-syntax keyword goasmOpcode_X64_Base  HINT_NOP58
-syntax keyword goasmOpcode_X64_Base  HINT_NOP59
-syntax keyword goasmOpcode_X64_Base  HINT_NOP60
-syntax keyword goasmOpcode_X64_Base  HINT_NOP61
-syntax keyword goasmOpcode_X64_Base  HINT_NOP62
-
-"-- Section: Geode (Cyrix) 3DNow! additions
-syntax keyword goasmOpcode_PENT_3DNOW PFRCPV PFRCPVB PFRCPVW PFRCPVL PFRCPVQ
-syntax keyword goasmOpcode_PENT_3DNOW PFRSQRTV PFRSQRTVB PFRSQRTVW PFRSQRTVL PFRSQRTVQ
-
-"-- Section: XSAVE group (AVX and extended state)
-syntax keyword goasmOpcode_NEHALEM_Base XGETBV
-syntax keyword goasmOpcode_NEHALEM_Base XSETBV
-syntax keyword goasmOpcode_NEHALEM_Base XSAVE XSAVEB XSAVEW XSAVEL XSAVEQ
-syntax keyword goasmOpcode_NEHALEM_Base XRSTOR XRSTORB XRSTORW XRSTORL XRSTORQ
-
-"-- Section: Conventional instructions
-syntax keyword goasmOpcode_8086_Base  FNSTCW FNSTCWB FNSTCWW FNSTCWL FNSTCWQ
-syntax keyword goasmOpcode_8086_Base  FNSTENV FNSTENVB FNSTENVW FNSTENVL FNSTENVQ
-syntax keyword goasmOpcode_286_Base  FNSTSW
-syntax keyword goasmOpcode_8086_Base  FPATAN
-syntax keyword goasmOpcode_8086_Base  FPREM
-syntax keyword goasmOpcode_386_Base  FPREM1
-syntax keyword goasmOpcode_8086_Base  FPTAN
-syntax keyword goasmOpcode_8086_Base  FRNDINT
-syntax keyword goasmOpcode_8086_Base  FRSTOR FRSTORB FRSTORW FRSTORL FRSTORQ
-syntax keyword goasmOpcode_8086_Base  FSAVE FSAVEB FSAVEW FSAVEL FSAVEQ
-syntax keyword goasmOpcode_8086_Base  FSCALE
-syntax keyword goasmOpcode_286_Base  FSETPM
-syntax keyword goasmOpcode_386_Base  FSIN
-syntax keyword goasmOpcode_386_Base  FSINCOS
-syntax keyword goasmOpcode_8086_Base  FSQRT
-syntax keyword goasmOpcode_8086_Base  FST
-syntax keyword goasmOpcode_8086_Base  FSTCW FSTCWB FSTCWW FSTCWL FSTCWQ
-syntax keyword goasmOpcode_8086_Base  FSTENV FSTENVB FSTENVW FSTENVL FSTENVQ
-syntax keyword goasmOpcode_8086_Base  FSTP
-syntax keyword goasmOpcode_286_Base  FSTSW
-syntax keyword goasmOpcode_8086_Base  FSUB
-syntax keyword goasmOpcode_8086_Base  FSUBP
-syntax keyword goasmOpcode_8086_Base  FSUBR
-syntax keyword goasmOpcode_8086_Base  FSUBRP
-syntax keyword goasmOpcode_8086_Base  FTST
-syntax keyword goasmOpcode_386_Base  FUCOM
-syntax keyword goasmOpcode_P6_Base  FUCOMI
-syntax keyword goasmOpcode_P6_Base  FUCOMIP
-syntax keyword goasmOpcode_386_Base  FUCOMP
-syntax keyword goasmOpcode_386_Base  FUCOMPP
-syntax keyword goasmOpcode_8086_Base  FXAM
-syntax keyword goasmOpcode_8086_Base  FXCH
-syntax keyword goasmOpcode_8086_Base  FXTRACT
-syntax keyword goasmOpcode_8086_Base  FYL2X
-syntax keyword goasmOpcode_8086_Base  FYL2XP1
-syntax keyword goasmOpcode_8086_Base  HLT
-syntax keyword goasmOpcode_386_Base  IBTS
-syntax keyword goasmOpcode_386_Base  ICEBP
-syntax keyword goasmOpcode_X64_Base  IDIV
-syntax keyword goasmOpcode_X64_Base  IMUL IMULB IMULW IMULL IMULQ
-syntax keyword goasmOpcode_386_Base  IN
-syntax keyword goasmOpcode_X64_Base  INC INCB INCW INCL INCQ
-syntax keyword goasmOpcode_Base  INCBIN
-syntax keyword goasmOpcode_186_Base  INSB
-syntax keyword goasmOpcode_386_Base  INSD
-syntax keyword goasmOpcode_186_Base  INSW
-syntax keyword goasmOpcode_8086_Base  INT INTB INTW INTL INTQ
-syntax keyword goasmOpcode_386_Base  INT01
-syntax keyword goasmOpcode_386_Base  INT1
-syntax keyword goasmOpcode_8086_Base  INT03
-syntax keyword goasmOpcode_8086_Base  INT3
-syntax keyword goasmOpcode_8086_Base  INTO
-syntax keyword goasmOpcode_486_Base  INVD
-syntax keyword goasmOpcode_486_Base  INVLPG INVLPGB INVLPGW INVLPGL INVLPGQ
-syntax keyword goasmOpcode_X86_64_Base INVLPGA
-syntax keyword goasmOpcode_8086_Base  IRET
-syntax keyword goasmOpcode_386_Base  IRETD
-syntax keyword goasmOpcode_X64_Base  IRETQ
-syntax keyword goasmOpcode_8086_Base  IRETW
-syntax keyword goasmOpcode_8086_Base  JCXZ JCXZB JCXZW JCXZL JCXZQ
-syntax keyword goasmOpcode_386_Base  JECXZ JECXZB JECXZW JECXZL JECXZQ
-syntax keyword goasmOpcode_X64_Base  JRCXZ JRCXZB JRCXZW JRCXZL JRCXZQ
-syntax keyword goasmOpcode_X64_Base  JMP JMPB JMPW JMPL JMPQ
-syntax keyword goasmOpcode_IA64_Base  JMPE
-syntax keyword goasmOpcode_8086_Base  LAHF
-syntax keyword goasmOpcode_X64_Base  LAR
-syntax keyword goasmOpcode_386_Base  LDS LDSB LDSW LDSL LDSQ
-syntax keyword goasmOpcode_X64_Base  LEA LEAB LEAW LEAL LEAQ
-syntax keyword goasmOpcode_186_Base  LEAVE
-syntax keyword goasmOpcode_386_Base  LES LESB LESW LESL LESQ
-syntax keyword goasmOpcode_X64_Base  LFENCE
-syntax keyword goasmOpcode_386_Base  LFS LFSB LFSW LFSL LFSQ
-syntax keyword goasmOpcode_286_Base  LGDT LGDTB LGDTW LGDTL LGDTQ
-syntax keyword goasmOpcode_386_Base  LGS LGSB LGSW LGSL LGSQ
-syntax keyword goasmOpcode_286_Base  LIDT LIDTB LIDTW LIDTL LIDTQ
-syntax keyword goasmOpcode_286_Base  LLDT
-syntax keyword goasmOpcode_286_Base  LMSW
-syntax keyword goasmOpcode_386_Base  LOADALL
-syntax keyword goasmOpcode_286_Base  LOADALL286
-syntax keyword goasmOpcode_8086_Base  LODSB
-syntax keyword goasmOpcode_386_Base  LODSD
-syntax keyword goasmOpcode_X64_Base  LODSQ
-syntax keyword goasmOpcode_8086_Base  LODSW
-syntax keyword goasmOpcode_X64_Base  LOOP LOOPB LOOPW LOOPL LOOPQ
-syntax keyword goasmOpcode_X64_Base  LOOPE LOOPEB LOOPEW LOOPEL LOOPEQ
-syntax keyword goasmOpcode_X64_Base  LOOPNE LOOPNEB LOOPNEW LOOPNEL LOOPNEQ
-syntax keyword goasmOpcode_X64_Base  LOOPNZ LOOPNZB LOOPNZW LOOPNZL LOOPNZQ
-syntax keyword goasmOpcode_X64_Base  LOOPZ LOOPZB LOOPZW LOOPZL LOOPZQ
-syntax keyword goasmOpcode_X64_Base  LSL
-syntax keyword goasmOpcode_386_Base  LSS LSSB LSSW LSSL LSSQ
-syntax keyword goasmOpcode_286_Base  LTR
-syntax keyword goasmOpcode_X64_Base  MFENCE
-syntax keyword goasmOpcode_PRESCOTT_Base MONITOR
-syntax keyword goasmOpcode_386_Base  MOV MOVB MOVW MOVL MOVQ
-syntax keyword goasmOpcode_X64_SSE  MOVD
-syntax keyword goasmOpcode_X64_MMX  MOVQ
-syntax keyword goasmOpcode_8086_Base  MOVSB
-syntax keyword goasmOpcode_386_Base  MOVSD
-syntax keyword goasmOpcode_X64_Base  MOVSQ
-syntax keyword goasmOpcode_8086_Base  MOVSW
-syntax keyword goasmOpcode_X64_Base  MOVSX
-syntax keyword goasmOpcode_X64_Base  MOVSXD
-syntax keyword goasmOpcode_X64_Base  MOVSX
-syntax keyword goasmOpcode_X64_Base  MOVZX
-syntax keyword goasmOpcode_X64_Base  MUL
-syntax keyword goasmOpcode_PRESCOTT_Base MWAIT
-syntax keyword goasmOpcode_X64_Base  NEG
-syntax keyword goasmOpcode_X64_Base  NOP
-syntax keyword goasmOpcode_X64_Base  NOT
-syntax keyword goasmOpcode_386_Base  OR ORB ORW ORL ORQ
-syntax keyword goasmOpcode_386_Base  OUT
-syntax keyword goasmOpcode_186_Base  OUTSB
-syntax keyword goasmOpcode_386_Base  OUTSD
-syntax keyword goasmOpcode_186_Base  OUTSW
-syntax keyword goasmOpcode_PENT_MMX  PACKSSDW PACKSSDWB PACKSSDWW PACKSSDWL PACKSSDWQ
-syntax keyword goasmOpcode_PENT_MMX  PACKSSWB PACKSSWBB PACKSSWBW PACKSSWBL PACKSSWBQ
-syntax keyword goasmOpcode_PENT_MMX  PACKUSWB PACKUSWBB PACKUSWBW PACKUSWBL PACKUSWBQ
-syntax keyword goasmOpcode_PENT_MMX  PADDB PADDBB PADDBW PADDBL PADDBQ
-syntax keyword goasmOpcode_PENT_MMX  PADDD PADDDB PADDDW PADDDL PADDDQ
-syntax keyword goasmOpcode_PENT_MMX  PADDSB PADDSBB PADDSBW PADDSBL PADDSBQ
-syntax keyword goasmOpcode_PENT_MMX  PADDSIW PADDSIWB PADDSIWW PADDSIWL PADDSIWQ
-syntax keyword goasmOpcode_PENT_MMX  PADDSW PADDSWB PADDSWW PADDSWL PADDSWQ
-syntax keyword goasmOpcode_PENT_MMX  PADDUSB PADDUSBB PADDUSBW PADDUSBL PADDUSBQ
-syntax keyword goasmOpcode_PENT_MMX  PADDUSW PADDUSWB PADDUSWW PADDUSWL PADDUSWQ
-syntax keyword goasmOpcode_PENT_MMX  PADDW PADDWB PADDWW PADDWL PADDWQ
-syntax keyword goasmOpcode_PENT_MMX  PAND PANDB PANDW PANDL PANDQ
-syntax keyword goasmOpcode_PENT_MMX  PANDN PANDNB PANDNW PANDNL PANDNQ
-syntax keyword goasmOpcode_8086_Base  PAUSE
-syntax keyword goasmOpcode_PENT_MMX  PAVEB PAVEBB PAVEBW PAVEBL PAVEBQ
-syntax keyword goasmOpcode_PENT_3DNOW PAVGUSB PAVGUSBB PAVGUSBW PAVGUSBL PAVGUSBQ
-syntax keyword goasmOpcode_PENT_MMX  PCMPEQB PCMPEQBB PCMPEQBW PCMPEQBL PCMPEQBQ
-syntax keyword goasmOpcode_PENT_MMX  PCMPEQD PCMPEQDB PCMPEQDW PCMPEQDL PCMPEQDQ
-syntax keyword goasmOpcode_PENT_MMX  PCMPEQW PCMPEQWB PCMPEQWW PCMPEQWL PCMPEQWQ
-syntax keyword goasmOpcode_PENT_MMX  PCMPGTB PCMPGTBB PCMPGTBW PCMPGTBL PCMPGTBQ
-syntax keyword goasmOpcode_PENT_MMX  PCMPGTD PCMPGTDB PCMPGTDW PCMPGTDL PCMPGTDQ
-syntax keyword goasmOpcode_PENT_MMX  PCMPGTW PCMPGTWB PCMPGTWW PCMPGTWL PCMPGTWQ
-syntax keyword goasmOpcode_PENT_MMX  PDISTIB PDISTIBB PDISTIBW PDISTIBL PDISTIBQ
-syntax keyword goasmOpcode_PENT_3DNOW PF2ID PF2IDB PF2IDW PF2IDL PF2IDQ
-syntax keyword goasmOpcode_PENT_3DNOW PFACC PFACCB PFACCW PFACCL PFACCQ
-syntax keyword goasmOpcode_PENT_3DNOW PFADD PFADDB PFADDW PFADDL PFADDQ
-syntax keyword goasmOpcode_PENT_3DNOW PFCMPEQ PFCMPEQB PFCMPEQW PFCMPEQL PFCMPEQQ
-syntax keyword goasmOpcode_PENT_3DNOW PFCMPGE PFCMPGEB PFCMPGEW PFCMPGEL PFCMPGEQ
-syntax keyword goasmOpcode_PENT_3DNOW PFCMPGT PFCMPGTB PFCMPGTW PFCMPGTL PFCMPGTQ
-syntax keyword goasmOpcode_PENT_3DNOW PFMAX PFMAXB PFMAXW PFMAXL PFMAXQ
-syntax keyword goasmOpcode_PENT_3DNOW PFMIN PFMINB PFMINW PFMINL PFMINQ
-syntax keyword goasmOpcode_PENT_3DNOW PFMUL PFMULB PFMULW PFMULL PFMULQ
-syntax keyword goasmOpcode_PENT_3DNOW PFRCP PFRCPB PFRCPW PFRCPL PFRCPQ
-syntax keyword goasmOpcode_PENT_3DNOW PFRCPIT1 PFRCPIT1B PFRCPIT1W PFRCPIT1L PFRCPIT1Q
-syntax keyword goasmOpcode_PENT_3DNOW PFRCPIT2 PFRCPIT2B PFRCPIT2W PFRCPIT2L PFRCPIT2Q
-syntax keyword goasmOpcode_PENT_3DNOW PFRSQIT1 PFRSQIT1B PFRSQIT1W PFRSQIT1L PFRSQIT1Q
-syntax keyword goasmOpcode_PENT_3DNOW PFRSQRT PFRSQRTB PFRSQRTW PFRSQRTL PFRSQRTQ
-syntax keyword goasmOpcode_PENT_3DNOW PFSUB PFSUBB PFSUBW PFSUBL PFSUBQ
-syntax keyword goasmOpcode_PENT_3DNOW PFSUBR PFSUBRB PFSUBRW PFSUBRL PFSUBRQ
-syntax keyword goasmOpcode_PENT_3DNOW PI2FD PI2FDB PI2FDW PI2FDL PI2FDQ
-syntax keyword goasmOpcode_PENT_MMX  PMACHRIW PMACHRIWB PMACHRIWW PMACHRIWL PMACHRIWQ
-syntax keyword goasmOpcode_PENT_MMX  PMADDWD PMADDWDB PMADDWDW PMADDWDL PMADDWDQ
-syntax keyword goasmOpcode_PENT_MMX  PMAGW PMAGWB PMAGWW PMAGWL PMAGWQ
-syntax keyword goasmOpcode_PENT_MMX  PMULHRIW PMULHRIWB PMULHRIWW PMULHRIWL PMULHRIWQ
-syntax keyword goasmOpcode_PENT_3DNOW PMULHRWA PMULHRWAB PMULHRWAW PMULHRWAL PMULHRWAQ
-syntax keyword goasmOpcode_PENT_MMX  PMULHRWC PMULHRWCB PMULHRWCW PMULHRWCL PMULHRWCQ
-syntax keyword goasmOpcode_PENT_MMX  PMULHW PMULHWB PMULHWW PMULHWL PMULHWQ
-syntax keyword goasmOpcode_PENT_MMX  PMULLW PMULLWB PMULLWW PMULLWL PMULLWQ
-syntax keyword goasmOpcode_PENT_MMX  PMVGEZB PMVGEZBB PMVGEZBW PMVGEZBL PMVGEZBQ
-syntax keyword goasmOpcode_PENT_MMX  PMVLZB PMVLZBB PMVLZBW PMVLZBL PMVLZBQ
-syntax keyword goasmOpcode_PENT_MMX  PMVNZB PMVNZBB PMVNZBW PMVNZBL PMVNZBQ
-syntax keyword goasmOpcode_PENT_MMX  PMVZB PMVZBB PMVZBW PMVZBL PMVZBQ
-syntax keyword goasmOpcode_386_Base  POP POPB POPW POPL POPQ
-syntax keyword goasmOpcode_186_Base  POPA
-syntax keyword goasmOpcode_386_Base  POPAL
-syntax keyword goasmOpcode_186_Base  POPAW
-syntax keyword goasmOpcode_8086_Base  POPF
-syntax keyword goasmOpcode_386_Base  POPFD POPFL
-syntax keyword goasmOpcode_X64_Base  POPFQ
-syntax keyword goasmOpcode_8086_Base  POPFW
-syntax keyword goasmOpcode_PENT_MMX  POR PORB PORW PORL PORQ
-syntax keyword goasmOpcode_PENT_3DNOW PREFETCH PREFETCHB PREFETCHW PREFETCHL PREFETCHQ
-syntax keyword goasmOpcode_PENT_3DNOW PREFETCHW PREFETCHWB PREFETCHWW PREFETCHWL PREFETCHWQ
-syntax keyword goasmOpcode_PENT_MMX  PSLLD PSLLDB PSLLDW PSLLDL PSLLDQ
-syntax keyword goasmOpcode_PENT_MMX  PSLLQ PSLLQB PSLLQW PSLLQL PSLLQQ
-syntax keyword goasmOpcode_PENT_MMX  PSLLW PSLLWB PSLLWW PSLLWL PSLLWQ
-syntax keyword goasmOpcode_PENT_MMX  PSRAD PSRADB PSRADW PSRADL PSRADQ
-syntax keyword goasmOpcode_PENT_MMX  PSRAW PSRAWB PSRAWW PSRAWL PSRAWQ
-syntax keyword goasmOpcode_PENT_MMX  PSRLD PSRLDB PSRLDW PSRLDL PSRLDQ
-syntax keyword goasmOpcode_PENT_MMX  PSRLQ PSRLQB PSRLQW PSRLQL PSRLQQ
-syntax keyword goasmOpcode_PENT_MMX  PSRLW PSRLWB PSRLWW PSRLWL PSRLWQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBB PSUBBB PSUBBW PSUBBL PSUBBQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBD PSUBDB PSUBDW PSUBDL PSUBDQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBSB PSUBSBB PSUBSBW PSUBSBL PSUBSBQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBSIW PSUBSIWB PSUBSIWW PSUBSIWL PSUBSIWQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBSW PSUBSWB PSUBSWW PSUBSWL PSUBSWQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBUSB PSUBUSBB PSUBUSBW PSUBUSBL PSUBUSBQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBUSW PSUBUSWB PSUBUSWW PSUBUSWL PSUBUSWQ
-syntax keyword goasmOpcode_PENT_MMX  PSUBW PSUBWB PSUBWW PSUBWL PSUBWQ
-syntax keyword goasmOpcode_PENT_MMX  PUNPCKHBW PUNPCKHBWB PUNPCKHBWW PUNPCKHBWL PUNPCKHBWQ
-syntax keyword goasmOpcode_PENT_MMX  PUNPCKHDQ PUNPCKHDQB PUNPCKHDQW PUNPCKHDQL PUNPCKHDQQ
-syntax keyword goasmOpcode_PENT_MMX  PUNPCKHWD PUNPCKHWDB PUNPCKHWDW PUNPCKHWDL PUNPCKHWDQ
-syntax keyword goasmOpcode_PENT_MMX  PUNPCKLBW PUNPCKLBWB PUNPCKLBWW PUNPCKLBWL PUNPCKLBWQ
-syntax keyword goasmOpcode_PENT_MMX  PUNPCKLDQ PUNPCKLDQB PUNPCKLDQW PUNPCKLDQL PUNPCKLDQQ
-syntax keyword goasmOpcode_PENT_MMX  PUNPCKLWD PUNPCKLWDB PUNPCKLWDW PUNPCKLWDL PUNPCKLWDQ
-syntax keyword goasmOpcode_X64_Base  PUSH PUSHB PUSHW PUSHL PUSHQ
-syntax keyword goasmOpcode_186_Base  PUSHA
-syntax keyword goasmOpcode_386_Base  PUSHAL
-syntax keyword goasmOpcode_186_Base  PUSHAW
-syntax keyword goasmOpcode_8086_Base  PUSHF
-syntax keyword goasmOpcode_386_Base  PUSHFD
-syntax keyword goasmOpcode_X64_Base  PUSHFQ
-syntax keyword goasmOpcode_8086_Base  PUSHFW
-syntax keyword goasmOpcode_PENT_MMX  PXOR PXORB PXORW PXORL PXORQ
-syntax keyword goasmOpcode_X64_Base  RCL RCLB RCLW RCLL RCLQ
-syntax keyword goasmOpcode_X64_Base  RCR RCRB RCRW RCRL RCRQ
-syntax keyword goasmOpcode_P6_Base  RDSHR
-syntax keyword goasmOpcode_PENT_Base  RDMSR
-syntax keyword goasmOpcode_P6_Base  RDPMC
-syntax keyword goasmOpcode_PENT_Base  RDTSC
-syntax keyword goasmOpcode_X86_64_Base  RDTSCP
-syntax keyword goasmOpcode_8086_Base  RET RETB RETW RETL RETQ
-syntax keyword goasmOpcode_8086_Base  RETF RETFB RETFW RETFL RETFQ
-syntax keyword goasmOpcode_8086_Base  RETN RETNB RETNW RETNL RETNQ
-syntax keyword goasmOpcode_X64_Base  ROL ROLB ROLW ROLL ROLQ
-syntax keyword goasmOpcode_X64_Base  ROR RORB RORW RORL RORQ
-syntax keyword goasmOpcode_P6_Base  RDM
-syntax keyword goasmOpcode_486_Base  RSDC RSDCB RSDCW RSDCL RSDCQ
-syntax keyword goasmOpcode_486_Base  RSLDT RSLDTB RSLDTW RSLDTL RSLDTQ
-syntax keyword goasmOpcode_PENTM_Base  RSM
-syntax keyword goasmOpcode_486_Base  RSTS RSTSB RSTSW RSTSL RSTSQ
-syntax keyword goasmOpcode_8086_Base  SAHF
-syntax keyword goasmOpcode_X64_Base  SAL SALB SALW SALL SALQ
-syntax keyword goasmOpcode_8086_Base  SALC
-syntax keyword goasmOpcode_X64_Base  SAR SARB SARW SARL SARQ
-syntax keyword goasmOpcode_386_Base  SBB SBBB SBBW SBBL SBBQ
-syntax keyword goasmOpcode_8086_Base  SCASB
-syntax keyword goasmOpcode_386_Base  SCASD
-syntax keyword goasmOpcode_X64_Base  SCASQ
-syntax keyword goasmOpcode_8086_Base  SCASW
-syntax keyword goasmOpcode_X64_Base  SFENCE
-syntax keyword goasmOpcode_286_Base  SGDT SGDTB SGDTW SGDTL SGDTQ
-syntax keyword goasmOpcode_X64_Base  SHL SHLB SHLW SHLL SHLQ
-syntax keyword goasmOpcode_X64_Base  SHLD
-syntax keyword goasmOpcode_X64_Base  SHR SHRB SHRW SHRL SHRQ
-syntax keyword goasmOpcode_X64_Base  SHRD
-syntax keyword goasmOpcode_286_Base  SIDT SIDTB SIDTW SIDTL SIDTQ
-syntax keyword goasmOpcode_X64_Base  SLDT
-syntax keyword goasmOpcode_X64_Base  SKINIT
-syntax keyword goasmOpcode_386_Base  SMI
-syntax keyword goasmOpcode_P6_Base  SMINT
-syntax keyword goasmOpcode_486_Base  SMINTOLD
-syntax keyword goasmOpcode_386_Base  SMSW
-syntax keyword goasmOpcode_8086_Base  STC
-syntax keyword goasmOpcode_8086_Base  STD
-syntax keyword goasmOpcode_X64_Base  STGI
-syntax keyword goasmOpcode_8086_Base  STI
-syntax keyword goasmOpcode_8086_Base  STOSB
-syntax keyword goasmOpcode_386_Base  STOSD STOSL
-syntax keyword goasmOpcode_X64_Base  STOSQ
-syntax keyword goasmOpcode_8086_Base  STOSW
-syntax keyword goasmOpcode_X64_Base  STR
-syntax keyword goasmOpcode_386_Base  SUB SUBB SUBW SUBL SUBQ
-syntax keyword goasmOpcode_486_Base  SVDC SVDCB SVDCW SVDCL SVDCQ
-syntax keyword goasmOpcode_486_Base  SVLDT SVLDTB SVLDTW SVLDTL SVLDTQ
-syntax keyword goasmOpcode_486_Base  SVTS SVTSB SVTSW SVTSL SVTSQ
-syntax keyword goasmOpcode_X64_Base  SWAPGS
-syntax keyword goasmOpcode_P6_Base  SYSCALL
-syntax keyword goasmOpcode_P6_Base  SYSENTER
-syntax keyword goasmOpcode_P6_Base  SYSEXIT
-syntax keyword goasmOpcode_P6_Base  SYSRET
-syntax keyword goasmOpcode_386_Base  TEST TESTB TESTW TESTL TESTQ
-syntax keyword goasmOpcode_186_Base  UD0
-syntax keyword goasmOpcode_186_Base  UD1
-syntax keyword goasmOpcode_186_Base  UD2B
-syntax keyword goasmOpcode_186_Base  UD2
-syntax keyword goasmOpcode_186_Base  UD2A
-syntax keyword goasmOpcode_386_Base  UMOV
-syntax keyword goasmOpcode_286_Base  VERR
-syntax keyword goasmOpcode_286_Base  VERW
-syntax keyword goasmOpcode_8086_Base  FWAIT
-syntax keyword goasmOpcode_486_Base  WBINVD
-syntax keyword goasmOpcode_P6_Base  WRSHR
-syntax keyword goasmOpcode_PENT_Base  WRMSR
-syntax keyword goasmOpcode_X64_Base  XADD
-syntax keyword goasmOpcode_386_Base  XBTS
-syntax keyword goasmOpcode_X64_Base  XCHG
-syntax keyword goasmOpcode_8086_Base  XLATB
-syntax keyword goasmOpcode_8086_Base  XLAT
-syntax keyword goasmOpcode_386_Base  XOR XORB XORW XORL XORQ
-syntax keyword goasmOpcode_X64_Base  CMOVCC
-syntax match   goasmOpcode_8086_Base  /\<j\(e\|ne\|a\|ae\|b\|be\|nbe\|g\|ge\|ng\|nge\|l\|le\|\|z\|nz\|c\|nc\|d\|nd\|o\|no\|p\|np\|s\|ns\)[bwlq]\?\>/
-syntax match   goasmOpcode_386_Base  /\<set\(e\|ne\|a\|ae\|b\|be\|nbe\|g\|ge\|ng\|nge\|l\|le\|\|z\|nz\|c\|nc\|d\|nd\|o\|no\|p\|np\|s\|ns\)[bwlq]\?\>/
-
-"-- Section: VIA (Centaur) security instructions
-syntax keyword goasmOpcode_PENT_Base  XSTORE
-syntax keyword goasmOpcode_PENT_Base  XCRYPTECB
-syntax keyword goasmOpcode_PENT_Base  XCRYPTCBC
-syntax keyword goasmOpcode_PENT_Base  XCRYPTCTR
-syntax keyword goasmOpcode_PENT_Base  XCRYPTCFB
-syntax keyword goasmOpcode_PENT_Base  XCRYPTOFB
-syntax keyword goasmOpcode_PENT_Base  MONTMUL
-syntax keyword goasmOpcode_PENT_Base  XSHA1
-syntax keyword goasmOpcode_PENT_Base  XSHA256
-
-"-- Section: Intel AVX Carry-Less Multiplication instructions (CLMUL)
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCLMULLQLQDQ VPCLMULLQLQDQB VPCLMULLQLQDQW VPCLMULLQLQDQL VPCLMULLQLQDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCLMULHQLQDQ VPCLMULHQLQDQB VPCLMULHQLQDQW VPCLMULHQLQDQL VPCLMULHQLQDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCLMULLQHQDQ VPCLMULLQHQDQB VPCLMULLQHQDQW VPCLMULLQHQDQL VPCLMULLQHQDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCLMULHQHQDQ VPCLMULHQHQDQB VPCLMULHQHQDQW VPCLMULHQHQDQL VPCLMULHQHQDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCLMULQDQ VPCLMULQDQB VPCLMULQDQW VPCLMULQDQL VPCLMULQDQQ
-
-"-- Section: AMD SSE5 instructions
-syntax keyword goasmOpcode_AMD_SSE5  FMADDPS FMADDPSB FMADDPSW FMADDPSL FMADDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  FMADDPD FMADDPDB FMADDPDW FMADDPDL FMADDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  FMADDSS FMADDSSB FMADDSSW FMADDSSL FMADDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  FMADDSD FMADDSDB FMADDSDW FMADDSDL FMADDSDQ
-syntax keyword goasmOpcode_AMD_SSE5  FMSUBPS FMSUBPSB FMSUBPSW FMSUBPSL FMSUBPSQ
-syntax keyword goasmOpcode_AMD_SSE5  FMSUBPD FMSUBPDB FMSUBPDW FMSUBPDL FMSUBPDQ
-syntax keyword goasmOpcode_AMD_SSE5  FMSUBSS FMSUBSSB FMSUBSSW FMSUBSSL FMSUBSSQ
-syntax keyword goasmOpcode_AMD_SSE5  FMSUBSD FMSUBSDB FMSUBSDW FMSUBSDL FMSUBSDQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMADDPS FNMADDPSB FNMADDPSW FNMADDPSL FNMADDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMADDPD FNMADDPDB FNMADDPDW FNMADDPDL FNMADDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMADDSS FNMADDSSB FNMADDSSW FNMADDSSL FNMADDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMADDSD FNMADDSDB FNMADDSDW FNMADDSDL FNMADDSDQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMSUBPS FNMSUBPSB FNMSUBPSW FNMSUBPSL FNMSUBPSQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMSUBPD FNMSUBPDB FNMSUBPDW FNMSUBPDL FNMSUBPDQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMSUBSS FNMSUBSSB FNMSUBSSW FNMSUBSSL FNMSUBSSQ
-syntax keyword goasmOpcode_AMD_SSE5  FNMSUBSD FNMSUBSDB FNMSUBSDW FNMSUBSDL FNMSUBSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMEQPS COMEQPSB COMEQPSW COMEQPSL COMEQPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLTPS COMLTPSB COMLTPSW COMLTPSL COMLTPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLEPS COMLEPSB COMLEPSW COMLEPSL COMLEPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNORDPS COMUNORDPSB COMUNORDPSW COMUNORDPSL COMUNORDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNEQPS COMUNEQPSB COMUNEQPSW COMUNEQPSL COMUNEQPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLTPS COMUNLTPSB COMUNLTPSW COMUNLTPSL COMUNLTPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLEPS COMUNLEPSB COMUNLEPSW COMUNLEPSL COMUNLEPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMORDPS COMORDPSB COMORDPSW COMORDPSL COMORDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUEQPS COMUEQPSB COMUEQPSW COMUEQPSL COMUEQPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULTPS COMULTPSB COMULTPSW COMULTPSL COMULTPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULEPS COMULEPSB COMULEPSW COMULEPSL COMULEPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMFALSEPS COMFALSEPSB COMFALSEPSW COMFALSEPSL COMFALSEPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNEQPS COMNEQPSB COMNEQPSW COMNEQPSL COMNEQPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLTPS COMNLTPSB COMNLTPSW COMNLTPSL COMNLTPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLEPS COMNLEPSB COMNLEPSW COMNLEPSL COMNLEPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMTRUEPS COMTRUEPSB COMTRUEPSW COMTRUEPSL COMTRUEPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMPS COMPSB COMPSW COMPSL COMPSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMEQPD COMEQPDB COMEQPDW COMEQPDL COMEQPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLTPD COMLTPDB COMLTPDW COMLTPDL COMLTPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLEPD COMLEPDB COMLEPDW COMLEPDL COMLEPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNORDPD COMUNORDPDB COMUNORDPDW COMUNORDPDL COMUNORDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNEQPD COMUNEQPDB COMUNEQPDW COMUNEQPDL COMUNEQPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLTPD COMUNLTPDB COMUNLTPDW COMUNLTPDL COMUNLTPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLEPD COMUNLEPDB COMUNLEPDW COMUNLEPDL COMUNLEPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMORDPD COMORDPDB COMORDPDW COMORDPDL COMORDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUEQPD COMUEQPDB COMUEQPDW COMUEQPDL COMUEQPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULTPD COMULTPDB COMULTPDW COMULTPDL COMULTPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULEPD COMULEPDB COMULEPDW COMULEPDL COMULEPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMFALSEPD COMFALSEPDB COMFALSEPDW COMFALSEPDL COMFALSEPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNEQPD COMNEQPDB COMNEQPDW COMNEQPDL COMNEQPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLTPD COMNLTPDB COMNLTPDW COMNLTPDL COMNLTPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLEPD COMNLEPDB COMNLEPDW COMNLEPDL COMNLEPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMTRUEPD COMTRUEPDB COMTRUEPDW COMTRUEPDL COMTRUEPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMPD COMPDB COMPDW COMPDL COMPDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMEQSS COMEQSSB COMEQSSW COMEQSSL COMEQSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLTSS COMLTSSB COMLTSSW COMLTSSL COMLTSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLESS COMLESSB COMLESSW COMLESSL COMLESSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNORDSS COMUNORDSSB COMUNORDSSW COMUNORDSSL COMUNORDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNEQSS COMUNEQSSB COMUNEQSSW COMUNEQSSL COMUNEQSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLTSS COMUNLTSSB COMUNLTSSW COMUNLTSSL COMUNLTSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLESS COMUNLESSB COMUNLESSW COMUNLESSL COMUNLESSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMORDSS COMORDSSB COMORDSSW COMORDSSL COMORDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUEQSS COMUEQSSB COMUEQSSW COMUEQSSL COMUEQSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULTSS COMULTSSB COMULTSSW COMULTSSL COMULTSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULESS COMULESSB COMULESSW COMULESSL COMULESSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMFALSESS COMFALSESSB COMFALSESSW COMFALSESSL COMFALSESSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNEQSS COMNEQSSB COMNEQSSW COMNEQSSL COMNEQSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLTSS COMNLTSSB COMNLTSSW COMNLTSSL COMNLTSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLESS COMNLESSB COMNLESSW COMNLESSL COMNLESSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMTRUESS COMTRUESSB COMTRUESSW COMTRUESSL COMTRUESSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMSS COMSSB COMSSW COMSSL COMSSQ
-syntax keyword goasmOpcode_AMD_SSE5  COMEQSD COMEQSDB COMEQSDW COMEQSDL COMEQSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLTSD COMLTSDB COMLTSDW COMLTSDL COMLTSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMLESD COMLESDB COMLESDW COMLESDL COMLESDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNORDSD COMUNORDSDB COMUNORDSDW COMUNORDSDL COMUNORDSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNEQSD COMUNEQSDB COMUNEQSDW COMUNEQSDL COMUNEQSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLTSD COMUNLTSDB COMUNLTSDW COMUNLTSDL COMUNLTSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUNLESD COMUNLESDB COMUNLESDW COMUNLESDL COMUNLESDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMORDSD COMORDSDB COMORDSDW COMORDSDL COMORDSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMUEQSD COMUEQSDB COMUEQSDW COMUEQSDL COMUEQSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULTSD COMULTSDB COMULTSDW COMULTSDL COMULTSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMULESD COMULESDB COMULESDW COMULESDL COMULESDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMFALSESD COMFALSESDB COMFALSESDW COMFALSESDL COMFALSESDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNEQSD COMNEQSDB COMNEQSDW COMNEQSDL COMNEQSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLTSD COMNLTSDB COMNLTSDW COMNLTSDL COMNLTSDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMNLESD COMNLESDB COMNLESDW COMNLESDL COMNLESDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMTRUESD COMTRUESDB COMTRUESDW COMTRUESDL COMTRUESDQ
-syntax keyword goasmOpcode_AMD_SSE5  COMSD COMSDB COMSDW COMSDL COMSDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTB PCOMLTBB PCOMLTBW PCOMLTBL PCOMLTBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEB PCOMLEBB PCOMLEBW PCOMLEBL PCOMLEBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTB PCOMGTBB PCOMGTBW PCOMGTBL PCOMGTBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEB PCOMGEBB PCOMGEBW PCOMGEBL PCOMGEBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQB PCOMEQBB PCOMEQBW PCOMEQBL PCOMEQBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQB PCOMNEQBB PCOMNEQBW PCOMNEQBL PCOMNEQBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEB PCOMFALSEBB PCOMFALSEBW PCOMFALSEBL PCOMFALSEBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEB PCOMTRUEBB PCOMTRUEBW PCOMTRUEBL PCOMTRUEBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMB PCOMBB PCOMBW PCOMBL PCOMBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTW PCOMLTWB PCOMLTWW PCOMLTWL PCOMLTWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEW PCOMLEWB PCOMLEWW PCOMLEWL PCOMLEWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTW PCOMGTWB PCOMGTWW PCOMGTWL PCOMGTWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEW PCOMGEWB PCOMGEWW PCOMGEWL PCOMGEWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQW PCOMEQWB PCOMEQWW PCOMEQWL PCOMEQWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQW PCOMNEQWB PCOMNEQWW PCOMNEQWL PCOMNEQWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEW PCOMFALSEWB PCOMFALSEWW PCOMFALSEWL PCOMFALSEWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEW PCOMTRUEWB PCOMTRUEWW PCOMTRUEWL PCOMTRUEWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMW PCOMWB PCOMWW PCOMWL PCOMWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTD PCOMLTDB PCOMLTDW PCOMLTDL PCOMLTDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLED PCOMLEDB PCOMLEDW PCOMLEDL PCOMLEDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTD PCOMGTDB PCOMGTDW PCOMGTDL PCOMGTDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGED PCOMGEDB PCOMGEDW PCOMGEDL PCOMGEDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQD PCOMEQDB PCOMEQDW PCOMEQDL PCOMEQDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQD PCOMNEQDB PCOMNEQDW PCOMNEQDL PCOMNEQDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSED PCOMFALSEDB PCOMFALSEDW PCOMFALSEDL PCOMFALSEDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUED PCOMTRUEDB PCOMTRUEDW PCOMTRUEDL PCOMTRUEDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMD PCOMDB PCOMDW PCOMDL PCOMDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTQ PCOMLTQB PCOMLTQW PCOMLTQL PCOMLTQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEQ PCOMLEQB PCOMLEQW PCOMLEQL PCOMLEQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTQ PCOMGTQB PCOMGTQW PCOMGTQL PCOMGTQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEQ PCOMGEQB PCOMGEQW PCOMGEQL PCOMGEQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQQ PCOMEQQB PCOMEQQW PCOMEQQL PCOMEQQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQQ PCOMNEQQB PCOMNEQQW PCOMNEQQL PCOMNEQQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEQ PCOMFALSEQB PCOMFALSEQW PCOMFALSEQL PCOMFALSEQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEQ PCOMTRUEQB PCOMTRUEQW PCOMTRUEQL PCOMTRUEQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMQ PCOMQB PCOMQW PCOMQL PCOMQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTUB PCOMLTUBB PCOMLTUBW PCOMLTUBL PCOMLTUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEUB PCOMLEUBB PCOMLEUBW PCOMLEUBL PCOMLEUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTUB PCOMGTUBB PCOMGTUBW PCOMGTUBL PCOMGTUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEUB PCOMGEUBB PCOMGEUBW PCOMGEUBL PCOMGEUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQUB PCOMEQUBB PCOMEQUBW PCOMEQUBL PCOMEQUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQUB PCOMNEQUBB PCOMNEQUBW PCOMNEQUBL PCOMNEQUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEUB PCOMFALSEUBB PCOMFALSEUBW PCOMFALSEUBL PCOMFALSEUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEUB PCOMTRUEUBB PCOMTRUEUBW PCOMTRUEUBL PCOMTRUEUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMUB PCOMUBB PCOMUBW PCOMUBL PCOMUBQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTUW PCOMLTUWB PCOMLTUWW PCOMLTUWL PCOMLTUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEUW PCOMLEUWB PCOMLEUWW PCOMLEUWL PCOMLEUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTUW PCOMGTUWB PCOMGTUWW PCOMGTUWL PCOMGTUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEUW PCOMGEUWB PCOMGEUWW PCOMGEUWL PCOMGEUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQUW PCOMEQUWB PCOMEQUWW PCOMEQUWL PCOMEQUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQUW PCOMNEQUWB PCOMNEQUWW PCOMNEQUWL PCOMNEQUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEUW PCOMFALSEUWB PCOMFALSEUWW PCOMFALSEUWL PCOMFALSEUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEUW PCOMTRUEUWB PCOMTRUEUWW PCOMTRUEUWL PCOMTRUEUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMUW PCOMUWB PCOMUWW PCOMUWL PCOMUWQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTUD PCOMLTUDB PCOMLTUDW PCOMLTUDL PCOMLTUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEUD PCOMLEUDB PCOMLEUDW PCOMLEUDL PCOMLEUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTUD PCOMGTUDB PCOMGTUDW PCOMGTUDL PCOMGTUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEUD PCOMGEUDB PCOMGEUDW PCOMGEUDL PCOMGEUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQUD PCOMEQUDB PCOMEQUDW PCOMEQUDL PCOMEQUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQUD PCOMNEQUDB PCOMNEQUDW PCOMNEQUDL PCOMNEQUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEUD PCOMFALSEUDB PCOMFALSEUDW PCOMFALSEUDL PCOMFALSEUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEUD PCOMTRUEUDB PCOMTRUEUDW PCOMTRUEUDL PCOMTRUEUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMUD PCOMUDB PCOMUDW PCOMUDL PCOMUDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLTUQ PCOMLTUQB PCOMLTUQW PCOMLTUQL PCOMLTUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMLEUQ PCOMLEUQB PCOMLEUQW PCOMLEUQL PCOMLEUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGTUQ PCOMGTUQB PCOMGTUQW PCOMGTUQL PCOMGTUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMGEUQ PCOMGEUQB PCOMGEUQW PCOMGEUQL PCOMGEUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMEQUQ PCOMEQUQB PCOMEQUQW PCOMEQUQL PCOMEQUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMNEQUQ PCOMNEQUQB PCOMNEQUQW PCOMNEQUQL PCOMNEQUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMFALSEUQ PCOMFALSEUQB PCOMFALSEUQW PCOMFALSEUQL PCOMFALSEUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMTRUEUQ PCOMTRUEUQB PCOMTRUEUQW PCOMTRUEUQL PCOMTRUEUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PCOMUQ PCOMUQB PCOMUQW PCOMUQL PCOMUQQ
-syntax keyword goasmOpcode_AMD_SSE5  PERMPS PERMPSB PERMPSW PERMPSL PERMPSQ
-syntax keyword goasmOpcode_AMD_SSE5  PERMPD PERMPDB PERMPDW PERMPDL PERMPDQ
-syntax keyword goasmOpcode_AMD_SSE5  PCMOV PCMOVB PCMOVW PCMOVL PCMOVQ
-syntax keyword goasmOpcode_AMD_SSE5  PPERM PPERMB PPERMW PPERML PPERMQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSSWW PMACSSWWB PMACSSWWW PMACSSWWL PMACSSWWQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSWW PMACSWWB PMACSWWW PMACSWWL PMACSWWQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSSWD PMACSSWDB PMACSSWDW PMACSSWDL PMACSSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSWD PMACSWDB PMACSWDW PMACSWDL PMACSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSSDD PMACSSDDB PMACSSDDW PMACSSDDL PMACSSDDQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSDD PMACSDDB PMACSDDW PMACSDDL PMACSDDQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSSDQL PMACSSDQLB PMACSSDQLW PMACSSDQLL PMACSSDQLQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSDQL PMACSDQLB PMACSDQLW PMACSDQLL PMACSDQLQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSSDQH PMACSSDQHB PMACSSDQHW PMACSSDQHL PMACSSDQHQ
-syntax keyword goasmOpcode_AMD_SSE5  PMACSDQH PMACSDQHB PMACSDQHW PMACSDQHL PMACSDQHQ
-syntax keyword goasmOpcode_AMD_SSE5  PMADCSSWD PMADCSSWDB PMADCSSWDW PMADCSSWDL PMADCSSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PMADCSWD PMADCSWDB PMADCSWDW PMADCSWDL PMADCSWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTB PROTBB PROTBW PROTBL PROTBQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTW PROTWB PROTWW PROTWL PROTWQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTD PROTDB PROTDW PROTDL PROTDQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTQ PROTQB PROTQW PROTQL PROTQQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHLB PSHLBB PSHLBW PSHLBL PSHLBQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHLW PSHLWB PSHLWW PSHLWL PSHLWQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHLD PSHLDB PSHLDW PSHLDL PSHLDQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHLQ PSHLQB PSHLQW PSHLQL PSHLQQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHAB PSHABB PSHABW PSHABL PSHABQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHAW PSHAWB PSHAWW PSHAWL PSHAWQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHAD PSHADB PSHADW PSHADL PSHADQ
-syntax keyword goasmOpcode_AMD_SSE5  PSHAQ PSHAQB PSHAQW PSHAQL PSHAQQ
-syntax keyword goasmOpcode_AMD_SSE5  FRCZPS FRCZPSB FRCZPSW FRCZPSL FRCZPSQ
-syntax keyword goasmOpcode_AMD_SSE5  FRCZPD FRCZPDB FRCZPDW FRCZPDL FRCZPDQ
-syntax keyword goasmOpcode_AMD_SSE5  FRCZSS FRCZSSB FRCZSSW FRCZSSL FRCZSSQ
-syntax keyword goasmOpcode_AMD_SSE5  FRCZSD FRCZSDB FRCZSDW FRCZSDL FRCZSDQ
-syntax keyword goasmOpcode_AMD_SSE5  CVTPH2PS CVTPH2PSB CVTPH2PSW CVTPH2PSL CVTPH2PSQ
-syntax keyword goasmOpcode_AMD_SSE5  CVTPS2PH CVTPS2PHB CVTPS2PHW CVTPS2PHL CVTPS2PHQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDBW PHADDBWB PHADDBWW PHADDBWL PHADDBWQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDBD PHADDBDB PHADDBDW PHADDBDL PHADDBDQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDBQ PHADDBQB PHADDBQW PHADDBQL PHADDBQQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDWD PHADDWDB PHADDWDW PHADDWDL PHADDWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDWQ PHADDWQB PHADDWQW PHADDWQL PHADDWQQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDDQ PHADDDQB PHADDDQW PHADDDQL PHADDDQQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDUBW PHADDUBWB PHADDUBWW PHADDUBWL PHADDUBWQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDUBD PHADDUBDB PHADDUBDW PHADDUBDL PHADDUBDQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDUBQ PHADDUBQB PHADDUBQW PHADDUBQL PHADDUBQQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDUWD PHADDUWDB PHADDUWDW PHADDUWDL PHADDUWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDUWQ PHADDUWQB PHADDUWQW PHADDUWQL PHADDUWQQ
-syntax keyword goasmOpcode_AMD_SSE5  PHADDUDQ PHADDUDQB PHADDUDQW PHADDUDQL PHADDUDQQ
-syntax keyword goasmOpcode_AMD_SSE5  PHSUBBW PHSUBBWB PHSUBBWW PHSUBBWL PHSUBBWQ
-syntax keyword goasmOpcode_AMD_SSE5  PHSUBWD PHSUBWDB PHSUBWDW PHSUBWDL PHSUBWDQ
-syntax keyword goasmOpcode_AMD_SSE5  PHSUBDQ PHSUBDQB PHSUBDQW PHSUBDQL PHSUBDQQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTB PROTBB PROTBW PROTBL PROTBQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTW PROTWB PROTWW PROTWL PROTWQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTD PROTDB PROTDW PROTDL PROTDQ
-syntax keyword goasmOpcode_AMD_SSE5  PROTQ PROTQB PROTQW PROTQL PROTQQ
-syntax keyword goasmOpcode_AMD_SSE5  ROUNDPS ROUNDPSB ROUNDPSW ROUNDPSL ROUNDPSQ
-syntax keyword goasmOpcode_AMD_SSE5  ROUNDPD ROUNDPDB ROUNDPDW ROUNDPDL ROUNDPDQ
-syntax keyword goasmOpcode_AMD_SSE5  ROUNDSS ROUNDSSB ROUNDSSW ROUNDSSL ROUNDSSQ
-syntax keyword goasmOpcode_AMD_SSE5  ROUNDSD ROUNDSDB ROUNDSDW ROUNDSDL ROUNDSDQ
-
-"-- Section: Introduced in Deschutes but necessary for SSE support
-syntax keyword goasmOpcode_P6_SSE  FXRSTOR FXRSTORB FXRSTORW FXRSTORL FXRSTORQ
-syntax keyword goasmOpcode_P6_SSE  FXSAVE FXSAVEB FXSAVEW FXSAVEL FXSAVEQ
-
-"-- Section: Prescott New Instructions (SSE3)
-syntax keyword goasmOpcode_PRESCOTT_SSE3 ADDSUBPD ADDSUBPDB ADDSUBPDW ADDSUBPDL ADDSUBPDQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 ADDSUBPS ADDSUBPSB ADDSUBPSW ADDSUBPSL ADDSUBPSQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 HADDPD HADDPDB HADDPDW HADDPDL HADDPDQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 HADDPS HADDPSB HADDPSW HADDPSL HADDPSQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 HSUBPD HSUBPDB HSUBPDW HSUBPDL HSUBPDQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 HSUBPS HSUBPSB HSUBPSW HSUBPSL HSUBPSQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 LDDQU LDDQUB LDDQUW LDDQUL LDDQUQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 MOVDDUP MOVDDUPB MOVDDUPW MOVDDUPL MOVDDUPQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 MOVSHDUP MOVSHDUPB MOVSHDUPW MOVSHDUPL MOVSHDUPQ
-syntax keyword goasmOpcode_PRESCOTT_SSE3 MOVSLDUP MOVSLDUPB MOVSLDUPW MOVSLDUPL MOVSLDUPQ
-
-"-- Section: Intel AES instructions
-syntax keyword goasmOpcode_SSE  AESENC AESENCB AESENCW AESENCL AESENCQ
-syntax keyword goasmOpcode_SSE  AESENCLAST AESENCLASTB AESENCLASTW AESENCLASTL AESENCLASTQ
-syntax keyword goasmOpcode_SSE  AESDEC AESDECB AESDECW AESDECL AESDECQ
-syntax keyword goasmOpcode_SSE  AESDECLAST AESDECLASTB AESDECLASTW AESDECLASTL AESDECLASTQ
-syntax keyword goasmOpcode_SSE  AESIMC AESIMCB AESIMCW AESIMCL AESIMCQ
-syntax keyword goasmOpcode_SSE  AESKEYGENASSIST AESKEYGENASSISTB AESKEYGENASSISTW AESKEYGENASSISTL AESKEYGENASSISTQ
-
-"-- Section: Willamette Streaming SIMD instructions (SSE2)
-syntax keyword goasmOpcode_SSE2  ADDPD ADDPDB ADDPDW ADDPDL ADDPDQ
-syntax keyword goasmOpcode_SSE2  ADDSD ADDSDB ADDSDW ADDSDL ADDSDQ
-syntax keyword goasmOpcode_SSE2  ANDNPD ANDNPDB ANDNPDW ANDNPDL ANDNPDQ
-syntax keyword goasmOpcode_SSE2  ANDPD ANDPDB ANDPDW ANDPDL ANDPDQ
-syntax keyword goasmOpcode_SSE2  CMPEQPD CMPEQPDB CMPEQPDW CMPEQPDL CMPEQPDQ
-syntax keyword goasmOpcode_SSE2  CMPEQSD CMPEQSDB CMPEQSDW CMPEQSDL CMPEQSDQ
-syntax keyword goasmOpcode_SSE2  CMPLEPD CMPLEPDB CMPLEPDW CMPLEPDL CMPLEPDQ
-syntax keyword goasmOpcode_SSE2  CMPLESD CMPLESDB CMPLESDW CMPLESDL CMPLESDQ
-syntax keyword goasmOpcode_SSE2  CMPLTPD CMPLTPDB CMPLTPDW CMPLTPDL CMPLTPDQ
-syntax keyword goasmOpcode_SSE2  CMPLTSD CMPLTSDB CMPLTSDW CMPLTSDL CMPLTSDQ
-syntax keyword goasmOpcode_SSE2  CMPNEQPD CMPNEQPDB CMPNEQPDW CMPNEQPDL CMPNEQPDQ
-syntax keyword goasmOpcode_SSE2  CMPNEQSD CMPNEQSDB CMPNEQSDW CMPNEQSDL CMPNEQSDQ
-syntax keyword goasmOpcode_SSE2  CMPNLEPD CMPNLEPDB CMPNLEPDW CMPNLEPDL CMPNLEPDQ
-syntax keyword goasmOpcode_SSE2  CMPNLESD CMPNLESDB CMPNLESDW CMPNLESDL CMPNLESDQ
-syntax keyword goasmOpcode_SSE2  CMPNLTPD CMPNLTPDB CMPNLTPDW CMPNLTPDL CMPNLTPDQ
-syntax keyword goasmOpcode_SSE2  CMPNLTSD CMPNLTSDB CMPNLTSDW CMPNLTSDL CMPNLTSDQ
-syntax keyword goasmOpcode_SSE2  CMPORDPD CMPORDPDB CMPORDPDW CMPORDPDL CMPORDPDQ
-syntax keyword goasmOpcode_SSE2  CMPORDSD CMPORDSDB CMPORDSDW CMPORDSDL CMPORDSDQ
-syntax keyword goasmOpcode_SSE2  CMPUNORDPD CMPUNORDPDB CMPUNORDPDW CMPUNORDPDL CMPUNORDPDQ
-syntax keyword goasmOpcode_SSE2  CMPUNORDSD CMPUNORDSDB CMPUNORDSDW CMPUNORDSDL CMPUNORDSDQ
-syntax keyword goasmOpcode_Base  CMPPD CMPPDB CMPPDW CMPPDL CMPPDQ
-syntax keyword goasmOpcode_SSE2  CMPSD CMPSDB CMPSDW CMPSDL CMPSDQ
-syntax keyword goasmOpcode_SSE2  COMISD COMISDB COMISDW COMISDL COMISDQ
-syntax keyword goasmOpcode_SSE2  CVTDQ2PD CVTDQ2PDB CVTDQ2PDW CVTDQ2PDL CVTDQ2PDQ
-syntax keyword goasmOpcode_SSE2  CVTDQ2PS CVTDQ2PSB CVTDQ2PSW CVTDQ2PSL CVTDQ2PSQ
-syntax keyword goasmOpcode_SSE2  CVTPD2DQ CVTPD2DQB CVTPD2DQW CVTPD2DQL CVTPD2DQQ
-syntax keyword goasmOpcode_SSE2  CVTPD2PI CVTPD2PIB CVTPD2PIW CVTPD2PIL CVTPD2PIQ
-syntax keyword goasmOpcode_SSE2  CVTPD2PS CVTPD2PSB CVTPD2PSW CVTPD2PSL CVTPD2PSQ
-syntax keyword goasmOpcode_SSE2  CVTPI2PD CVTPI2PDB CVTPI2PDW CVTPI2PDL CVTPI2PDQ
-syntax keyword goasmOpcode_SSE2  CVTPS2DQ CVTPS2DQB CVTPS2DQW CVTPS2DQL CVTPS2DQQ
-syntax keyword goasmOpcode_SSE2  CVTPS2PD CVTPS2PDB CVTPS2PDW CVTPS2PDL CVTPS2PDQ
-syntax keyword goasmOpcode_X64_SSE2  CVTSD2SI CVTSD2SIB CVTSD2SIW CVTSD2SIL CVTSD2SIQ
-syntax keyword goasmOpcode_SSE2  CVTSD2SS CVTSD2SSB CVTSD2SSW CVTSD2SSL CVTSD2SSQ
-syntax keyword goasmOpcode_X64_SSE2  CVTSI2SD
-syntax keyword goasmOpcode_SSE2  CVTSS2SD CVTSS2SDB CVTSS2SDW CVTSS2SDL CVTSS2SDQ
-syntax keyword goasmOpcode_SSE2  CVTTPD2PI CVTTPD2PIB CVTTPD2PIW CVTTPD2PIL CVTTPD2PIQ
-syntax keyword goasmOpcode_SSE2  CVTTPD2DQ CVTTPD2DQB CVTTPD2DQW CVTTPD2DQL CVTTPD2DQQ
-syntax keyword goasmOpcode_SSE2  CVTTPS2DQ CVTTPS2DQB CVTTPS2DQW CVTTPS2DQL CVTTPS2DQQ
-syntax keyword goasmOpcode_X64_SSE2  CVTTSD2SI CVTTSD2SIB CVTTSD2SIW CVTTSD2SIL CVTTSD2SIQ
-syntax keyword goasmOpcode_SSE2  DIVPD DIVPDB DIVPDW DIVPDL DIVPDQ
-syntax keyword goasmOpcode_SSE2  DIVSD DIVSDB DIVSDW DIVSDL DIVSDQ
-syntax keyword goasmOpcode_SSE2  MAXPD MAXPDB MAXPDW MAXPDL MAXPDQ
-syntax keyword goasmOpcode_SSE2  MAXSD MAXSDB MAXSDW MAXSDL MAXSDQ
-syntax keyword goasmOpcode_SSE2  MINPD MINPDB MINPDW MINPDL MINPDQ
-syntax keyword goasmOpcode_SSE2  MINSD MINSDB MINSDW MINSDL MINSDQ
-syntax keyword goasmOpcode_SSE2  MOVAPD MOVAPDB MOVAPDW MOVAPDL MOVAPDQ
-syntax keyword goasmOpcode_SSE2  MOVHPD MOVHPDB MOVHPDW MOVHPDL MOVHPDQ
-syntax keyword goasmOpcode_SSE2  MOVLPD MOVLPDB MOVLPDW MOVLPDL MOVLPDQ
-syntax keyword goasmOpcode_X64_SSE2  MOVMSKPD
-syntax keyword goasmOpcode_SSE2  MOVSD MOVSDB MOVSDW MOVSDL MOVSDQ
-syntax keyword goasmOpcode_SSE2  MOVUPD MOVUPDB MOVUPDW MOVUPDL MOVUPDQ
-syntax keyword goasmOpcode_SSE2  MULPD MULPDB MULPDW MULPDL MULPDQ
-syntax keyword goasmOpcode_SSE2  MULSD MULSDB MULSDW MULSDL MULSDQ
-syntax keyword goasmOpcode_SSE2  ORPD ORPDB ORPDW ORPDL ORPDQ
-syntax keyword goasmOpcode_SSE2  SHUFPD SHUFPDB SHUFPDW SHUFPDL SHUFPDQ
-syntax keyword goasmOpcode_SSE2  SQRTPD SQRTPDB SQRTPDW SQRTPDL SQRTPDQ
-syntax keyword goasmOpcode_SSE2  SQRTSD SQRTSDB SQRTSDW SQRTSDL SQRTSDQ
-syntax keyword goasmOpcode_SSE2  SUBPD SUBPDB SUBPDW SUBPDL SUBPDQ
-syntax keyword goasmOpcode_SSE2  SUBSD SUBSDB SUBSDW SUBSDL SUBSDQ
-syntax keyword goasmOpcode_SSE2  UCOMISD UCOMISDB UCOMISDW UCOMISDL UCOMISDQ
-syntax keyword goasmOpcode_SSE2  UNPCKHPD UNPCKHPDB UNPCKHPDW UNPCKHPDL UNPCKHPDQ
-syntax keyword goasmOpcode_SSE2  UNPCKLPD UNPCKLPDB UNPCKLPDW UNPCKLPDL UNPCKLPDQ
-syntax keyword goasmOpcode_SSE2  XORPD XORPDB XORPDW XORPDL XORPDQ
-
-"-- Section: Intel Carry-Less Multiplication instructions (CLMUL)
-syntax keyword goasmOpcode_SSE  PCLMULLQLQDQ PCLMULLQLQDQB PCLMULLQLQDQW PCLMULLQLQDQL PCLMULLQLQDQQ
-syntax keyword goasmOpcode_SSE  PCLMULHQLQDQ PCLMULHQLQDQB PCLMULHQLQDQW PCLMULHQLQDQL PCLMULHQLQDQQ
-syntax keyword goasmOpcode_SSE  PCLMULLQHQDQ PCLMULLQHQDQB PCLMULLQHQDQW PCLMULLQHQDQL PCLMULLQHQDQQ
-syntax keyword goasmOpcode_SSE  PCLMULHQHQDQ PCLMULHQHQDQB PCLMULHQHQDQW PCLMULHQHQDQL PCLMULHQHQDQQ
-syntax keyword goasmOpcode_SSE  PCLMULQDQ PCLMULQDQB PCLMULQDQW PCLMULQDQL PCLMULQDQQ
-
-"-- Section: New MMX instructions introduced in Katmai
-syntax keyword goasmOpcode_KATMAI_MMX MASKMOVQ
-syntax keyword goasmOpcode_KATMAI_MMX MOVNTQ MOVNTQB MOVNTQW MOVNTQL MOVNTQQ
-syntax keyword goasmOpcode_KATMAI_MMX PAVGB PAVGBB PAVGBW PAVGBL PAVGBQ
-syntax keyword goasmOpcode_KATMAI_MMX PAVGW PAVGWB PAVGWW PAVGWL PAVGWQ
-syntax keyword goasmOpcode_KATMAI_MMX PEXTRW PEXTRWB PEXTRWW PEXTRWL PEXTRWQ
-syntax keyword goasmOpcode_KATMAI_MMX PINSRW PINSRWB PINSRWW PINSRWL PINSRWQ
-syntax keyword goasmOpcode_KATMAI_MMX PMAXSW PMAXSWB PMAXSWW PMAXSWL PMAXSWQ
-syntax keyword goasmOpcode_KATMAI_MMX PMAXUB PMAXUBB PMAXUBW PMAXUBL PMAXUBQ
-syntax keyword goasmOpcode_KATMAI_MMX PMINSW PMINSWB PMINSWW PMINSWL PMINSWQ
-syntax keyword goasmOpcode_KATMAI_MMX PMINUB PMINUBB PMINUBW PMINUBL PMINUBQ
-syntax keyword goasmOpcode_KATMAI_MMX PMOVMSKB
-syntax keyword goasmOpcode_KATMAI_MMX PMULHUW PMULHUWB PMULHUWW PMULHUWL PMULHUWQ
-syntax keyword goasmOpcode_KATMAI_MMX PSADBW PSADBWB PSADBWW PSADBWL PSADBWQ
-syntax keyword goasmOpcode_KATMAI_MMX2 PSHUFW PSHUFWB PSHUFWW PSHUFWL PSHUFWQ
-
-"-- Section: Intel SMX
-syntax keyword goasmOpcode_KATMAI_Base GETSEC
-
-"-- Section: Katmai Streaming SIMD instructions (SSE -- a.k.a. KNI, XMM, MMX2)
-syntax keyword goasmOpcode_KATMAI_SSE ADDPS ADDPSB ADDPSW ADDPSL ADDPSQ
-syntax keyword goasmOpcode_KATMAI_SSE ADDSS ADDSSB ADDSSW ADDSSL ADDSSQ
-syntax keyword goasmOpcode_KATMAI_SSE ANDNPS ANDNPSB ANDNPSW ANDNPSL ANDNPSQ
-syntax keyword goasmOpcode_KATMAI_SSE ANDPS ANDPSB ANDPSW ANDPSL ANDPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPEQPS CMPEQPSB CMPEQPSW CMPEQPSL CMPEQPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPEQSS CMPEQSSB CMPEQSSW CMPEQSSL CMPEQSSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPLEPS CMPLEPSB CMPLEPSW CMPLEPSL CMPLEPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPLESS CMPLESSB CMPLESSW CMPLESSL CMPLESSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPLTPS CMPLTPSB CMPLTPSW CMPLTPSL CMPLTPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPLTSS CMPLTSSB CMPLTSSW CMPLTSSL CMPLTSSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPNEQPS CMPNEQPSB CMPNEQPSW CMPNEQPSL CMPNEQPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPNEQSS CMPNEQSSB CMPNEQSSW CMPNEQSSL CMPNEQSSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPNLEPS CMPNLEPSB CMPNLEPSW CMPNLEPSL CMPNLEPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPNLESS CMPNLESSB CMPNLESSW CMPNLESSL CMPNLESSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPNLTPS CMPNLTPSB CMPNLTPSW CMPNLTPSL CMPNLTPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPNLTSS CMPNLTSSB CMPNLTSSW CMPNLTSSL CMPNLTSSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPORDPS CMPORDPSB CMPORDPSW CMPORDPSL CMPORDPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPORDSS CMPORDSSB CMPORDSSW CMPORDSSL CMPORDSSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPUNORDPS CMPUNORDPSB CMPUNORDPSW CMPUNORDPSL CMPUNORDPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPUNORDSS CMPUNORDSSB CMPUNORDSSW CMPUNORDSSL CMPUNORDSSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPPS CMPPSB CMPPSW CMPPSL CMPPSQ
-syntax keyword goasmOpcode_KATMAI_SSE CMPSS CMPSSB CMPSSW CMPSSL CMPSSQ
-syntax keyword goasmOpcode_KATMAI_SSE COMISS COMISSB COMISSW COMISSL COMISSQ
-syntax keyword goasmOpcode_KATMAI_SSE CVTPI2PS CVTPI2PSB CVTPI2PSW CVTPI2PSL CVTPI2PSQ
-syntax keyword goasmOpcode_KATMAI_SSE CVTPS2PI CVTPS2PIB CVTPS2PIW CVTPS2PIL CVTPS2PIQ
-syntax keyword goasmOpcode_X64_SSE  CVTSI2SS
-syntax keyword goasmOpcode_X64_SSE  CVTSS2SI CVTSS2SIB CVTSS2SIW CVTSS2SIL CVTSS2SIQ
-syntax keyword goasmOpcode_KATMAI_SSE CVTTPS2PI CVTTPS2PIB CVTTPS2PIW CVTTPS2PIL CVTTPS2PIQ
-syntax keyword goasmOpcode_X64_SSE  CVTTSS2SI CVTTSS2SIB CVTTSS2SIW CVTTSS2SIL CVTTSS2SIQ
-syntax keyword goasmOpcode_KATMAI_SSE DIVPS DIVPSB DIVPSW DIVPSL DIVPSQ
-syntax keyword goasmOpcode_KATMAI_SSE DIVSS DIVSSB DIVSSW DIVSSL DIVSSQ
-syntax keyword goasmOpcode_KATMAI_SSE LDMXCSR LDMXCSRB LDMXCSRW LDMXCSRL LDMXCSRQ
-syntax keyword goasmOpcode_KATMAI_SSE MAXPS MAXPSB MAXPSW MAXPSL MAXPSQ
-syntax keyword goasmOpcode_KATMAI_SSE MAXSS MAXSSB MAXSSW MAXSSL MAXSSQ
-syntax keyword goasmOpcode_KATMAI_SSE MINPS MINPSB MINPSW MINPSL MINPSQ
-syntax keyword goasmOpcode_KATMAI_SSE MINSS MINSSB MINSSW MINSSL MINSSQ
-syntax keyword goasmOpcode_KATMAI_SSE MOVAPS
-syntax keyword goasmOpcode_KATMAI_SSE MOVHPS MOVHPSB MOVHPSW MOVHPSL MOVHPSQ
-syntax keyword goasmOpcode_KATMAI_SSE MOVLHPS
-syntax keyword goasmOpcode_KATMAI_SSE MOVLPS MOVLPSB MOVLPSW MOVLPSL MOVLPSQ
-syntax keyword goasmOpcode_KATMAI_SSE MOVHLPS
-syntax keyword goasmOpcode_X64_SSE  MOVMSKPS
-syntax keyword goasmOpcode_KATMAI_SSE MOVNTPS MOVNTPSB MOVNTPSW MOVNTPSL MOVNTPSQ
-syntax keyword goasmOpcode_KATMAI_SSE MOVSS
-syntax keyword goasmOpcode_KATMAI_SSE MOVUPS
-syntax keyword goasmOpcode_KATMAI_SSE MULPS MULPSB MULPSW MULPSL MULPSQ
-syntax keyword goasmOpcode_KATMAI_SSE MULSS MULSSB MULSSW MULSSL MULSSQ
-syntax keyword goasmOpcode_KATMAI_SSE ORPS ORPSB ORPSW ORPSL ORPSQ
-syntax keyword goasmOpcode_KATMAI_SSE RCPPS RCPPSB RCPPSW RCPPSL RCPPSQ
-syntax keyword goasmOpcode_KATMAI_SSE RCPSS RCPSSB RCPSSW RCPSSL RCPSSQ
-syntax keyword goasmOpcode_KATMAI_SSE RSQRTPS RSQRTPSB RSQRTPSW RSQRTPSL RSQRTPSQ
-syntax keyword goasmOpcode_KATMAI_SSE RSQRTSS RSQRTSSB RSQRTSSW RSQRTSSL RSQRTSSQ
-syntax keyword goasmOpcode_KATMAI_SSE SHUFPS SHUFPSB SHUFPSW SHUFPSL SHUFPSQ
-syntax keyword goasmOpcode_KATMAI_SSE SQRTPS SQRTPSB SQRTPSW SQRTPSL SQRTPSQ
-syntax keyword goasmOpcode_KATMAI_SSE SQRTSS SQRTSSB SQRTSSW SQRTSSL SQRTSSQ
-syntax keyword goasmOpcode_KATMAI_SSE STMXCSR STMXCSRB STMXCSRW STMXCSRL STMXCSRQ
-syntax keyword goasmOpcode_KATMAI_SSE SUBPS SUBPSB SUBPSW SUBPSL SUBPSQ
-syntax keyword goasmOpcode_KATMAI_SSE SUBSS SUBSSB SUBSSW SUBSSL SUBSSQ
-syntax keyword goasmOpcode_KATMAI_SSE UCOMISS UCOMISSB UCOMISSW UCOMISSL UCOMISSQ
-syntax keyword goasmOpcode_KATMAI_SSE UNPCKHPS UNPCKHPSB UNPCKHPSW UNPCKHPSL UNPCKHPSQ
-syntax keyword goasmOpcode_KATMAI_SSE UNPCKLPS UNPCKLPSB UNPCKLPSW UNPCKLPSL UNPCKLPSQ
-syntax keyword goasmOpcode_KATMAI_SSE XORPS XORPSB XORPSW XORPSL XORPSQ
-
-"-- Section: Extended Page Tables VMX instructions
-syntax keyword goasmOpcode_VMX  INVEPT INVEPTB INVEPTW INVEPTL INVEPTQ
-syntax keyword goasmOpcode_VMX  INVVPID INVVPIDB INVVPIDW INVVPIDL INVVPIDQ
-
-"-- Section: VMX Instructions
-syntax keyword goasmOpcode_VMX  VMCALL
-syntax keyword goasmOpcode_VMX  VMCLEAR VMCLEARB VMCLEARW VMCLEARL VMCLEARQ
-syntax keyword goasmOpcode_VMX  VMLAUNCH
-syntax keyword goasmOpcode_X64_VMX  VMLOAD
-syntax keyword goasmOpcode_X64_VMX  VMMCALL
-syntax keyword goasmOpcode_VMX  VMPTRLD VMPTRLDB VMPTRLDW VMPTRLDL VMPTRLDQ
-syntax keyword goasmOpcode_VMX  VMPTRST VMPTRSTB VMPTRSTW VMPTRSTL VMPTRSTQ
-syntax keyword goasmOpcode_X64_VMX  VMREAD
-syntax keyword goasmOpcode_VMX  VMRESUME
-syntax keyword goasmOpcode_X64_VMX  VMRUN
-syntax keyword goasmOpcode_X64_VMX  VMSAVE
-syntax keyword goasmOpcode_X64_VMX  VMWRITE
-syntax keyword goasmOpcode_VMX  VMXOFF
-syntax keyword goasmOpcode_VMX  VMXON VMXONB VMXONW VMXONL VMXONQ
-
-"-- Section: Intel AVX AES instructions
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VAESENC VAESENCB VAESENCW VAESENCL VAESENCQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VAESENCLAST VAESENCLASTB VAESENCLASTW VAESENCLASTL VAESENCLASTQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VAESDEC VAESDECB VAESDECW VAESDECL VAESDECQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VAESDECLAST VAESDECLASTB VAESDECLASTW VAESDECLASTL VAESDECLASTQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VAESIMC VAESIMCB VAESIMCW VAESIMCL VAESIMCQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VAESKEYGENASSIST VAESKEYGENASSISTB VAESKEYGENASSISTW VAESKEYGENASSISTL VAESKEYGENASSISTQ
-
-"-- Section: New instructions in Barcelona
-syntax keyword goasmOpcode_X64_Base  lzcnt
-
-"-- Section: Intel AVX instructions
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VADDPD VADDPDB VADDPDW VADDPDL VADDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VADDPS VADDPSB VADDPSW VADDPSL VADDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VADDSD VADDSDB VADDSDW VADDSDL VADDSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VADDSS VADDSSB VADDSSW VADDSSL VADDSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VADDSUBPD VADDSUBPDB VADDSUBPDW VADDSUBPDL VADDSUBPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VADDSUBPS VADDSUBPSB VADDSUBPSW VADDSUBPSL VADDSUBPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VANDPD VANDPDB VANDPDW VANDPDL VANDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VANDPS VANDPSB VANDPSW VANDPSL VANDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VANDNPD VANDNPDB VANDNPDW VANDNPDL VANDNPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VANDNPS VANDNPSB VANDNPSW VANDNPSL VANDNPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBLENDPD VBLENDPDB VBLENDPDW VBLENDPDL VBLENDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBLENDPS VBLENDPSB VBLENDPSW VBLENDPSL VBLENDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBLENDVPD VBLENDVPDB VBLENDVPDW VBLENDVPDL VBLENDVPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBLENDVPS VBLENDVPSB VBLENDVPSW VBLENDVPSL VBLENDVPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBLENDVPD VBLENDVPDB VBLENDVPDW VBLENDVPDL VBLENDVPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBROADCASTSS VBROADCASTSSB VBROADCASTSSW VBROADCASTSSL VBROADCASTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBROADCASTSD VBROADCASTSDB VBROADCASTSDW VBROADCASTSDL VBROADCASTSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VBROADCASTF128 VBROADCASTF128B VBROADCASTF128W VBROADCASTF128L VBROADCASTF128Q
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQPD VCMPEQPDB VCMPEQPDW VCMPEQPDL VCMPEQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLTPD VCMPLTPDB VCMPLTPDW VCMPLTPDL VCMPLTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLEPD VCMPLEPDB VCMPLEPDW VCMPLEPDL VCMPLEPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORDPD VCMPUNORDPDB VCMPUNORDPDW VCMPUNORDPDL VCMPUNORDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQPD VCMPNEQPDB VCMPNEQPDW VCMPNEQPDL VCMPNEQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLTPD VCMPNLTPDB VCMPNLTPDW VCMPNLTPDL VCMPNLTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLEPD VCMPNLEPDB VCMPNLEPDW VCMPNLEPDL VCMPNLEPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORDPD VCMPORDPDB VCMPORDPDW VCMPORDPDL VCMPORDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_UQPD VCMPEQ_UQPDB VCMPEQ_UQPDW VCMPEQ_UQPDL VCMPEQ_UQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGEPD VCMPNGEPDB VCMPNGEPDW VCMPNGEPDL VCMPNGEPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGTPD VCMPNGTPDB VCMPNGTPDW VCMPNGTPDL VCMPNGTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSEPD VCMPFALSEPDB VCMPFALSEPDW VCMPFALSEPDL VCMPFALSEPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OQPD VCMPNEQ_OQPDB VCMPNEQ_OQPDW VCMPNEQ_OQPDL VCMPNEQ_OQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGEPD VCMPGEPDB VCMPGEPDW VCMPGEPDL VCMPGEPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGTPD VCMPGTPDB VCMPGTPDW VCMPGTPDL VCMPGTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUEPD VCMPTRUEPDB VCMPTRUEPDW VCMPTRUEPDL VCMPTRUEPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_OSPD VCMPEQ_OSPDB VCMPEQ_OSPDW VCMPEQ_OSPDL VCMPEQ_OSPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLT_OQPD VCMPLT_OQPDB VCMPLT_OQPDW VCMPLT_OQPDL VCMPLT_OQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLE_OQPD VCMPLE_OQPDB VCMPLE_OQPDW VCMPLE_OQPDL VCMPLE_OQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORD_SPD VCMPUNORD_SPDB VCMPUNORD_SPDW VCMPUNORD_SPDL VCMPUNORD_SPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_USPD VCMPNEQ_USPDB VCMPNEQ_USPDW VCMPNEQ_USPDL VCMPNEQ_USPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLT_UQPD VCMPNLT_UQPDB VCMPNLT_UQPDW VCMPNLT_UQPDL VCMPNLT_UQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLE_UQPD VCMPNLE_UQPDB VCMPNLE_UQPDW VCMPNLE_UQPDL VCMPNLE_UQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORD_SPD VCMPORD_SPDB VCMPORD_SPDW VCMPORD_SPDL VCMPORD_SPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_USPD VCMPEQ_USPDB VCMPEQ_USPDW VCMPEQ_USPDL VCMPEQ_USPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGE_UQPD VCMPNGE_UQPDB VCMPNGE_UQPDW VCMPNGE_UQPDL VCMPNGE_UQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGT_UQPD VCMPNGT_UQPDB VCMPNGT_UQPDW VCMPNGT_UQPDL VCMPNGT_UQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSE_OSPD VCMPFALSE_OSPDB VCMPFALSE_OSPDW VCMPFALSE_OSPDL VCMPFALSE_OSPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OSPD VCMPNEQ_OSPDB VCMPNEQ_OSPDW VCMPNEQ_OSPDL VCMPNEQ_OSPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGE_OQPD VCMPGE_OQPDB VCMPGE_OQPDW VCMPGE_OQPDL VCMPGE_OQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGT_OQPD VCMPGT_OQPDB VCMPGT_OQPDW VCMPGT_OQPDL VCMPGT_OQPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUE_USPD VCMPTRUE_USPDB VCMPTRUE_USPDW VCMPTRUE_USPDL VCMPTRUE_USPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPPD VCMPPDB VCMPPDW VCMPPDL VCMPPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQPS VCMPEQPSB VCMPEQPSW VCMPEQPSL VCMPEQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLTPS VCMPLTPSB VCMPLTPSW VCMPLTPSL VCMPLTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLEPS VCMPLEPSB VCMPLEPSW VCMPLEPSL VCMPLEPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORDPS VCMPUNORDPSB VCMPUNORDPSW VCMPUNORDPSL VCMPUNORDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQPS VCMPNEQPSB VCMPNEQPSW VCMPNEQPSL VCMPNEQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLTPS VCMPNLTPSB VCMPNLTPSW VCMPNLTPSL VCMPNLTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLEPS VCMPNLEPSB VCMPNLEPSW VCMPNLEPSL VCMPNLEPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORDPS VCMPORDPSB VCMPORDPSW VCMPORDPSL VCMPORDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_UQPS VCMPEQ_UQPSB VCMPEQ_UQPSW VCMPEQ_UQPSL VCMPEQ_UQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGEPS VCMPNGEPSB VCMPNGEPSW VCMPNGEPSL VCMPNGEPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGTPS VCMPNGTPSB VCMPNGTPSW VCMPNGTPSL VCMPNGTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSEPS VCMPFALSEPSB VCMPFALSEPSW VCMPFALSEPSL VCMPFALSEPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OQPS VCMPNEQ_OQPSB VCMPNEQ_OQPSW VCMPNEQ_OQPSL VCMPNEQ_OQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGEPS VCMPGEPSB VCMPGEPSW VCMPGEPSL VCMPGEPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGTPS VCMPGTPSB VCMPGTPSW VCMPGTPSL VCMPGTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUEPS VCMPTRUEPSB VCMPTRUEPSW VCMPTRUEPSL VCMPTRUEPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_OSPS VCMPEQ_OSPSB VCMPEQ_OSPSW VCMPEQ_OSPSL VCMPEQ_OSPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLT_OQPS VCMPLT_OQPSB VCMPLT_OQPSW VCMPLT_OQPSL VCMPLT_OQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLE_OQPS VCMPLE_OQPSB VCMPLE_OQPSW VCMPLE_OQPSL VCMPLE_OQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORD_SPS VCMPUNORD_SPSB VCMPUNORD_SPSW VCMPUNORD_SPSL VCMPUNORD_SPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_USPS VCMPNEQ_USPSB VCMPNEQ_USPSW VCMPNEQ_USPSL VCMPNEQ_USPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLT_UQPS VCMPNLT_UQPSB VCMPNLT_UQPSW VCMPNLT_UQPSL VCMPNLT_UQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLE_UQPS VCMPNLE_UQPSB VCMPNLE_UQPSW VCMPNLE_UQPSL VCMPNLE_UQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORD_SPS VCMPORD_SPSB VCMPORD_SPSW VCMPORD_SPSL VCMPORD_SPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_USPS VCMPEQ_USPSB VCMPEQ_USPSW VCMPEQ_USPSL VCMPEQ_USPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGE_UQPS VCMPNGE_UQPSB VCMPNGE_UQPSW VCMPNGE_UQPSL VCMPNGE_UQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGT_UQPS VCMPNGT_UQPSB VCMPNGT_UQPSW VCMPNGT_UQPSL VCMPNGT_UQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSE_OSPS VCMPFALSE_OSPSB VCMPFALSE_OSPSW VCMPFALSE_OSPSL VCMPFALSE_OSPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OSPS VCMPNEQ_OSPSB VCMPNEQ_OSPSW VCMPNEQ_OSPSL VCMPNEQ_OSPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGE_OQPS VCMPGE_OQPSB VCMPGE_OQPSW VCMPGE_OQPSL VCMPGE_OQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGT_OQPS VCMPGT_OQPSB VCMPGT_OQPSW VCMPGT_OQPSL VCMPGT_OQPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUE_USPS VCMPTRUE_USPSB VCMPTRUE_USPSW VCMPTRUE_USPSL VCMPTRUE_USPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPPS VCMPPSB VCMPPSW VCMPPSL VCMPPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQSD VCMPEQSDB VCMPEQSDW VCMPEQSDL VCMPEQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLTSD VCMPLTSDB VCMPLTSDW VCMPLTSDL VCMPLTSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLESD VCMPLESDB VCMPLESDW VCMPLESDL VCMPLESDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORDSD VCMPUNORDSDB VCMPUNORDSDW VCMPUNORDSDL VCMPUNORDSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQSD VCMPNEQSDB VCMPNEQSDW VCMPNEQSDL VCMPNEQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLTSD VCMPNLTSDB VCMPNLTSDW VCMPNLTSDL VCMPNLTSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLESD VCMPNLESDB VCMPNLESDW VCMPNLESDL VCMPNLESDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORDSD VCMPORDSDB VCMPORDSDW VCMPORDSDL VCMPORDSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_UQSD VCMPEQ_UQSDB VCMPEQ_UQSDW VCMPEQ_UQSDL VCMPEQ_UQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGESD VCMPNGESDB VCMPNGESDW VCMPNGESDL VCMPNGESDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGTSD VCMPNGTSDB VCMPNGTSDW VCMPNGTSDL VCMPNGTSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSESD VCMPFALSESDB VCMPFALSESDW VCMPFALSESDL VCMPFALSESDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OQSD VCMPNEQ_OQSDB VCMPNEQ_OQSDW VCMPNEQ_OQSDL VCMPNEQ_OQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGESD VCMPGESDB VCMPGESDW VCMPGESDL VCMPGESDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGTSD VCMPGTSDB VCMPGTSDW VCMPGTSDL VCMPGTSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUESD VCMPTRUESDB VCMPTRUESDW VCMPTRUESDL VCMPTRUESDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_OSSD VCMPEQ_OSSDB VCMPEQ_OSSDW VCMPEQ_OSSDL VCMPEQ_OSSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLT_OQSD VCMPLT_OQSDB VCMPLT_OQSDW VCMPLT_OQSDL VCMPLT_OQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLE_OQSD VCMPLE_OQSDB VCMPLE_OQSDW VCMPLE_OQSDL VCMPLE_OQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORD_SSD VCMPUNORD_SSDB VCMPUNORD_SSDW VCMPUNORD_SSDL VCMPUNORD_SSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_USSD VCMPNEQ_USSDB VCMPNEQ_USSDW VCMPNEQ_USSDL VCMPNEQ_USSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLT_UQSD VCMPNLT_UQSDB VCMPNLT_UQSDW VCMPNLT_UQSDL VCMPNLT_UQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLE_UQSD VCMPNLE_UQSDB VCMPNLE_UQSDW VCMPNLE_UQSDL VCMPNLE_UQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORD_SSD VCMPORD_SSDB VCMPORD_SSDW VCMPORD_SSDL VCMPORD_SSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_USSD VCMPEQ_USSDB VCMPEQ_USSDW VCMPEQ_USSDL VCMPEQ_USSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGE_UQSD VCMPNGE_UQSDB VCMPNGE_UQSDW VCMPNGE_UQSDL VCMPNGE_UQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGT_UQSD VCMPNGT_UQSDB VCMPNGT_UQSDW VCMPNGT_UQSDL VCMPNGT_UQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSE_OSSD VCMPFALSE_OSSDB VCMPFALSE_OSSDW VCMPFALSE_OSSDL VCMPFALSE_OSSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OSSD VCMPNEQ_OSSDB VCMPNEQ_OSSDW VCMPNEQ_OSSDL VCMPNEQ_OSSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGE_OQSD VCMPGE_OQSDB VCMPGE_OQSDW VCMPGE_OQSDL VCMPGE_OQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGT_OQSD VCMPGT_OQSDB VCMPGT_OQSDW VCMPGT_OQSDL VCMPGT_OQSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUE_USSD VCMPTRUE_USSDB VCMPTRUE_USSDW VCMPTRUE_USSDL VCMPTRUE_USSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPSD VCMPSDB VCMPSDW VCMPSDL VCMPSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQSS VCMPEQSSB VCMPEQSSW VCMPEQSSL VCMPEQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLTSS VCMPLTSSB VCMPLTSSW VCMPLTSSL VCMPLTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLESS VCMPLESSB VCMPLESSW VCMPLESSL VCMPLESSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORDSS VCMPUNORDSSB VCMPUNORDSSW VCMPUNORDSSL VCMPUNORDSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQSS VCMPNEQSSB VCMPNEQSSW VCMPNEQSSL VCMPNEQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLTSS VCMPNLTSSB VCMPNLTSSW VCMPNLTSSL VCMPNLTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLESS VCMPNLESSB VCMPNLESSW VCMPNLESSL VCMPNLESSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORDSS VCMPORDSSB VCMPORDSSW VCMPORDSSL VCMPORDSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_UQSS VCMPEQ_UQSSB VCMPEQ_UQSSW VCMPEQ_UQSSL VCMPEQ_UQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGESS VCMPNGESSB VCMPNGESSW VCMPNGESSL VCMPNGESSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGTSS VCMPNGTSSB VCMPNGTSSW VCMPNGTSSL VCMPNGTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSESS VCMPFALSESSB VCMPFALSESSW VCMPFALSESSL VCMPFALSESSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OQSS VCMPNEQ_OQSSB VCMPNEQ_OQSSW VCMPNEQ_OQSSL VCMPNEQ_OQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGESS VCMPGESSB VCMPGESSW VCMPGESSL VCMPGESSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGTSS VCMPGTSSB VCMPGTSSW VCMPGTSSL VCMPGTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUESS VCMPTRUESSB VCMPTRUESSW VCMPTRUESSL VCMPTRUESSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_OSSS VCMPEQ_OSSSB VCMPEQ_OSSSW VCMPEQ_OSSSL VCMPEQ_OSSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLT_OQSS VCMPLT_OQSSB VCMPLT_OQSSW VCMPLT_OQSSL VCMPLT_OQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPLE_OQSS VCMPLE_OQSSB VCMPLE_OQSSW VCMPLE_OQSSL VCMPLE_OQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPUNORD_SSS VCMPUNORD_SSSB VCMPUNORD_SSSW VCMPUNORD_SSSL VCMPUNORD_SSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_USSS VCMPNEQ_USSSB VCMPNEQ_USSSW VCMPNEQ_USSSL VCMPNEQ_USSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLT_UQSS VCMPNLT_UQSSB VCMPNLT_UQSSW VCMPNLT_UQSSL VCMPNLT_UQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNLE_UQSS VCMPNLE_UQSSB VCMPNLE_UQSSW VCMPNLE_UQSSL VCMPNLE_UQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPORD_SSS VCMPORD_SSSB VCMPORD_SSSW VCMPORD_SSSL VCMPORD_SSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPEQ_USSS VCMPEQ_USSSB VCMPEQ_USSSW VCMPEQ_USSSL VCMPEQ_USSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGE_UQSS VCMPNGE_UQSSB VCMPNGE_UQSSW VCMPNGE_UQSSL VCMPNGE_UQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNGT_UQSS VCMPNGT_UQSSB VCMPNGT_UQSSW VCMPNGT_UQSSL VCMPNGT_UQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPFALSE_OSSS VCMPFALSE_OSSSB VCMPFALSE_OSSSW VCMPFALSE_OSSSL VCMPFALSE_OSSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPNEQ_OSSS VCMPNEQ_OSSSB VCMPNEQ_OSSSW VCMPNEQ_OSSSL VCMPNEQ_OSSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGE_OQSS VCMPGE_OQSSB VCMPGE_OQSSW VCMPGE_OQSSL VCMPGE_OQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPGT_OQSS VCMPGT_OQSSB VCMPGT_OQSSW VCMPGT_OQSSL VCMPGT_OQSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPTRUE_USSS VCMPTRUE_USSSB VCMPTRUE_USSSW VCMPTRUE_USSSL VCMPTRUE_USSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCMPSS VCMPSSB VCMPSSW VCMPSSL VCMPSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCOMISD VCOMISDB VCOMISDW VCOMISDL VCOMISDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCOMISS VCOMISSB VCOMISSW VCOMISSL VCOMISSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTDQ2PD VCVTDQ2PDB VCVTDQ2PDW VCVTDQ2PDL VCVTDQ2PDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTDQ2PS VCVTDQ2PSB VCVTDQ2PSW VCVTDQ2PSL VCVTDQ2PSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTPD2DQ VCVTPD2DQB VCVTPD2DQW VCVTPD2DQL VCVTPD2DQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTPD2PS VCVTPD2PSB VCVTPD2PSW VCVTPD2PSL VCVTPD2PSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTPS2DQ VCVTPS2DQB VCVTPS2DQW VCVTPS2DQL VCVTPS2DQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTPS2PD VCVTPS2PDB VCVTPS2PDW VCVTPS2PDL VCVTPS2PDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTSD2SI VCVTSD2SIB VCVTSD2SIW VCVTSD2SIL VCVTSD2SIQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTSD2SS VCVTSD2SSB VCVTSD2SSW VCVTSD2SSL VCVTSD2SSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTSI2SD
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTSI2SS
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTSS2SD VCVTSS2SDB VCVTSS2SDW VCVTSS2SDL VCVTSS2SDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTSS2SI VCVTSS2SIB VCVTSS2SIW VCVTSS2SIL VCVTSS2SIQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTTPD2DQ VCVTTPD2DQB VCVTTPD2DQW VCVTTPD2DQL VCVTTPD2DQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTTPS2DQ VCVTTPS2DQB VCVTTPS2DQW VCVTTPS2DQL VCVTTPS2DQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTTSD2SI VCVTTSD2SIB VCVTTSD2SIW VCVTTSD2SIL VCVTTSD2SIQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VCVTTSS2SI VCVTTSS2SIB VCVTTSS2SIW VCVTTSS2SIL VCVTTSS2SIQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VDIVPD VDIVPDB VDIVPDW VDIVPDL VDIVPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VDIVPS VDIVPSB VDIVPSW VDIVPSL VDIVPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VDIVSD VDIVSDB VDIVSDW VDIVSDL VDIVSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VDIVSS VDIVSSB VDIVSSW VDIVSSL VDIVSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VDPPD VDPPDB VDPPDW VDPPDL VDPPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VDPPS VDPPSB VDPPSW VDPPSL VDPPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VEXTRACTF128 VEXTRACTF128B VEXTRACTF128W VEXTRACTF128L VEXTRACTF128Q
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VEXTRACTPS VEXTRACTPSB VEXTRACTPSW VEXTRACTPSL VEXTRACTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VHADDPD VHADDPDB VHADDPDW VHADDPDL VHADDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VHADDPS VHADDPSB VHADDPSW VHADDPSL VHADDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VHSUBPD VHSUBPDB VHSUBPDW VHSUBPDL VHSUBPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VHSUBPS VHSUBPSB VHSUBPSW VHSUBPSL VHSUBPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VINSERTF128 VINSERTF128B VINSERTF128W VINSERTF128L VINSERTF128Q
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VINSERTPS VINSERTPSB VINSERTPSW VINSERTPSL VINSERTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VLDDQU VLDDQUB VLDDQUW VLDDQUL VLDDQUQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VLDQQU VLDQQUB VLDQQUW VLDQQUL VLDQQUQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VLDDQU VLDDQUB VLDDQUW VLDDQUL VLDDQUQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VLDMXCSR VLDMXCSRB VLDMXCSRW VLDMXCSRL VLDMXCSRQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMASKMOVDQU
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMASKMOVPS VMASKMOVPSB VMASKMOVPSW VMASKMOVPSL VMASKMOVPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMASKMOVPD VMASKMOVPDB VMASKMOVPDW VMASKMOVPDL VMASKMOVPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMAXPD VMAXPDB VMAXPDW VMAXPDL VMAXPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMAXPS VMAXPSB VMAXPSW VMAXPSL VMAXPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMAXSD VMAXSDB VMAXSDW VMAXSDL VMAXSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMAXSS VMAXSSB VMAXSSW VMAXSSL VMAXSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMINPD VMINPDB VMINPDW VMINPDL VMINPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMINPS VMINPSB VMINPSW VMINPSL VMINPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMINSD VMINSDB VMINSDW VMINSDL VMINSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMINSS VMINSSB VMINSSW VMINSSL VMINSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVAPD VMOVAPDB VMOVAPDW VMOVAPDL VMOVAPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVAPS VMOVAPSB VMOVAPSW VMOVAPSL VMOVAPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVQ VMOVQB VMOVQW VMOVQL VMOVQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVD
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVD
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVDDUP VMOVDDUPB VMOVDDUPW VMOVDDUPL VMOVDDUPQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVDQA VMOVDQAB VMOVDQAW VMOVDQAL VMOVDQAQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVQQA VMOVQQAB VMOVQQAW VMOVQQAL VMOVQQAQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVDQA VMOVDQAB VMOVDQAW VMOVDQAL VMOVDQAQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVDQU VMOVDQUB VMOVDQUW VMOVDQUL VMOVDQUQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVQQU VMOVQQUB VMOVQQUW VMOVQQUL VMOVQQUQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVDQU VMOVDQUB VMOVDQUW VMOVDQUL VMOVDQUQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVHLPS
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVHPD VMOVHPDB VMOVHPDW VMOVHPDL VMOVHPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVHPS VMOVHPSB VMOVHPSW VMOVHPSL VMOVHPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVLHPS
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVLPD VMOVLPDB VMOVLPDW VMOVLPDL VMOVLPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVLPS VMOVLPSB VMOVLPSW VMOVLPSL VMOVLPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVMSKPD VMOVMSKPDB VMOVMSKPDW VMOVMSKPDL VMOVMSKPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVMSKPS VMOVMSKPSB VMOVMSKPSW VMOVMSKPSL VMOVMSKPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVNTDQ VMOVNTDQB VMOVNTDQW VMOVNTDQL VMOVNTDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVNTQQ VMOVNTQQB VMOVNTQQW VMOVNTQQL VMOVNTQQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVNTDQ VMOVNTDQB VMOVNTDQW VMOVNTDQL VMOVNTDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVNTDQA VMOVNTDQAB VMOVNTDQAW VMOVNTDQAL VMOVNTDQAQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVNTPD VMOVNTPDB VMOVNTPDW VMOVNTPDL VMOVNTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVNTPS VMOVNTPSB VMOVNTPSW VMOVNTPSL VMOVNTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVSD VMOVSDB VMOVSDW VMOVSDL VMOVSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVSHDUP VMOVSHDUPB VMOVSHDUPW VMOVSHDUPL VMOVSHDUPQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVSLDUP VMOVSLDUPB VMOVSLDUPW VMOVSLDUPL VMOVSLDUPQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVSS VMOVSSB VMOVSSW VMOVSSL VMOVSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVUPD VMOVUPDB VMOVUPDW VMOVUPDL VMOVUPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMOVUPS VMOVUPSB VMOVUPSW VMOVUPSL VMOVUPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMPSADBW VMPSADBWB VMPSADBWW VMPSADBWL VMPSADBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMULPD VMULPDB VMULPDW VMULPDL VMULPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMULPS VMULPSB VMULPSW VMULPSL VMULPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMULSD VMULSDB VMULSDW VMULSDL VMULSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VMULSS VMULSSB VMULSSW VMULSSL VMULSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VORPD VORPDB VORPDW VORPDL VORPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VORPS VORPSB VORPSW VORPSL VORPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPABSB VPABSBB VPABSBW VPABSBL VPABSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPABSW VPABSWB VPABSWW VPABSWL VPABSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPABSD VPABSDB VPABSDW VPABSDL VPABSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPACKSSWB VPACKSSWBB VPACKSSWBW VPACKSSWBL VPACKSSWBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPACKSSDW VPACKSSDWB VPACKSSDWW VPACKSSDWL VPACKSSDWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPACKUSWB VPACKUSWBB VPACKUSWBW VPACKUSWBL VPACKUSWBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPACKUSDW VPACKUSDWB VPACKUSDWW VPACKUSDWL VPACKUSDWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDB VPADDBB VPADDBW VPADDBL VPADDBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDW VPADDWB VPADDWW VPADDWL VPADDWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDD VPADDDB VPADDDW VPADDDL VPADDDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDQ VPADDQB VPADDQW VPADDQL VPADDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDSB VPADDSBB VPADDSBW VPADDSBL VPADDSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDSW VPADDSWB VPADDSWW VPADDSWL VPADDSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDUSB VPADDUSBB VPADDUSBW VPADDUSBL VPADDUSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPADDUSW VPADDUSWB VPADDUSWW VPADDUSWL VPADDUSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPALIGNR VPALIGNRB VPALIGNRW VPALIGNRL VPALIGNRQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPAND VPANDB VPANDW VPANDL VPANDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPANDN VPANDNB VPANDNW VPANDNL VPANDNQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPAVGB VPAVGBB VPAVGBW VPAVGBL VPAVGBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPAVGW VPAVGWB VPAVGWW VPAVGWL VPAVGWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPBLENDVB VPBLENDVBB VPBLENDVBW VPBLENDVBL VPBLENDVBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPBLENDW VPBLENDWB VPBLENDWW VPBLENDWL VPBLENDWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPESTRI VPCMPESTRIB VPCMPESTRIW VPCMPESTRIL VPCMPESTRIQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPESTRM VPCMPESTRMB VPCMPESTRMW VPCMPESTRML VPCMPESTRMQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPISTRI VPCMPISTRIB VPCMPISTRIW VPCMPISTRIL VPCMPISTRIQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPISTRM VPCMPISTRMB VPCMPISTRMW VPCMPISTRML VPCMPISTRMQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPEQB VPCMPEQBB VPCMPEQBW VPCMPEQBL VPCMPEQBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPEQW VPCMPEQWB VPCMPEQWW VPCMPEQWL VPCMPEQWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPEQD VPCMPEQDB VPCMPEQDW VPCMPEQDL VPCMPEQDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPEQQ VPCMPEQQB VPCMPEQQW VPCMPEQQL VPCMPEQQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPGTB VPCMPGTBB VPCMPGTBW VPCMPGTBL VPCMPGTBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPGTW VPCMPGTWB VPCMPGTWW VPCMPGTWL VPCMPGTWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPGTD VPCMPGTDB VPCMPGTDW VPCMPGTDL VPCMPGTDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPCMPGTQ VPCMPGTQB VPCMPGTQW VPCMPGTQL VPCMPGTQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILPD VPERMILPDB VPERMILPDW VPERMILPDL VPERMILPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILTD2PD VPERMILTD2PDB VPERMILTD2PDW VPERMILTD2PDL VPERMILTD2PDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILMO2PD VPERMILMO2PDB VPERMILMO2PDW VPERMILMO2PDL VPERMILMO2PDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILMZ2PD VPERMILMZ2PDB VPERMILMZ2PDW VPERMILMZ2PDL VPERMILMZ2PDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMIL2PD VPERMIL2PDB VPERMIL2PDW VPERMIL2PDL VPERMIL2PDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILPS VPERMILPSB VPERMILPSW VPERMILPSL VPERMILPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILTD2PS VPERMILTD2PSB VPERMILTD2PSW VPERMILTD2PSL VPERMILTD2PSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILMO2PS VPERMILMO2PSB VPERMILMO2PSW VPERMILMO2PSL VPERMILMO2PSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMILMZ2PS VPERMILMZ2PSB VPERMILMZ2PSW VPERMILMZ2PSL VPERMILMZ2PSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERMIL2PS VPERMIL2PSB VPERMIL2PSW VPERMIL2PSL VPERMIL2PSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPERM2F128 VPERM2F128B VPERM2F128W VPERM2F128L VPERM2F128Q
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPEXTRB VPEXTRBB VPEXTRBW VPEXTRBL VPEXTRBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPEXTRW VPEXTRWB VPEXTRWW VPEXTRWL VPEXTRWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPEXTRD VPEXTRDB VPEXTRDW VPEXTRDL VPEXTRDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPEXTRQ VPEXTRQB VPEXTRQW VPEXTRQL VPEXTRQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHADDW VPHADDWB VPHADDWW VPHADDWL VPHADDWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHADDD VPHADDDB VPHADDDW VPHADDDL VPHADDDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHADDSW VPHADDSWB VPHADDSWW VPHADDSWL VPHADDSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHMINPOSUW VPHMINPOSUWB VPHMINPOSUWW VPHMINPOSUWL VPHMINPOSUWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHSUBW VPHSUBWB VPHSUBWW VPHSUBWL VPHSUBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHSUBD VPHSUBDB VPHSUBDW VPHSUBDL VPHSUBDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPHSUBSW VPHSUBSWB VPHSUBSWW VPHSUBSWL VPHSUBSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPINSRB VPINSRBB VPINSRBW VPINSRBL VPINSRBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPINSRW VPINSRWB VPINSRWW VPINSRWL VPINSRWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPINSRD VPINSRDB VPINSRDW VPINSRDL VPINSRDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPINSRQ VPINSRQB VPINSRQW VPINSRQL VPINSRQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMADDWD VPMADDWDB VPMADDWDW VPMADDWDL VPMADDWDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMADDUBSW VPMADDUBSWB VPMADDUBSWW VPMADDUBSWL VPMADDUBSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMAXSB VPMAXSBB VPMAXSBW VPMAXSBL VPMAXSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMAXSW VPMAXSWB VPMAXSWW VPMAXSWL VPMAXSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMAXSD VPMAXSDB VPMAXSDW VPMAXSDL VPMAXSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMAXUB VPMAXUBB VPMAXUBW VPMAXUBL VPMAXUBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMAXUW VPMAXUWB VPMAXUWW VPMAXUWL VPMAXUWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMAXUD VPMAXUDB VPMAXUDW VPMAXUDL VPMAXUDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMINSB VPMINSBB VPMINSBW VPMINSBL VPMINSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMINSW VPMINSWB VPMINSWW VPMINSWL VPMINSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMINSD VPMINSDB VPMINSDW VPMINSDL VPMINSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMINUB VPMINUBB VPMINUBW VPMINUBL VPMINUBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMINUW VPMINUWB VPMINUWW VPMINUWL VPMINUWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMINUD VPMINUDB VPMINUDW VPMINUDL VPMINUDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVMSKB
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVSXBW VPMOVSXBWB VPMOVSXBWW VPMOVSXBWL VPMOVSXBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVSXBD VPMOVSXBDB VPMOVSXBDW VPMOVSXBDL VPMOVSXBDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVSXBQ VPMOVSXBQB VPMOVSXBQW VPMOVSXBQL VPMOVSXBQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVSXWD VPMOVSXWDB VPMOVSXWDW VPMOVSXWDL VPMOVSXWDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVSXWQ VPMOVSXWQB VPMOVSXWQW VPMOVSXWQL VPMOVSXWQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVSXDQ VPMOVSXDQB VPMOVSXDQW VPMOVSXDQL VPMOVSXDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVZXBW VPMOVZXBWB VPMOVZXBWW VPMOVZXBWL VPMOVZXBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVZXBD VPMOVZXBDB VPMOVZXBDW VPMOVZXBDL VPMOVZXBDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVZXBQ VPMOVZXBQB VPMOVZXBQW VPMOVZXBQL VPMOVZXBQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVZXWD VPMOVZXWDB VPMOVZXWDW VPMOVZXWDL VPMOVZXWDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVZXWQ VPMOVZXWQB VPMOVZXWQW VPMOVZXWQL VPMOVZXWQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMOVZXDQ VPMOVZXDQB VPMOVZXDQW VPMOVZXDQL VPMOVZXDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULHUW VPMULHUWB VPMULHUWW VPMULHUWL VPMULHUWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULHRSW VPMULHRSWB VPMULHRSWW VPMULHRSWL VPMULHRSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULHW VPMULHWB VPMULHWW VPMULHWL VPMULHWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULLW VPMULLWB VPMULLWW VPMULLWL VPMULLWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULLD VPMULLDB VPMULLDW VPMULLDL VPMULLDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULUDQ VPMULUDQB VPMULUDQW VPMULUDQL VPMULUDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPMULDQ VPMULDQB VPMULDQW VPMULDQL VPMULDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPOR VPORB VPORW VPORL VPORQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSADBW VPSADBWB VPSADBWW VPSADBWL VPSADBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSHUFB VPSHUFBB VPSHUFBW VPSHUFBL VPSHUFBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSHUFD VPSHUFDB VPSHUFDW VPSHUFDL VPSHUFDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSHUFHW VPSHUFHWB VPSHUFHWW VPSHUFHWL VPSHUFHWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSHUFLW VPSHUFLWB VPSHUFLWW VPSHUFLWL VPSHUFLWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSIGNB VPSIGNBB VPSIGNBW VPSIGNBL VPSIGNBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSIGNW VPSIGNWB VPSIGNWW VPSIGNWL VPSIGNWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSIGND VPSIGNDB VPSIGNDW VPSIGNDL VPSIGNDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSLLDQ VPSLLDQB VPSLLDQW VPSLLDQL VPSLLDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSRLDQ VPSRLDQB VPSRLDQW VPSRLDQL VPSRLDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSLLW VPSLLWB VPSLLWW VPSLLWL VPSLLWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSLLD VPSLLDB VPSLLDW VPSLLDL VPSLLDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSLLQ VPSLLQB VPSLLQW VPSLLQL VPSLLQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSRAW VPSRAWB VPSRAWW VPSRAWL VPSRAWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSRAD VPSRADB VPSRADW VPSRADL VPSRADQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSRLW VPSRLWB VPSRLWW VPSRLWL VPSRLWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSRLD VPSRLDB VPSRLDW VPSRLDL VPSRLDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSRLQ VPSRLQB VPSRLQW VPSRLQL VPSRLQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPTEST VPTESTB VPTESTW VPTESTL VPTESTQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBB VPSUBBB VPSUBBW VPSUBBL VPSUBBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBW VPSUBWB VPSUBWW VPSUBWL VPSUBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBD VPSUBDB VPSUBDW VPSUBDL VPSUBDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBQ VPSUBQB VPSUBQW VPSUBQL VPSUBQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBSB VPSUBSBB VPSUBSBW VPSUBSBL VPSUBSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBSW VPSUBSWB VPSUBSWW VPSUBSWL VPSUBSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBUSB VPSUBUSBB VPSUBUSBW VPSUBUSBL VPSUBUSBQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPSUBUSW VPSUBUSWB VPSUBUSWW VPSUBUSWL VPSUBUSWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKHBW VPUNPCKHBWB VPUNPCKHBWW VPUNPCKHBWL VPUNPCKHBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKHWD VPUNPCKHWDB VPUNPCKHWDW VPUNPCKHWDL VPUNPCKHWDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKHDQ VPUNPCKHDQB VPUNPCKHDQW VPUNPCKHDQL VPUNPCKHDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKHQDQ VPUNPCKHQDQB VPUNPCKHQDQW VPUNPCKHQDQL VPUNPCKHQDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKLBW VPUNPCKLBWB VPUNPCKLBWW VPUNPCKLBWL VPUNPCKLBWQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKLWD VPUNPCKLWDB VPUNPCKLWDW VPUNPCKLWDL VPUNPCKLWDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKLDQ VPUNPCKLDQB VPUNPCKLDQW VPUNPCKLDQL VPUNPCKLDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPUNPCKLQDQ VPUNPCKLQDQB VPUNPCKLQDQW VPUNPCKLQDQL VPUNPCKLQDQQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VPXOR VPXORB VPXORW VPXORL VPXORQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VRCPPS VRCPPSB VRCPPSW VRCPPSL VRCPPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VRCPSS VRCPSSB VRCPSSW VRCPSSL VRCPSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VRSQRTPS VRSQRTPSB VRSQRTPSW VRSQRTPSL VRSQRTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VRSQRTSS VRSQRTSSB VRSQRTSSW VRSQRTSSL VRSQRTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VROUNDPD VROUNDPDB VROUNDPDW VROUNDPDL VROUNDPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VROUNDPS VROUNDPSB VROUNDPSW VROUNDPSL VROUNDPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VROUNDSD VROUNDSDB VROUNDSDW VROUNDSDL VROUNDSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VROUNDSS VROUNDSSB VROUNDSSW VROUNDSSL VROUNDSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSHUFPD VSHUFPDB VSHUFPDW VSHUFPDL VSHUFPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSHUFPS VSHUFPSB VSHUFPSW VSHUFPSL VSHUFPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSQRTPD VSQRTPDB VSQRTPDW VSQRTPDL VSQRTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSQRTPS VSQRTPSB VSQRTPSW VSQRTPSL VSQRTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSQRTSD VSQRTSDB VSQRTSDW VSQRTSDL VSQRTSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSQRTSS VSQRTSSB VSQRTSSW VSQRTSSL VSQRTSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSTMXCSR VSTMXCSRB VSTMXCSRW VSTMXCSRL VSTMXCSRQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSUBPD VSUBPDB VSUBPDW VSUBPDL VSUBPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSUBPS VSUBPSB VSUBPSW VSUBPSL VSUBPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSUBSD VSUBSDB VSUBSDW VSUBSDL VSUBSDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VSUBSS VSUBSSB VSUBSSW VSUBSSL VSUBSSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VTESTPS VTESTPSB VTESTPSW VTESTPSL VTESTPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VTESTPD VTESTPDB VTESTPDW VTESTPDL VTESTPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VUCOMISD VUCOMISDB VUCOMISDW VUCOMISDL VUCOMISDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VUCOMISS VUCOMISSB VUCOMISSW VUCOMISSL VUCOMISSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VUNPCKHPD VUNPCKHPDB VUNPCKHPDW VUNPCKHPDL VUNPCKHPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VUNPCKHPS VUNPCKHPSB VUNPCKHPSW VUNPCKHPSL VUNPCKHPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VUNPCKLPD VUNPCKLPDB VUNPCKLPDW VUNPCKLPDL VUNPCKLPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VUNPCKLPS VUNPCKLPSB VUNPCKLPSW VUNPCKLPSL VUNPCKLPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VXORPD VXORPDB VXORPDW VXORPDL VXORPDQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VXORPS VXORPSB VXORPSW VXORPSL VXORPSQ
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VZEROALL
-syntax keyword goasmOpcode_SANDYBRIDGE_AVX VZEROUPPER
-
-"-- Section: AMD Enhanced 3DNow! (Athlon) instructions
-syntax keyword goasmOpcode_PENT_3DNOW PF2IW PF2IWB PF2IWW PF2IWL PF2IWQ
-syntax keyword goasmOpcode_PENT_3DNOW PFNACC PFNACCB PFNACCW PFNACCL PFNACCQ
-syntax keyword goasmOpcode_PENT_3DNOW PFPNACC PFPNACCB PFPNACCW PFPNACCL PFPNACCQ
-syntax keyword goasmOpcode_PENT_3DNOW PI2FW PI2FWB PI2FWW PI2FWL PI2FWQ
-syntax keyword goasmOpcode_PENT_3DNOW PSWAPD PSWAPDB PSWAPDW PSWAPDL PSWAPDQ
-
-"-- Section: Penryn New Instructions (SSE4.1)
-syntax keyword goasmOpcode_SSE41  BLENDPD BLENDPDB BLENDPDW BLENDPDL BLENDPDQ
-syntax keyword goasmOpcode_SSE41  BLENDPS BLENDPSB BLENDPSW BLENDPSL BLENDPSQ
-syntax keyword goasmOpcode_SSE41  BLENDVPD BLENDVPDB BLENDVPDW BLENDVPDL BLENDVPDQ
-syntax keyword goasmOpcode_SSE41  BLENDVPS BLENDVPSB BLENDVPSW BLENDVPSL BLENDVPSQ
-syntax keyword goasmOpcode_SSE41  DPPD DPPDB DPPDW DPPDL DPPDQ
-syntax keyword goasmOpcode_SSE41  DPPS DPPSB DPPSW DPPSL DPPSQ
-syntax keyword goasmOpcode_X64_SSE41  EXTRACTPS EXTRACTPSB EXTRACTPSW EXTRACTPSL EXTRACTPSQ
-syntax keyword goasmOpcode_SSE41  INSERTPS INSERTPSB INSERTPSW INSERTPSL INSERTPSQ
-syntax keyword goasmOpcode_SSE41  MOVNTDQA MOVNTDQAB MOVNTDQAW MOVNTDQAL MOVNTDQAQ
-syntax keyword goasmOpcode_SSE41  MPSADBW MPSADBWB MPSADBWW MPSADBWL MPSADBWQ
-syntax keyword goasmOpcode_SSE41  PACKUSDW PACKUSDWB PACKUSDWW PACKUSDWL PACKUSDWQ
-syntax keyword goasmOpcode_SSE41  PBLENDVB PBLENDVBB PBLENDVBW PBLENDVBL PBLENDVBQ
-syntax keyword goasmOpcode_SSE41  PBLENDW PBLENDWB PBLENDWW PBLENDWL PBLENDWQ
-syntax keyword goasmOpcode_SSE41  PCMPEQQ PCMPEQQB PCMPEQQW PCMPEQQL PCMPEQQQ
-syntax keyword goasmOpcode_X64_SSE41  PEXTRB PEXTRBB PEXTRBW PEXTRBL PEXTRBQ
-syntax keyword goasmOpcode_SSE41  PEXTRD PEXTRDB PEXTRDW PEXTRDL PEXTRDQ
-syntax keyword goasmOpcode_X64_SSE41  PEXTRQ PEXTRQB PEXTRQW PEXTRQL PEXTRQQ
-syntax keyword goasmOpcode_X64_SSE41  PEXTRW PEXTRWB PEXTRWW PEXTRWL PEXTRWQ
-syntax keyword goasmOpcode_SSE41  PHMINPOSUW PHMINPOSUWB PHMINPOSUWW PHMINPOSUWL PHMINPOSUWQ
-syntax keyword goasmOpcode_SSE41  PINSRB PINSRBB PINSRBW PINSRBL PINSRBQ
-syntax keyword goasmOpcode_SSE41  PINSRD PINSRDB PINSRDW PINSRDL PINSRDQ
-syntax keyword goasmOpcode_X64_SSE41  PINSRQ PINSRQB PINSRQW PINSRQL PINSRQQ
-syntax keyword goasmOpcode_SSE41  PMAXSB PMAXSBB PMAXSBW PMAXSBL PMAXSBQ
-syntax keyword goasmOpcode_SSE41  PMAXSD PMAXSDB PMAXSDW PMAXSDL PMAXSDQ
-syntax keyword goasmOpcode_SSE41  PMAXUD PMAXUDB PMAXUDW PMAXUDL PMAXUDQ
-syntax keyword goasmOpcode_SSE41  PMAXUW PMAXUWB PMAXUWW PMAXUWL PMAXUWQ
-syntax keyword goasmOpcode_SSE41  PMINSB PMINSBB PMINSBW PMINSBL PMINSBQ
-syntax keyword goasmOpcode_SSE41  PMINSD PMINSDB PMINSDW PMINSDL PMINSDQ
-syntax keyword goasmOpcode_SSE41  PMINUD PMINUDB PMINUDW PMINUDL PMINUDQ
-syntax keyword goasmOpcode_SSE41  PMINUW PMINUWB PMINUWW PMINUWL PMINUWQ
-syntax keyword goasmOpcode_SSE41  PMOVSXBW PMOVSXBWB PMOVSXBWW PMOVSXBWL PMOVSXBWQ
-syntax keyword goasmOpcode_SSE41  PMOVSXBD PMOVSXBDB PMOVSXBDW PMOVSXBDL PMOVSXBDQ
-syntax keyword goasmOpcode_SSE41  PMOVSXBQ PMOVSXBQB PMOVSXBQW PMOVSXBQL PMOVSXBQQ
-syntax keyword goasmOpcode_SSE41  PMOVSXWD PMOVSXWDB PMOVSXWDW PMOVSXWDL PMOVSXWDQ
-syntax keyword goasmOpcode_SSE41  PMOVSXWQ PMOVSXWQB PMOVSXWQW PMOVSXWQL PMOVSXWQQ
-syntax keyword goasmOpcode_SSE41  PMOVSXDQ PMOVSXDQB PMOVSXDQW PMOVSXDQL PMOVSXDQQ
-syntax keyword goasmOpcode_SSE41  PMOVZXBW PMOVZXBWB PMOVZXBWW PMOVZXBWL PMOVZXBWQ
-syntax keyword goasmOpcode_SSE41  PMOVZXBD PMOVZXBDB PMOVZXBDW PMOVZXBDL PMOVZXBDQ
-syntax keyword goasmOpcode_SSE41  PMOVZXBQ PMOVZXBQB PMOVZXBQW PMOVZXBQL PMOVZXBQQ
-syntax keyword goasmOpcode_SSE41  PMOVZXWD PMOVZXWDB PMOVZXWDW PMOVZXWDL PMOVZXWDQ
-syntax keyword goasmOpcode_SSE41  PMOVZXWQ PMOVZXWQB PMOVZXWQW PMOVZXWQL PMOVZXWQQ
-syntax keyword goasmOpcode_SSE41  PMOVZXDQ PMOVZXDQB PMOVZXDQW PMOVZXDQL PMOVZXDQQ
-syntax keyword goasmOpcode_SSE41  PMULDQ PMULDQB PMULDQW PMULDQL PMULDQQ
-syntax keyword goasmOpcode_SSE41  PMULLD PMULLDB PMULLDW PMULLDL PMULLDQ
-syntax keyword goasmOpcode_SSE41  PTEST PTESTB PTESTW PTESTL PTESTQ
-syntax keyword goasmOpcode_SSE41  ROUNDPD ROUNDPDB ROUNDPDW ROUNDPDL ROUNDPDQ
-syntax keyword goasmOpcode_SSE41  ROUNDPS ROUNDPSB ROUNDPSW ROUNDPSL ROUNDPSQ
-syntax keyword goasmOpcode_SSE41  ROUNDSD ROUNDSDB ROUNDSDW ROUNDSDL ROUNDSDQ
-syntax keyword goasmOpcode_SSE41  ROUNDSS ROUNDSSB ROUNDSSW ROUNDSSL ROUNDSSQ
-
-"-- Section: AMD SSE4A
-syntax keyword goasmOpcode_AMD_SSE4A  EXTRQ
-syntax keyword goasmOpcode_AMD_SSE4A  INSERTQ
-syntax keyword goasmOpcode_AMD_SSE4A  MOVNTSD MOVNTSDB MOVNTSDW MOVNTSDL MOVNTSDQ
-syntax keyword goasmOpcode_AMD_SSE4A  MOVNTSS MOVNTSSB MOVNTSSW MOVNTSSL MOVNTSSQ
-
-"-- Section: ARM Thumb
-syntax keyword goasmOpcode_ARM_THUMB         ADC ADCEQ ADCNE ADCCS ADCHS ADCCC ADCLO
-syntax keyword goasmOpcode_ARM_THUMB         ADCMI ADCPL ADCVS ADCVC ADCHI ADCLS
-syntax keyword goasmOpcode_ARM_THUMB         ADCGE ADCLT ADCGT ADCLE ADCAL
-syntax keyword goasmOpcode_ARM_THUMB         ADD ADDEQ ADDNE ADDCS ADDHS ADDCC ADDLO
-syntax keyword goasmOpcode_ARM_THUMB         ADDMI ADDPL ADDVS ADDVC ADDHI ADDLS
-syntax keyword goasmOpcode_ARM_THUMB         ADDGE ADDLT ADDGT ADDLE ADDAL
-syntax keyword goasmOpcode_ARM_THUMB         AND ANDEQ ANDNE ANDCS ANDHS ANDCC ANDLO
-syntax keyword goasmOpcode_ARM_THUMB         ANDMI ANDPL ANDVS ANDVC ANDHI ANDLS
-syntax keyword goasmOpcode_ARM_THUMB         ANDGE ANDLT ANDGT ANDLE ANDAL
-syntax keyword goasmOpcode_ARM_THUMB         ASR ASREQ ASRNE ASRCS ASRHS ASRCC ASRLO
-syntax keyword goasmOpcode_ARM_THUMB         ASRMI ASRPL ASRVS ASRVC ASRHI ASRLS
-syntax keyword goasmOpcode_ARM_THUMB         ASRGE ASRLT ASRGT ASRLE ASRAL
-syntax keyword goasmOpcode_ARM_THUMB         B BEQ BNE BCS BHS BCC BLO BMI BPL BVS
-syntax keyword goasmOpcode_ARM_THUMB         BVC BHI BLS BGE BLT BGT BLE BAL
-syntax keyword goasmOpcode_ARM_THUMB         BL BLEQ BLNE BLCS BLHS BLCC BLLO BLMI
-syntax keyword goasmOpcode_ARM_THUMB         BLPL BLVS BLVC BLHI BLLS BLGE BLLT BLGT
-syntax keyword goasmOpcode_ARM_THUMB         BLLE BLAL
-syntax keyword goasmOpcode_ARM_THUMB         BX BXPL BXVS BXVC BXHI BXLS BXGE BXLT BXGT
-syntax keyword goasmOpcode_ARM_THUMB         BXLE
-syntax keyword goasmOpcode_ARM_THUMB         BLX BLXEQ BLXNE  BLXCS  BLXHS  BLXCC
-syntax keyword goasmOpcode_ARM_THUMB         BLXLO  BLXMI  BLXPL  BLXVS  BLXVC  BLXHI
-syntax keyword goasmOpcode_ARM_THUMB         BLXLS  BLXGE  BLXLT  BLXGT  BLXLE  BLXAL
-syntax keyword goasmOpcode_ARM_THUMB         BI BICEQ BICNE BICCS BICHS BICCC BICLO
-syntax keyword goasmOpcode_ARM_THUMB         BICMI BICPL BICVS BICVC BICHI BICLS
-syntax keyword goasmOpcode_ARM_THUMB         BICGE BICLT BICGT BICLE BICAL
-syntax keyword goasmOpcode_ARM_THUMB         CMN CMNEQ CMNNE CMNCS CMNHS CMNCC CMNLO
-syntax keyword goasmOpcode_ARM_THUMB         CMNMI CMNPL CMNVS CMNVC CMNHI CMNLS
-syntax keyword goasmOpcode_ARM_THUMB         CMNGE CMNLT CMNGT CMNLE CMNAL
-syntax keyword goasmOpcode_ARM_THUMB         CMP CMPEQ CMPNE CMPCS CMPHS CMPCC CMPLO
-syntax keyword goasmOpcode_ARM_THUMB         CMPMI CMPPL CMPVS CMPVC CMPHI CMPLS
-syntax keyword goasmOpcode_ARM_THUMB         CMPGE CMPLT CMPGT CMPLE CMPAL
-syntax keyword goasmOpcode_ARM_THUMB         EOR EOREQ EORNE EORCS EORHS EORCC EORLO
-syntax keyword goasmOpcode_ARM_THUMB         EORMI EORPL EORVS EORVC EORHI EORLS
-syntax keyword goasmOpcode_ARM_THUMB         EORGE EORLT EORGT EORLE EORAL
-syntax keyword goasmOpcode_ARM_THUMB         LDMIA LDMIAEQ LDMIANE LDMIACS LDMIAHS
-syntax keyword goasmOpcode_ARM_THUMB         LDMIACC LDMIALO LDMIAMI LDMIAPL LDMIAVS
-syntax keyword goasmOpcode_ARM_THUMB         LDMIAVC LDMIAHI LDMIALS LDMIAGE LDMIALT
-syntax keyword goasmOpcode_ARM_THUMB         LDMIAGT LDMIALE LDMIAAL
-syntax keyword goasmOpcode_ARM_THUMB         LDR LDREQ LDRNE LDRCS LDRHS LDRCC LDRLO
-syntax keyword goasmOpcode_ARM_THUMB         LDRMI LDRPL LDRVS LDRVC LDRHI LDRLS
-syntax keyword goasmOpcode_ARM_THUMB         LDRGE LDRLT LDRGT LDRLE LDRAL
-syntax keyword goasmOpcode_ARM_THUMB         LDRB LDRBEQ LDRBNE LDRBCS LDRBHS LDRBCC
-syntax keyword goasmOpcode_ARM_THUMB         LDRBLO LDRBMI LDRBPL LDRBVS LDRBVC
-syntax keyword goasmOpcode_ARM_THUMB         LDRBHI LDRBLS LDRBGE LDRBLT LDRBGT
-syntax keyword goasmOpcode_ARM_THUMB         LDRBLE LDRBAL
-syntax keyword goasmOpcode_ARM_THUMB         LDRH LDRHEQ LDRHNE LDRHCS LDRHHS LDRHCC
-syntax keyword goasmOpcode_ARM_THUMB         LDRHLO LDRHMI LDRHPL LDRHVS LDRHVC
-syntax keyword goasmOpcode_ARM_THUMB         LDRHHI LDRHLS LDRHGE LDRHLT LDRHGT
-syntax keyword goasmOpcode_ARM_THUMB         LDRHLE LDRHAL
-syntax keyword goasmOpcode_ARM_THUMB         LSL LSLEQ LSLNE LSLCS LSLHS LSLCC LSLLO
-syntax keyword goasmOpcode_ARM_THUMB         LSLMI LSLPL LSLVS LSLVC LSLHI LSLLS
-syntax keyword goasmOpcode_ARM_THUMB         LSLGE LSLLT LSLGT LSLLE LSLAL
-syntax keyword goasmOpcode_ARM_THUMB         LDSB LDSBEQ LDSBNE LDSBCS LDSBHS LDSBCC
-syntax keyword goasmOpcode_ARM_THUMB         LDSBLO LDSBMI LDSBPL LDSBVS LDSBVC
-syntax keyword goasmOpcode_ARM_THUMB         LDSBHI LDSBLS LDSBGE LDSBLT LDSBGT
-syntax keyword goasmOpcode_ARM_THUMB         LDSBLE LDSBAL
-syntax keyword goasmOpcode_ARM_THUMB         LDSD LDSHEQ LDSHNE LDSHCS LDSHHS LDSHCC
-syntax keyword goasmOpcode_ARM_THUMB         LDSHLO LDSHMI LDSHPL LDSHVS LDSHVC
-syntax keyword goasmOpcode_ARM_THUMB         LDSHHI LDSHLS LDSHGE LDSHLT LDSHGT
-syntax keyword goasmOpcode_ARM_THUMB         LDSHLE LDSHAL
-syntax keyword goasmOpcode_ARM_THUMB         MOV MOVEQ MOVNE MOVCS MOVHS MOVCC MOVLO
-syntax keyword goasmOpcode_ARM_THUMB         MOVMI MOVPL MOVVS MOVVC MOVHI MOVLS
-syntax keyword goasmOpcode_ARM_THUMB         MOVGE MOVLT MOVGT MOVLE MOVAL
-syntax keyword goasmOpcode_ARM_THUMB         MUL MULEQ MULNE MULCS MULHS MULCC MULLO
-syntax keyword goasmOpcode_ARM_THUMB         MULMI MULPL MULVS MULVC MULHI MULLS
-syntax keyword goasmOpcode_ARM_THUMB         MULGE MULLT MULGT MULLE MULAL
-syntax keyword goasmOpcode_ARM_THUMB         MVN MVNEQ MVNNE MVNCS MVNHS MVNCC MVNLO
-syntax keyword goasmOpcode_ARM_THUMB         MVNMI MVNPL MVNVS MVNVC MVNHI MVNLS
-syntax keyword goasmOpcode_ARM_THUMB         MVNGE MVNLT MVNGT MVNLE MVNAL
-syntax keyword goasmOpcode_ARM_THUMB         NEG NEGEQ NEGNE NEGCS NEGHS NEGCC NEGLO
-syntax keyword goasmOpcode_ARM_THUMB         NEGMI NEGPL NEGVS NEGVC NEGHI NEGLS
-syntax keyword goasmOpcode_ARM_THUMB         NEGGE NEGLT NEGGT NEGLE NEGAL
-syntax keyword goasmOpcode_ARM_THUMB         OR ORREQ ORRNE ORRCS ORRHS ORRCC ORRLO
-syntax keyword goasmOpcode_ARM_THUMB         ORRMI ORRPL ORRVS ORRVC ORRHI ORRLS
-syntax keyword goasmOpcode_ARM_THUMB         ORRGE ORRLT ORRGT ORRLE ORRAL
-syntax keyword goasmOpcode_ARM_THUMB         POP POPEQ POPNE POPCS POPHS POPCC POPLO
-syntax keyword goasmOpcode_ARM_THUMB         POPMI POPPL POPVS POPVC POPHI POPLS
-syntax keyword goasmOpcode_ARM_THUMB         POPGE POPLT POPGT POPLE POPAL
-syntax keyword goasmOpcode_ARM_THUMB         PUSH PUSHEQ PUSHNE PUSHCS PUSHHS PUSHCC
-syntax keyword goasmOpcode_ARM_THUMB         PUSHLO PUSHMI PUSHPL PUSHVS PUSHVC
-syntax keyword goasmOpcode_ARM_THUMB         PUSHHI PUSHLS PUSHGE PUSHLT PUSHGT
-syntax keyword goasmOpcode_ARM_THUMB         PUSHLE PUSHAL
-syntax keyword goasmOpcode_ARM_THUMB         ROR ROREQ RORNE RORCS RORHS RORCC RORLO
-syntax keyword goasmOpcode_ARM_THUMB         RORMI RORPL RORVS RORVC RORHI RORLS
-syntax keyword goasmOpcode_ARM_THUMB         RORGE RORLT RORGT RORLE RORAL
-syntax keyword goasmOpcode_ARM_THUMB         SB SBCEQ SBCNE SBCCS SBCHS SBCCC SBCLO
-syntax keyword goasmOpcode_ARM_THUMB         SBCMI SBCPL SBCVS SBCVC SBCHI SBCLS
-syntax keyword goasmOpcode_ARM_THUMB         SBCGE SBCLT SBCGT SBCLE SBCAL
-syntax keyword goasmOpcode_ARM_THUMB         STMIA STMIAEQ STMIANE STMIACS STMIAHS
-syntax keyword goasmOpcode_ARM_THUMB         STMIACC STMIALO STMIAMI STMIAPL STMIAVS
-syntax keyword goasmOpcode_ARM_THUMB         STMIAVC STMIAHI STMIALS STMIAGE STMIALT
-syntax keyword goasmOpcode_ARM_THUMB         STMIAGT STMIALE STMIAAL
-syntax keyword goasmOpcode_ARM_THUMB         STR STREQ STRNE STRCS STRHS STRCC STRLO
-syntax keyword goasmOpcode_ARM_THUMB         STRMI STRPL STRVS STRVC STRHI STRLS
-syntax keyword goasmOpcode_ARM_THUMB         STRGE STRLT STRGT STRLE STRAL
-syntax keyword goasmOpcode_ARM_THUMB         STRB STRBEQ STRBNE STRBCS STRBHS STRBCC
-syntax keyword goasmOpcode_ARM_THUMB         STRBLO STRBMI STRBPL STRBVS STRBVC
-syntax keyword goasmOpcode_ARM_THUMB         STRBHI STRBLS STRBGE STRBLT STRBGT
-syntax keyword goasmOpcode_ARM_THUMB         STRBLE STRBAL
-syntax keyword goasmOpcode_ARM_THUMB         STRH STRHEQ STRHNE STRHCS STRHHS STRHCC
-syntax keyword goasmOpcode_ARM_THUMB         STRHLO STRHMI STRHPL STRHVS STRHVC
-syntax keyword goasmOpcode_ARM_THUMB         STRHHI STRHLS STRHGE STRHLT STRHGT
-syntax keyword goasmOpcode_ARM_THUMB         STRHLE STRHAL
-syntax keyword goasmOpcode_ARM_THUMB         SWI SWIEQ SWINE SWICS SWIHS SWICC SWILO
-syntax keyword goasmOpcode_ARM_THUMB         SWIMI SWIPL SWIVS SWIVC SWIHI SWILS
-syntax keyword goasmOpcode_ARM_THUMB         SWIGE SWILT SWIGT SWILE SWIAL
-syntax keyword goasmOpcode_ARM_THUMB         SUB SUBEQ SUBNE SUBCS SUBHS SUBCC SUBLO
-syntax keyword goasmOpcode_ARM_THUMB         SUBMI SUBPL SUBVS SUBVC SUBHI SUBLS
-syntax keyword goasmOpcode_ARM_THUMB         SUBGE SUBLT SUBGT SUBLE SUBAL
-syntax keyword goasmOpcode_ARM_THUMB         TST TSTEQ TSTNE TSTCS TSTHS TSTCC TSTLO
-syntax keyword goasmOpcode_ARM_THUMB         TSTMI TSTPL TSTVS TSTVC TSTHI TSTLS
-syntax keyword goasmOpcode_ARM_THUMB         TSTGE TSTLT TSTGT TSTLE TSTAL
-
-"-- Section: AVR
-syntax keyword goasmOpcode_AVR       ADC ADD ADIW AND ANDI ASR
-syntax keyword goasmOpcode_AVR       BCLR BLD BRBC BRBS BRCC BRCS BREAK BREQ BRGE
-syntax keyword goasmOpcode_AVR       BRHC BRHS BRID BRIE BRLO BRLT BRMI BRNE BRPL
-syntax keyword goasmOpcode_AVR       BRSH BRTC BRTS BRVC BRVS BSET BST
-syntax keyword goasmOpcode_AVR       CALL CBI CBR CLC CLH CLI CLN CLR CLS CLT CLV
-syntax keyword goasmOpcode_AVR       CLZ COM CP CPC CPI CPSE DEC DES EICALL EIJMP
-syntax keyword goasmOpcode_AVR       ELPM EOR FMUL FMULS FMULSU ICALL IJMP IN INC
-syntax keyword goasmOpcode_AVR       JMP LAC LAS LAT LD LDD LDI LDS LPM LSL LSR
-syntax keyword goasmOpcode_AVR       MOV MOVW MUL MULS MULSU NEG NOP OR ORI OUT
-syntax keyword goasmOpcode_AVR       POP PUSH RCALL RET RETI RJMP ROL ROR SBC SBCI
-syntax keyword goasmOpcode_AVR       SBI SBIC SBIS SBIW SBR SBRC SBRS SEC SEH SEI
-syntax keyword goasmOpcode_AVR       SEN SER SES SET SEV SEZ SLEEP SPM ST STD STS
-syntax keyword goasmOpcode_AVR       SUB SUBI SWAP TST WDR XCH
+"" X86 AVX
+"" https://github.com/golang/go/blob/master/src/cmd/internal/obj/x86/aname.go
+syntax keyword goasmOpcodeX86AVX    AAAA
+syntax keyword goasmOpcodeX86AVX    AAAD
+syntax keyword goasmOpcodeX86AVX    AAAM
+syntax keyword goasmOpcodeX86AVX    AAAS
+syntax keyword goasmOpcodeX86AVX    AADCB
+syntax keyword goasmOpcodeX86AVX    AADCL
+syntax keyword goasmOpcodeX86AVX    AADCQ
+syntax keyword goasmOpcodeX86AVX    AADCW
+syntax keyword goasmOpcodeX86AVX    AADCXL
+syntax keyword goasmOpcodeX86AVX    AADCXQ
+syntax keyword goasmOpcodeX86AVX    AADDB
+syntax keyword goasmOpcodeX86AVX    AADDL
+syntax keyword goasmOpcodeX86AVX    AADDPD
+syntax keyword goasmOpcodeX86AVX    AADDPS
+syntax keyword goasmOpcodeX86AVX    AADDQ
+syntax keyword goasmOpcodeX86AVX    AADDSD
+syntax keyword goasmOpcodeX86AVX    AADDSS
+syntax keyword goasmOpcodeX86AVX    AADDSUBPD
+syntax keyword goasmOpcodeX86AVX    AADDSUBPS
+syntax keyword goasmOpcodeX86AVX    AADDW
+syntax keyword goasmOpcodeX86AVX    AADJSP
+syntax keyword goasmOpcodeX86AVX    AADOXL
+syntax keyword goasmOpcodeX86AVX    AADOXQ
+syntax keyword goasmOpcodeX86AVX    AAESDEC
+syntax keyword goasmOpcodeX86AVX    AAESDECLAST
+syntax keyword goasmOpcodeX86AVX    AAESENC
+syntax keyword goasmOpcodeX86AVX    AAESENCLAST
+syntax keyword goasmOpcodeX86AVX    AAESIMC
+syntax keyword goasmOpcodeX86AVX    AAESKEYGENASSIST
+syntax keyword goasmOpcodeX86AVX    AANDB
+syntax keyword goasmOpcodeX86AVX    AANDL
+syntax keyword goasmOpcodeX86AVX    AANDNL
+syntax keyword goasmOpcodeX86AVX    AANDNPD
+syntax keyword goasmOpcodeX86AVX    AANDNPS
+syntax keyword goasmOpcodeX86AVX    AANDNQ
+syntax keyword goasmOpcodeX86AVX    AANDPD
+syntax keyword goasmOpcodeX86AVX    AANDPS
+syntax keyword goasmOpcodeX86AVX    AANDQ
+syntax keyword goasmOpcodeX86AVX    AANDW
+syntax keyword goasmOpcodeX86AVX    AARPL
+syntax keyword goasmOpcodeX86AVX    ABEXTRL
+syntax keyword goasmOpcodeX86AVX    ABEXTRQ
+syntax keyword goasmOpcodeX86AVX    ABLENDPD
+syntax keyword goasmOpcodeX86AVX    ABLENDPS
+syntax keyword goasmOpcodeX86AVX    ABLENDVPD
+syntax keyword goasmOpcodeX86AVX    ABLENDVPS
+syntax keyword goasmOpcodeX86AVX    ABLSIL
+syntax keyword goasmOpcodeX86AVX    ABLSIQ
+syntax keyword goasmOpcodeX86AVX    ABLSMSKL
+syntax keyword goasmOpcodeX86AVX    ABLSMSKQ
+syntax keyword goasmOpcodeX86AVX    ABLSRL
+syntax keyword goasmOpcodeX86AVX    ABLSRQ
+syntax keyword goasmOpcodeX86AVX    ABOUNDL
+syntax keyword goasmOpcodeX86AVX    ABOUNDW
+syntax keyword goasmOpcodeX86AVX    ABSFL
+syntax keyword goasmOpcodeX86AVX    ABSFQ
+syntax keyword goasmOpcodeX86AVX    ABSFW
+syntax keyword goasmOpcodeX86AVX    ABSRL
+syntax keyword goasmOpcodeX86AVX    ABSRQ
+syntax keyword goasmOpcodeX86AVX    ABSRW
+syntax keyword goasmOpcodeX86AVX    ABSWAPL
+syntax keyword goasmOpcodeX86AVX    ABSWAPQ
+syntax keyword goasmOpcodeX86AVX    ABTCL
+syntax keyword goasmOpcodeX86AVX    ABTCQ
+syntax keyword goasmOpcodeX86AVX    ABTCW
+syntax keyword goasmOpcodeX86AVX    ABTL
+syntax keyword goasmOpcodeX86AVX    ABTQ
+syntax keyword goasmOpcodeX86AVX    ABTRL
+syntax keyword goasmOpcodeX86AVX    ABTRQ
+syntax keyword goasmOpcodeX86AVX    ABTRW
+syntax keyword goasmOpcodeX86AVX    ABTSL
+syntax keyword goasmOpcodeX86AVX    ABTSQ
+syntax keyword goasmOpcodeX86AVX    ABTSW
+syntax keyword goasmOpcodeX86AVX    ABTW
+syntax keyword goasmOpcodeX86AVX    ABYTE
+syntax keyword goasmOpcodeX86AVX    ABZHIL
+syntax keyword goasmOpcodeX86AVX    ABZHIQ
+syntax keyword goasmOpcodeX86AVX    ACBW
+syntax keyword goasmOpcodeX86AVX    ACDQ
+syntax keyword goasmOpcodeX86AVX    ACDQE
+syntax keyword goasmOpcodeX86AVX    ACLAC
+syntax keyword goasmOpcodeX86AVX    ACLC
+syntax keyword goasmOpcodeX86AVX    ACLD
+syntax keyword goasmOpcodeX86AVX    ACLDEMOTE
+syntax keyword goasmOpcodeX86AVX    ACLFLUSH
+syntax keyword goasmOpcodeX86AVX    ACLFLUSHOPT
+syntax keyword goasmOpcodeX86AVX    ACLI
+syntax keyword goasmOpcodeX86AVX    ACLTS
+syntax keyword goasmOpcodeX86AVX    ACLWB
+syntax keyword goasmOpcodeX86AVX    ACMC
+syntax keyword goasmOpcodeX86AVX    ACMOVLCC
+syntax keyword goasmOpcodeX86AVX    ACMOVLCS
+syntax keyword goasmOpcodeX86AVX    ACMOVLEQ
+syntax keyword goasmOpcodeX86AVX    ACMOVLGE
+syntax keyword goasmOpcodeX86AVX    ACMOVLGT
+syntax keyword goasmOpcodeX86AVX    ACMOVLHI
+syntax keyword goasmOpcodeX86AVX    ACMOVLLE
+syntax keyword goasmOpcodeX86AVX    ACMOVLLS
+syntax keyword goasmOpcodeX86AVX    ACMOVLLT
+syntax keyword goasmOpcodeX86AVX    ACMOVLMI
+syntax keyword goasmOpcodeX86AVX    ACMOVLNE
+syntax keyword goasmOpcodeX86AVX    ACMOVLOC
+syntax keyword goasmOpcodeX86AVX    ACMOVLOS
+syntax keyword goasmOpcodeX86AVX    ACMOVLPC
+syntax keyword goasmOpcodeX86AVX    ACMOVLPL
+syntax keyword goasmOpcodeX86AVX    ACMOVLPS
+syntax keyword goasmOpcodeX86AVX    ACMOVQCC
+syntax keyword goasmOpcodeX86AVX    ACMOVQCS
+syntax keyword goasmOpcodeX86AVX    ACMOVQEQ
+syntax keyword goasmOpcodeX86AVX    ACMOVQGE
+syntax keyword goasmOpcodeX86AVX    ACMOVQGT
+syntax keyword goasmOpcodeX86AVX    ACMOVQHI
+syntax keyword goasmOpcodeX86AVX    ACMOVQLE
+syntax keyword goasmOpcodeX86AVX    ACMOVQLS
+syntax keyword goasmOpcodeX86AVX    ACMOVQLT
+syntax keyword goasmOpcodeX86AVX    ACMOVQMI
+syntax keyword goasmOpcodeX86AVX    ACMOVQNE
+syntax keyword goasmOpcodeX86AVX    ACMOVQOC
+syntax keyword goasmOpcodeX86AVX    ACMOVQOS
+syntax keyword goasmOpcodeX86AVX    ACMOVQPC
+syntax keyword goasmOpcodeX86AVX    ACMOVQPL
+syntax keyword goasmOpcodeX86AVX    ACMOVQPS
+syntax keyword goasmOpcodeX86AVX    ACMOVWCC
+syntax keyword goasmOpcodeX86AVX    ACMOVWCS
+syntax keyword goasmOpcodeX86AVX    ACMOVWEQ
+syntax keyword goasmOpcodeX86AVX    ACMOVWGE
+syntax keyword goasmOpcodeX86AVX    ACMOVWGT
+syntax keyword goasmOpcodeX86AVX    ACMOVWHI
+syntax keyword goasmOpcodeX86AVX    ACMOVWLE
+syntax keyword goasmOpcodeX86AVX    ACMOVWLS
+syntax keyword goasmOpcodeX86AVX    ACMOVWLT
+syntax keyword goasmOpcodeX86AVX    ACMOVWMI
+syntax keyword goasmOpcodeX86AVX    ACMOVWNE
+syntax keyword goasmOpcodeX86AVX    ACMOVWOC
+syntax keyword goasmOpcodeX86AVX    ACMOVWOS
+syntax keyword goasmOpcodeX86AVX    ACMOVWPC
+syntax keyword goasmOpcodeX86AVX    ACMOVWPL
+syntax keyword goasmOpcodeX86AVX    ACMOVWPS
+syntax keyword goasmOpcodeX86AVX    ACMPB
+syntax keyword goasmOpcodeX86AVX    ACMPL
+syntax keyword goasmOpcodeX86AVX    ACMPPD
+syntax keyword goasmOpcodeX86AVX    ACMPPS
+syntax keyword goasmOpcodeX86AVX    ACMPQ
+syntax keyword goasmOpcodeX86AVX    ACMPSB
+syntax keyword goasmOpcodeX86AVX    ACMPSD
+syntax keyword goasmOpcodeX86AVX    ACMPSL
+syntax keyword goasmOpcodeX86AVX    ACMPSQ
+syntax keyword goasmOpcodeX86AVX    ACMPSS
+syntax keyword goasmOpcodeX86AVX    ACMPSW
+syntax keyword goasmOpcodeX86AVX    ACMPW
+syntax keyword goasmOpcodeX86AVX    ACMPXCHG16B
+syntax keyword goasmOpcodeX86AVX    ACMPXCHG8B
+syntax keyword goasmOpcodeX86AVX    ACMPXCHGB
+syntax keyword goasmOpcodeX86AVX    ACMPXCHGL
+syntax keyword goasmOpcodeX86AVX    ACMPXCHGQ
+syntax keyword goasmOpcodeX86AVX    ACMPXCHGW
+syntax keyword goasmOpcodeX86AVX    ACOMISD
+syntax keyword goasmOpcodeX86AVX    ACOMISS
+syntax keyword goasmOpcodeX86AVX    ACPUID
+syntax keyword goasmOpcodeX86AVX    ACQO
+syntax keyword goasmOpcodeX86AVX    ACRC32B
+syntax keyword goasmOpcodeX86AVX    ACRC32L
+syntax keyword goasmOpcodeX86AVX    ACRC32Q
+syntax keyword goasmOpcodeX86AVX    ACRC32W
+syntax keyword goasmOpcodeX86AVX    ACVTPD2PL
+syntax keyword goasmOpcodeX86AVX    ACVTPD2PS
+syntax keyword goasmOpcodeX86AVX    ACVTPL2PD
+syntax keyword goasmOpcodeX86AVX    ACVTPL2PS
+syntax keyword goasmOpcodeX86AVX    ACVTPS2PD
+syntax keyword goasmOpcodeX86AVX    ACVTPS2PL
+syntax keyword goasmOpcodeX86AVX    ACVTSD2SL
+syntax keyword goasmOpcodeX86AVX    ACVTSD2SQ
+syntax keyword goasmOpcodeX86AVX    ACVTSD2SS
+syntax keyword goasmOpcodeX86AVX    ACVTSL2SD
+syntax keyword goasmOpcodeX86AVX    ACVTSL2SS
+syntax keyword goasmOpcodeX86AVX    ACVTSQ2SD
+syntax keyword goasmOpcodeX86AVX    ACVTSQ2SS
+syntax keyword goasmOpcodeX86AVX    ACVTSS2SD
+syntax keyword goasmOpcodeX86AVX    ACVTSS2SL
+syntax keyword goasmOpcodeX86AVX    ACVTSS2SQ
+syntax keyword goasmOpcodeX86AVX    ACVTTPD2PL
+syntax keyword goasmOpcodeX86AVX    ACVTTPS2PL
+syntax keyword goasmOpcodeX86AVX    ACVTTSD2SL
+syntax keyword goasmOpcodeX86AVX    ACVTTSD2SQ
+syntax keyword goasmOpcodeX86AVX    ACVTTSS2SL
+syntax keyword goasmOpcodeX86AVX    ACVTTSS2SQ
+syntax keyword goasmOpcodeX86AVX    ACWD
+syntax keyword goasmOpcodeX86AVX    ACWDE
+syntax keyword goasmOpcodeX86AVX    ADAA
+syntax keyword goasmOpcodeX86AVX    ADAS
+syntax keyword goasmOpcodeX86AVX    ADECB
+syntax keyword goasmOpcodeX86AVX    ADECL
+syntax keyword goasmOpcodeX86AVX    ADECQ
+syntax keyword goasmOpcodeX86AVX    ADECW
+syntax keyword goasmOpcodeX86AVX    ADIVB
+syntax keyword goasmOpcodeX86AVX    ADIVL
+syntax keyword goasmOpcodeX86AVX    ADIVPD
+syntax keyword goasmOpcodeX86AVX    ADIVPS
+syntax keyword goasmOpcodeX86AVX    ADIVQ
+syntax keyword goasmOpcodeX86AVX    ADIVSD
+syntax keyword goasmOpcodeX86AVX    ADIVSS
+syntax keyword goasmOpcodeX86AVX    ADIVW
+syntax keyword goasmOpcodeX86AVX    ADPPD
+syntax keyword goasmOpcodeX86AVX    ADPPS
+syntax keyword goasmOpcodeX86AVX    AEMMS
+syntax keyword goasmOpcodeX86AVX    AENTER
+syntax keyword goasmOpcodeX86AVX    AEXTRACTPS
+syntax keyword goasmOpcodeX86AVX    AF2XM1
+syntax keyword goasmOpcodeX86AVX    AFABS
+syntax keyword goasmOpcodeX86AVX    AFADDD
+syntax keyword goasmOpcodeX86AVX    AFADDDP
+syntax keyword goasmOpcodeX86AVX    AFADDF
+syntax keyword goasmOpcodeX86AVX    AFADDL
+syntax keyword goasmOpcodeX86AVX    AFADDW
+syntax keyword goasmOpcodeX86AVX    AFBLD
+syntax keyword goasmOpcodeX86AVX    AFBSTP
+syntax keyword goasmOpcodeX86AVX    AFCHS
+syntax keyword goasmOpcodeX86AVX    AFCLEX
+syntax keyword goasmOpcodeX86AVX    AFCMOVB
+syntax keyword goasmOpcodeX86AVX    AFCMOVBE
+syntax keyword goasmOpcodeX86AVX    AFCMOVCC
+syntax keyword goasmOpcodeX86AVX    AFCMOVCS
+syntax keyword goasmOpcodeX86AVX    AFCMOVE
+syntax keyword goasmOpcodeX86AVX    AFCMOVEQ
+syntax keyword goasmOpcodeX86AVX    AFCMOVHI
+syntax keyword goasmOpcodeX86AVX    AFCMOVLS
+syntax keyword goasmOpcodeX86AVX    AFCMOVNB
+syntax keyword goasmOpcodeX86AVX    AFCMOVNBE
+syntax keyword goasmOpcodeX86AVX    AFCMOVNE
+syntax keyword goasmOpcodeX86AVX    AFCMOVNU
+syntax keyword goasmOpcodeX86AVX    AFCMOVU
+syntax keyword goasmOpcodeX86AVX    AFCMOVUN
+syntax keyword goasmOpcodeX86AVX    AFCOMD
+syntax keyword goasmOpcodeX86AVX    AFCOMDP
+syntax keyword goasmOpcodeX86AVX    AFCOMDPP
+syntax keyword goasmOpcodeX86AVX    AFCOMF
+syntax keyword goasmOpcodeX86AVX    AFCOMFP
+syntax keyword goasmOpcodeX86AVX    AFCOMI
+syntax keyword goasmOpcodeX86AVX    AFCOMIP
+syntax keyword goasmOpcodeX86AVX    AFCOML
+syntax keyword goasmOpcodeX86AVX    AFCOMLP
+syntax keyword goasmOpcodeX86AVX    AFCOMW
+syntax keyword goasmOpcodeX86AVX    AFCOMWP
+syntax keyword goasmOpcodeX86AVX    AFCOS
+syntax keyword goasmOpcodeX86AVX    AFDECSTP
+syntax keyword goasmOpcodeX86AVX    AFDIVD
+syntax keyword goasmOpcodeX86AVX    AFDIVDP
+syntax keyword goasmOpcodeX86AVX    AFDIVF
+syntax keyword goasmOpcodeX86AVX    AFDIVL
+syntax keyword goasmOpcodeX86AVX    AFDIVRD
+syntax keyword goasmOpcodeX86AVX    AFDIVRDP
+syntax keyword goasmOpcodeX86AVX    AFDIVRF
+syntax keyword goasmOpcodeX86AVX    AFDIVRL
+syntax keyword goasmOpcodeX86AVX    AFDIVRW
+syntax keyword goasmOpcodeX86AVX    AFDIVW
+syntax keyword goasmOpcodeX86AVX    AFFREE
+syntax keyword goasmOpcodeX86AVX    AFINCSTP
+syntax keyword goasmOpcodeX86AVX    AFINIT
+syntax keyword goasmOpcodeX86AVX    AFLD1
+syntax keyword goasmOpcodeX86AVX    AFLDCW
+syntax keyword goasmOpcodeX86AVX    AFLDENV
+syntax keyword goasmOpcodeX86AVX    AFLDL2E
+syntax keyword goasmOpcodeX86AVX    AFLDL2T
+syntax keyword goasmOpcodeX86AVX    AFLDLG2
+syntax keyword goasmOpcodeX86AVX    AFLDLN2
+syntax keyword goasmOpcodeX86AVX    AFLDPI
+syntax keyword goasmOpcodeX86AVX    AFLDZ
+syntax keyword goasmOpcodeX86AVX    AFMOVB
+syntax keyword goasmOpcodeX86AVX    AFMOVBP
+syntax keyword goasmOpcodeX86AVX    AFMOVD
+syntax keyword goasmOpcodeX86AVX    AFMOVDP
+syntax keyword goasmOpcodeX86AVX    AFMOVF
+syntax keyword goasmOpcodeX86AVX    AFMOVFP
+syntax keyword goasmOpcodeX86AVX    AFMOVL
+syntax keyword goasmOpcodeX86AVX    AFMOVLP
+syntax keyword goasmOpcodeX86AVX    AFMOVV
+syntax keyword goasmOpcodeX86AVX    AFMOVVP
+syntax keyword goasmOpcodeX86AVX    AFMOVW
+syntax keyword goasmOpcodeX86AVX    AFMOVWP
+syntax keyword goasmOpcodeX86AVX    AFMOVX
+syntax keyword goasmOpcodeX86AVX    AFMOVXP
+syntax keyword goasmOpcodeX86AVX    AFMULD
+syntax keyword goasmOpcodeX86AVX    AFMULDP
+syntax keyword goasmOpcodeX86AVX    AFMULF
+syntax keyword goasmOpcodeX86AVX    AFMULL
+syntax keyword goasmOpcodeX86AVX    AFMULW
+syntax keyword goasmOpcodeX86AVX    AFNOP
+syntax keyword goasmOpcodeX86AVX    AFPATAN
+syntax keyword goasmOpcodeX86AVX    AFPREM
+syntax keyword goasmOpcodeX86AVX    AFPREM1
+syntax keyword goasmOpcodeX86AVX    AFPTAN
+syntax keyword goasmOpcodeX86AVX    AFRNDINT
+syntax keyword goasmOpcodeX86AVX    AFRSTOR
+syntax keyword goasmOpcodeX86AVX    AFSAVE
+syntax keyword goasmOpcodeX86AVX    AFSCALE
+syntax keyword goasmOpcodeX86AVX    AFSIN
+syntax keyword goasmOpcodeX86AVX    AFSINCOS
+syntax keyword goasmOpcodeX86AVX    AFSQRT
+syntax keyword goasmOpcodeX86AVX    AFSTCW
+syntax keyword goasmOpcodeX86AVX    AFSTENV
+syntax keyword goasmOpcodeX86AVX    AFSTSW
+syntax keyword goasmOpcodeX86AVX    AFSUBD
+syntax keyword goasmOpcodeX86AVX    AFSUBDP
+syntax keyword goasmOpcodeX86AVX    AFSUBF
+syntax keyword goasmOpcodeX86AVX    AFSUBL
+syntax keyword goasmOpcodeX86AVX    AFSUBRD
+syntax keyword goasmOpcodeX86AVX    AFSUBRDP
+syntax keyword goasmOpcodeX86AVX    AFSUBRF
+syntax keyword goasmOpcodeX86AVX    AFSUBRL
+syntax keyword goasmOpcodeX86AVX    AFSUBRW
+syntax keyword goasmOpcodeX86AVX    AFSUBW
+syntax keyword goasmOpcodeX86AVX    AFTST
+syntax keyword goasmOpcodeX86AVX    AFUCOM
+syntax keyword goasmOpcodeX86AVX    AFUCOMI
+syntax keyword goasmOpcodeX86AVX    AFUCOMIP
+syntax keyword goasmOpcodeX86AVX    AFUCOMP
+syntax keyword goasmOpcodeX86AVX    AFUCOMPP
+syntax keyword goasmOpcodeX86AVX    AFXAM
+syntax keyword goasmOpcodeX86AVX    AFXCHD
+syntax keyword goasmOpcodeX86AVX    AFXRSTOR
+syntax keyword goasmOpcodeX86AVX    AFXRSTOR64
+syntax keyword goasmOpcodeX86AVX    AFXSAVE
+syntax keyword goasmOpcodeX86AVX    AFXSAVE64
+syntax keyword goasmOpcodeX86AVX    AFXTRACT
+syntax keyword goasmOpcodeX86AVX    AFYL2X
+syntax keyword goasmOpcodeX86AVX    AFYL2XP1
+syntax keyword goasmOpcodeX86AVX    AHADDPD
+syntax keyword goasmOpcodeX86AVX    AHADDPS
+syntax keyword goasmOpcodeX86AVX    AHLT
+syntax keyword goasmOpcodeX86AVX    AHSUBPD
+syntax keyword goasmOpcodeX86AVX    AHSUBPS
+syntax keyword goasmOpcodeX86AVX    AICEBP
+syntax keyword goasmOpcodeX86AVX    AIDIVB
+syntax keyword goasmOpcodeX86AVX    AIDIVL
+syntax keyword goasmOpcodeX86AVX    AIDIVQ
+syntax keyword goasmOpcodeX86AVX    AIDIVW
+syntax keyword goasmOpcodeX86AVX    AIMUL3L
+syntax keyword goasmOpcodeX86AVX    AIMUL3Q
+syntax keyword goasmOpcodeX86AVX    AIMUL3W
+syntax keyword goasmOpcodeX86AVX    AIMULB
+syntax keyword goasmOpcodeX86AVX    AIMULL
+syntax keyword goasmOpcodeX86AVX    AIMULQ
+syntax keyword goasmOpcodeX86AVX    AIMULW
+syntax keyword goasmOpcodeX86AVX    AINB
+syntax keyword goasmOpcodeX86AVX    AINCB
+syntax keyword goasmOpcodeX86AVX    AINCL
+syntax keyword goasmOpcodeX86AVX    AINCQ
+syntax keyword goasmOpcodeX86AVX    AINCW
+syntax keyword goasmOpcodeX86AVX    AINL
+syntax keyword goasmOpcodeX86AVX    AINSB
+syntax keyword goasmOpcodeX86AVX    AINSERTPS
+syntax keyword goasmOpcodeX86AVX    AINSL
+syntax keyword goasmOpcodeX86AVX    AINSW
+syntax keyword goasmOpcodeX86AVX    AINT
+syntax keyword goasmOpcodeX86AVX    AINTO
+syntax keyword goasmOpcodeX86AVX    AINVD
+syntax keyword goasmOpcodeX86AVX    AINVLPG
+syntax keyword goasmOpcodeX86AVX    AINVPCID
+syntax keyword goasmOpcodeX86AVX    AINW
+syntax keyword goasmOpcodeX86AVX    AIRETL
+syntax keyword goasmOpcodeX86AVX    AIRETQ
+syntax keyword goasmOpcodeX86AVX    AIRETW
+" >= unsigned
+syntax keyword goasmOpcodeX86AVX    AJCC 
+" < unsigned
+syntax keyword goasmOpcodeX86AVX    AJCS
+syntax keyword goasmOpcodeX86AVX    AJCXZL
+syntax keyword goasmOpcodeX86AVX    AJCXZQ
+syntax keyword goasmOpcodeX86AVX    AJCXZW
+" == (zero)
+syntax keyword goasmOpcodeX86AVX    AJEQ
+" >= signed
+syntax keyword goasmOpcodeX86AVX    AJGE
+" > signed
+syntax keyword goasmOpcodeX86AVX    AJGT
+" > unsigned
+syntax keyword goasmOpcodeX86AVX    AJHI
+" <= signed
+syntax keyword goasmOpcodeX86AVX    AJLE
+" <= unsigned
+syntax keyword goasmOpcodeX86AVX    AJLS
+" < signed
+syntax keyword goasmOpcodeX86AVX    AJLT
+" sign bit set (negative)
+syntax keyword goasmOpcodeX86AVX    AJMI
+" != (nonzero)
+syntax keyword goasmOpcodeX86AVX    AJNE
+" overflow clear
+syntax keyword goasmOpcodeX86AVX    AJOC
+" overflow set
+syntax keyword goasmOpcodeX86AVX    AJOS
+" parity clear
+syntax keyword goasmOpcodeX86AVX    AJPC
+" sign bit clear (positive)
+syntax keyword goasmOpcodeX86AVX    AJPL
+" parity set
+syntax keyword goasmOpcodeX86AVX    AJPS
+syntax keyword goasmOpcodeX86AVX    AKADDB
+syntax keyword goasmOpcodeX86AVX    AKADDD
+syntax keyword goasmOpcodeX86AVX    AKADDQ
+syntax keyword goasmOpcodeX86AVX    AKADDW
+syntax keyword goasmOpcodeX86AVX    AKANDB
+syntax keyword goasmOpcodeX86AVX    AKANDD
+syntax keyword goasmOpcodeX86AVX    AKANDNB
+syntax keyword goasmOpcodeX86AVX    AKANDND
+syntax keyword goasmOpcodeX86AVX    AKANDNQ
+syntax keyword goasmOpcodeX86AVX    AKANDNW
+syntax keyword goasmOpcodeX86AVX    AKANDQ
+syntax keyword goasmOpcodeX86AVX    AKANDW
+syntax keyword goasmOpcodeX86AVX    AKMOVB
+syntax keyword goasmOpcodeX86AVX    AKMOVD
+syntax keyword goasmOpcodeX86AVX    AKMOVQ
+syntax keyword goasmOpcodeX86AVX    AKMOVW
+syntax keyword goasmOpcodeX86AVX    AKNOTB
+syntax keyword goasmOpcodeX86AVX    AKNOTD
+syntax keyword goasmOpcodeX86AVX    AKNOTQ
+syntax keyword goasmOpcodeX86AVX    AKNOTW
+syntax keyword goasmOpcodeX86AVX    AKORB
+syntax keyword goasmOpcodeX86AVX    AKORD
+syntax keyword goasmOpcodeX86AVX    AKORQ
+syntax keyword goasmOpcodeX86AVX    AKORTESTB
+syntax keyword goasmOpcodeX86AVX    AKORTESTD
+syntax keyword goasmOpcodeX86AVX    AKORTESTQ
+syntax keyword goasmOpcodeX86AVX    AKORTESTW
+syntax keyword goasmOpcodeX86AVX    AKORW
+syntax keyword goasmOpcodeX86AVX    AKSHIFTLB
+syntax keyword goasmOpcodeX86AVX    AKSHIFTLD
+syntax keyword goasmOpcodeX86AVX    AKSHIFTLQ
+syntax keyword goasmOpcodeX86AVX    AKSHIFTLW
+syntax keyword goasmOpcodeX86AVX    AKSHIFTRB
+syntax keyword goasmOpcodeX86AVX    AKSHIFTRD
+syntax keyword goasmOpcodeX86AVX    AKSHIFTRQ
+syntax keyword goasmOpcodeX86AVX    AKSHIFTRW
+syntax keyword goasmOpcodeX86AVX    AKTESTB
+syntax keyword goasmOpcodeX86AVX    AKTESTD
+syntax keyword goasmOpcodeX86AVX    AKTESTQ
+syntax keyword goasmOpcodeX86AVX    AKTESTW
+syntax keyword goasmOpcodeX86AVX    AKUNPCKBW
+syntax keyword goasmOpcodeX86AVX    AKUNPCKDQ
+syntax keyword goasmOpcodeX86AVX    AKUNPCKWD
+syntax keyword goasmOpcodeX86AVX    AKXNORB
+syntax keyword goasmOpcodeX86AVX    AKXNORD
+syntax keyword goasmOpcodeX86AVX    AKXNORQ
+syntax keyword goasmOpcodeX86AVX    AKXNORW
+syntax keyword goasmOpcodeX86AVX    AKXORB
+syntax keyword goasmOpcodeX86AVX    AKXORD
+syntax keyword goasmOpcodeX86AVX    AKXORQ
+syntax keyword goasmOpcodeX86AVX    AKXORW
+syntax keyword goasmOpcodeX86AVX    ALAHF
+syntax keyword goasmOpcodeX86AVX    ALARL
+syntax keyword goasmOpcodeX86AVX    ALARQ
+syntax keyword goasmOpcodeX86AVX    ALARW
+syntax keyword goasmOpcodeX86AVX    ALDDQU
+syntax keyword goasmOpcodeX86AVX    ALDMXCSR
+syntax keyword goasmOpcodeX86AVX    ALEAL
+syntax keyword goasmOpcodeX86AVX    ALEAQ
+syntax keyword goasmOpcodeX86AVX    ALEAVEL
+syntax keyword goasmOpcodeX86AVX    ALEAVEQ
+syntax keyword goasmOpcodeX86AVX    ALEAVEW
+syntax keyword goasmOpcodeX86AVX    ALEAW
+syntax keyword goasmOpcodeX86AVX    ALFENCE
+syntax keyword goasmOpcodeX86AVX    ALFSL
+syntax keyword goasmOpcodeX86AVX    ALFSQ
+syntax keyword goasmOpcodeX86AVX    ALFSW
+syntax keyword goasmOpcodeX86AVX    ALGDT
+syntax keyword goasmOpcodeX86AVX    ALGSL
+syntax keyword goasmOpcodeX86AVX    ALGSQ
+syntax keyword goasmOpcodeX86AVX    ALGSW
+syntax keyword goasmOpcodeX86AVX    ALIDT
+syntax keyword goasmOpcodeX86AVX    ALLDT
+syntax keyword goasmOpcodeX86AVX    ALMSW
+syntax keyword goasmOpcodeX86AVX    ALOCK
+syntax keyword goasmOpcodeX86AVX    ALODSB
+syntax keyword goasmOpcodeX86AVX    ALODSL
+syntax keyword goasmOpcodeX86AVX    ALODSQ
+syntax keyword goasmOpcodeX86AVX    ALODSW
+syntax keyword goasmOpcodeX86AVX    ALONG
+syntax keyword goasmOpcodeX86AVX    ALOOP
+syntax keyword goasmOpcodeX86AVX    ALOOPEQ
+syntax keyword goasmOpcodeX86AVX    ALOOPNE
+syntax keyword goasmOpcodeX86AVX    ALSLL
+syntax keyword goasmOpcodeX86AVX    ALSLQ
+syntax keyword goasmOpcodeX86AVX    ALSLW
+syntax keyword goasmOpcodeX86AVX    ALSSL
+syntax keyword goasmOpcodeX86AVX    ALSSQ
+syntax keyword goasmOpcodeX86AVX    ALSSW
+syntax keyword goasmOpcodeX86AVX    ALTR
+syntax keyword goasmOpcodeX86AVX    ALZCNTL
+syntax keyword goasmOpcodeX86AVX    ALZCNTQ
+syntax keyword goasmOpcodeX86AVX    ALZCNTW
+syntax keyword goasmOpcodeX86AVX    AMASKMOVOU
+syntax keyword goasmOpcodeX86AVX    AMASKMOVQ
+syntax keyword goasmOpcodeX86AVX    AMAXPD
+syntax keyword goasmOpcodeX86AVX    AMAXPS
+syntax keyword goasmOpcodeX86AVX    AMAXSD
+syntax keyword goasmOpcodeX86AVX    AMAXSS
+syntax keyword goasmOpcodeX86AVX    AMFENCE
+syntax keyword goasmOpcodeX86AVX    AMINPD
+syntax keyword goasmOpcodeX86AVX    AMINPS
+syntax keyword goasmOpcodeX86AVX    AMINSD
+syntax keyword goasmOpcodeX86AVX    AMINSS
+syntax keyword goasmOpcodeX86AVX    AMONITOR
+syntax keyword goasmOpcodeX86AVX    AMOVAPD
+syntax keyword goasmOpcodeX86AVX    AMOVAPS
+syntax keyword goasmOpcodeX86AVX    AMOVB
+syntax keyword goasmOpcodeX86AVX    AMOVBEL
+syntax keyword goasmOpcodeX86AVX    AMOVBEQ
+syntax keyword goasmOpcodeX86AVX    AMOVBEW
+syntax keyword goasmOpcodeX86AVX    AMOVBLSX
+syntax keyword goasmOpcodeX86AVX    AMOVBLZX
+syntax keyword goasmOpcodeX86AVX    AMOVBQSX
+syntax keyword goasmOpcodeX86AVX    AMOVBQZX
+syntax keyword goasmOpcodeX86AVX    AMOVBWSX
+syntax keyword goasmOpcodeX86AVX    AMOVBWZX
+syntax keyword goasmOpcodeX86AVX    AMOVDDUP
+syntax keyword goasmOpcodeX86AVX    AMOVHLPS
+syntax keyword goasmOpcodeX86AVX    AMOVHPD
+syntax keyword goasmOpcodeX86AVX    AMOVHPS
+syntax keyword goasmOpcodeX86AVX    AMOVL
+syntax keyword goasmOpcodeX86AVX    AMOVLHPS
+syntax keyword goasmOpcodeX86AVX    AMOVLPD
+syntax keyword goasmOpcodeX86AVX    AMOVLPS
+syntax keyword goasmOpcodeX86AVX    AMOVLQSX
+syntax keyword goasmOpcodeX86AVX    AMOVLQZX
+syntax keyword goasmOpcodeX86AVX    AMOVMSKPD
+syntax keyword goasmOpcodeX86AVX    AMOVMSKPS
+syntax keyword goasmOpcodeX86AVX    AMOVNTDQA
+syntax keyword goasmOpcodeX86AVX    AMOVNTIL
+syntax keyword goasmOpcodeX86AVX    AMOVNTIQ
+syntax keyword goasmOpcodeX86AVX    AMOVNTO
+syntax keyword goasmOpcodeX86AVX    AMOVNTPD
+syntax keyword goasmOpcodeX86AVX    AMOVNTPS
+syntax keyword goasmOpcodeX86AVX    AMOVNTQ
+syntax keyword goasmOpcodeX86AVX    AMOVO
+syntax keyword goasmOpcodeX86AVX    AMOVOU
+syntax keyword goasmOpcodeX86AVX    AMOVQ
+syntax keyword goasmOpcodeX86AVX    AMOVQL
+syntax keyword goasmOpcodeX86AVX    AMOVQOZX
+syntax keyword goasmOpcodeX86AVX    AMOVSB
+syntax keyword goasmOpcodeX86AVX    AMOVSD
+syntax keyword goasmOpcodeX86AVX    AMOVSHDUP
+syntax keyword goasmOpcodeX86AVX    AMOVSL
+syntax keyword goasmOpcodeX86AVX    AMOVSLDUP
+syntax keyword goasmOpcodeX86AVX    AMOVSQ
+syntax keyword goasmOpcodeX86AVX    AMOVSS
+syntax keyword goasmOpcodeX86AVX    AMOVSW
+syntax keyword goasmOpcodeX86AVX    AMOVSWW
+syntax keyword goasmOpcodeX86AVX    AMOVUPD
+syntax keyword goasmOpcodeX86AVX    AMOVUPS
+syntax keyword goasmOpcodeX86AVX    AMOVW
+syntax keyword goasmOpcodeX86AVX    AMOVWLSX
+syntax keyword goasmOpcodeX86AVX    AMOVWLZX
+syntax keyword goasmOpcodeX86AVX    AMOVWQSX
+syntax keyword goasmOpcodeX86AVX    AMOVWQZX
+syntax keyword goasmOpcodeX86AVX    AMOVZWW
+syntax keyword goasmOpcodeX86AVX    AMPSADBW
+syntax keyword goasmOpcodeX86AVX    AMULB
+syntax keyword goasmOpcodeX86AVX    AMULL
+syntax keyword goasmOpcodeX86AVX    AMULPD
+syntax keyword goasmOpcodeX86AVX    AMULPS
+syntax keyword goasmOpcodeX86AVX    AMULQ
+syntax keyword goasmOpcodeX86AVX    AMULSD
+syntax keyword goasmOpcodeX86AVX    AMULSS
+syntax keyword goasmOpcodeX86AVX    AMULW
+syntax keyword goasmOpcodeX86AVX    AMULXL
+syntax keyword goasmOpcodeX86AVX    AMULXQ
+syntax keyword goasmOpcodeX86AVX    AMWAIT
+syntax keyword goasmOpcodeX86AVX    ANEGB
+syntax keyword goasmOpcodeX86AVX    ANEGL
+syntax keyword goasmOpcodeX86AVX    ANEGQ
+syntax keyword goasmOpcodeX86AVX    ANEGW
+syntax keyword goasmOpcodeX86AVX    ANOPL
+syntax keyword goasmOpcodeX86AVX    ANOPW
+syntax keyword goasmOpcodeX86AVX    ANOTB
+syntax keyword goasmOpcodeX86AVX    ANOTL
+syntax keyword goasmOpcodeX86AVX    ANOTQ
+syntax keyword goasmOpcodeX86AVX    ANOTW
+syntax keyword goasmOpcodeX86AVX    AORB
+syntax keyword goasmOpcodeX86AVX    AORL
+syntax keyword goasmOpcodeX86AVX    AORPD
+syntax keyword goasmOpcodeX86AVX    AORPS
+syntax keyword goasmOpcodeX86AVX    AORQ
+syntax keyword goasmOpcodeX86AVX    AORW
+syntax keyword goasmOpcodeX86AVX    AOUTB
+syntax keyword goasmOpcodeX86AVX    AOUTL
+syntax keyword goasmOpcodeX86AVX    AOUTSB
+syntax keyword goasmOpcodeX86AVX    AOUTSL
+syntax keyword goasmOpcodeX86AVX    AOUTSW
+syntax keyword goasmOpcodeX86AVX    AOUTW
+syntax keyword goasmOpcodeX86AVX    APABSB
+syntax keyword goasmOpcodeX86AVX    APABSD
+syntax keyword goasmOpcodeX86AVX    APABSW
+syntax keyword goasmOpcodeX86AVX    APACKSSLW
+syntax keyword goasmOpcodeX86AVX    APACKSSWB
+syntax keyword goasmOpcodeX86AVX    APACKUSDW
+syntax keyword goasmOpcodeX86AVX    APACKUSWB
+syntax keyword goasmOpcodeX86AVX    APADDB
+syntax keyword goasmOpcodeX86AVX    APADDL
+syntax keyword goasmOpcodeX86AVX    APADDQ
+syntax keyword goasmOpcodeX86AVX    APADDSB
+syntax keyword goasmOpcodeX86AVX    APADDSW
+syntax keyword goasmOpcodeX86AVX    APADDUSB
+syntax keyword goasmOpcodeX86AVX    APADDUSW
+syntax keyword goasmOpcodeX86AVX    APADDW
+syntax keyword goasmOpcodeX86AVX    APALIGNR
+syntax keyword goasmOpcodeX86AVX    APAND
+syntax keyword goasmOpcodeX86AVX    APANDN
+syntax keyword goasmOpcodeX86AVX    APAUSE
+syntax keyword goasmOpcodeX86AVX    APAVGB
+syntax keyword goasmOpcodeX86AVX    APAVGW
+syntax keyword goasmOpcodeX86AVX    APBLENDVB
+syntax keyword goasmOpcodeX86AVX    APBLENDW
+syntax keyword goasmOpcodeX86AVX    APCLMULQDQ
+syntax keyword goasmOpcodeX86AVX    APCMPEQB
+syntax keyword goasmOpcodeX86AVX    APCMPEQL
+syntax keyword goasmOpcodeX86AVX    APCMPEQQ
+syntax keyword goasmOpcodeX86AVX    APCMPEQW
+syntax keyword goasmOpcodeX86AVX    APCMPESTRI
+syntax keyword goasmOpcodeX86AVX    APCMPESTRM
+syntax keyword goasmOpcodeX86AVX    APCMPGTB
+syntax keyword goasmOpcodeX86AVX    APCMPGTL
+syntax keyword goasmOpcodeX86AVX    APCMPGTQ
+syntax keyword goasmOpcodeX86AVX    APCMPGTW
+syntax keyword goasmOpcodeX86AVX    APCMPISTRI
+syntax keyword goasmOpcodeX86AVX    APCMPISTRM
+syntax keyword goasmOpcodeX86AVX    APDEPL
+syntax keyword goasmOpcodeX86AVX    APDEPQ
+syntax keyword goasmOpcodeX86AVX    APEXTL
+syntax keyword goasmOpcodeX86AVX    APEXTQ
+syntax keyword goasmOpcodeX86AVX    APEXTRB
+syntax keyword goasmOpcodeX86AVX    APEXTRD
+syntax keyword goasmOpcodeX86AVX    APEXTRQ
+syntax keyword goasmOpcodeX86AVX    APEXTRW
+syntax keyword goasmOpcodeX86AVX    APHADDD
+syntax keyword goasmOpcodeX86AVX    APHADDSW
+syntax keyword goasmOpcodeX86AVX    APHADDW
+syntax keyword goasmOpcodeX86AVX    APHMINPOSUW
+syntax keyword goasmOpcodeX86AVX    APHSUBD
+syntax keyword goasmOpcodeX86AVX    APHSUBSW
+syntax keyword goasmOpcodeX86AVX    APHSUBW
+syntax keyword goasmOpcodeX86AVX    APINSRB
+syntax keyword goasmOpcodeX86AVX    APINSRD
+syntax keyword goasmOpcodeX86AVX    APINSRQ
+syntax keyword goasmOpcodeX86AVX    APINSRW
+syntax keyword goasmOpcodeX86AVX    APMADDUBSW
+syntax keyword goasmOpcodeX86AVX    APMADDWL
+syntax keyword goasmOpcodeX86AVX    APMAXSB
+syntax keyword goasmOpcodeX86AVX    APMAXSD
+syntax keyword goasmOpcodeX86AVX    APMAXSW
+syntax keyword goasmOpcodeX86AVX    APMAXUB
+syntax keyword goasmOpcodeX86AVX    APMAXUD
+syntax keyword goasmOpcodeX86AVX    APMAXUW
+syntax keyword goasmOpcodeX86AVX    APMINSB
+syntax keyword goasmOpcodeX86AVX    APMINSD
+syntax keyword goasmOpcodeX86AVX    APMINSW
+syntax keyword goasmOpcodeX86AVX    APMINUB
+syntax keyword goasmOpcodeX86AVX    APMINUD
+syntax keyword goasmOpcodeX86AVX    APMINUW
+syntax keyword goasmOpcodeX86AVX    APMOVMSKB
+syntax keyword goasmOpcodeX86AVX    APMOVSXBD
+syntax keyword goasmOpcodeX86AVX    APMOVSXBQ
+syntax keyword goasmOpcodeX86AVX    APMOVSXBW
+syntax keyword goasmOpcodeX86AVX    APMOVSXDQ
+syntax keyword goasmOpcodeX86AVX    APMOVSXWD
+syntax keyword goasmOpcodeX86AVX    APMOVSXWQ
+syntax keyword goasmOpcodeX86AVX    APMOVZXBD
+syntax keyword goasmOpcodeX86AVX    APMOVZXBQ
+syntax keyword goasmOpcodeX86AVX    APMOVZXBW
+syntax keyword goasmOpcodeX86AVX    APMOVZXDQ
+syntax keyword goasmOpcodeX86AVX    APMOVZXWD
+syntax keyword goasmOpcodeX86AVX    APMOVZXWQ
+syntax keyword goasmOpcodeX86AVX    APMULDQ
+syntax keyword goasmOpcodeX86AVX    APMULHRSW
+syntax keyword goasmOpcodeX86AVX    APMULHUW
+syntax keyword goasmOpcodeX86AVX    APMULHW
+syntax keyword goasmOpcodeX86AVX    APMULLD
+syntax keyword goasmOpcodeX86AVX    APMULLW
+syntax keyword goasmOpcodeX86AVX    APMULULQ
+syntax keyword goasmOpcodeX86AVX    APOPAL
+syntax keyword goasmOpcodeX86AVX    APOPAW
+syntax keyword goasmOpcodeX86AVX    APOPCNTL
+syntax keyword goasmOpcodeX86AVX    APOPCNTQ
+syntax keyword goasmOpcodeX86AVX    APOPCNTW
+syntax keyword goasmOpcodeX86AVX    APOPFL
+syntax keyword goasmOpcodeX86AVX    APOPFQ
+syntax keyword goasmOpcodeX86AVX    APOPFW
+syntax keyword goasmOpcodeX86AVX    APOPL
+syntax keyword goasmOpcodeX86AVX    APOPQ
+syntax keyword goasmOpcodeX86AVX    APOPW
+syntax keyword goasmOpcodeX86AVX    APOR
+syntax keyword goasmOpcodeX86AVX    APREFETCHNTA
+syntax keyword goasmOpcodeX86AVX    APREFETCHT0
+syntax keyword goasmOpcodeX86AVX    APREFETCHT1
+syntax keyword goasmOpcodeX86AVX    APREFETCHT2
+syntax keyword goasmOpcodeX86AVX    APSADBW
+syntax keyword goasmOpcodeX86AVX    APSHUFB
+syntax keyword goasmOpcodeX86AVX    APSHUFD
+syntax keyword goasmOpcodeX86AVX    APSHUFHW
+syntax keyword goasmOpcodeX86AVX    APSHUFL
+syntax keyword goasmOpcodeX86AVX    APSHUFLW
+syntax keyword goasmOpcodeX86AVX    APSHUFW
+syntax keyword goasmOpcodeX86AVX    APSIGNB
+syntax keyword goasmOpcodeX86AVX    APSIGND
+syntax keyword goasmOpcodeX86AVX    APSIGNW
+syntax keyword goasmOpcodeX86AVX    APSLLL
+syntax keyword goasmOpcodeX86AVX    APSLLO
+syntax keyword goasmOpcodeX86AVX    APSLLQ
+syntax keyword goasmOpcodeX86AVX    APSLLW
+syntax keyword goasmOpcodeX86AVX    APSRAL
+syntax keyword goasmOpcodeX86AVX    APSRAW
+syntax keyword goasmOpcodeX86AVX    APSRLL
+syntax keyword goasmOpcodeX86AVX    APSRLO
+syntax keyword goasmOpcodeX86AVX    APSRLQ
+syntax keyword goasmOpcodeX86AVX    APSRLW
+syntax keyword goasmOpcodeX86AVX    APSUBB
+syntax keyword goasmOpcodeX86AVX    APSUBL
+syntax keyword goasmOpcodeX86AVX    APSUBQ
+syntax keyword goasmOpcodeX86AVX    APSUBSB
+syntax keyword goasmOpcodeX86AVX    APSUBSW
+syntax keyword goasmOpcodeX86AVX    APSUBUSB
+syntax keyword goasmOpcodeX86AVX    APSUBUSW
+syntax keyword goasmOpcodeX86AVX    APSUBW
+syntax keyword goasmOpcodeX86AVX    APTEST
+syntax keyword goasmOpcodeX86AVX    APUNPCKHBW
+syntax keyword goasmOpcodeX86AVX    APUNPCKHLQ
+syntax keyword goasmOpcodeX86AVX    APUNPCKHQDQ
+syntax keyword goasmOpcodeX86AVX    APUNPCKHWL
+syntax keyword goasmOpcodeX86AVX    APUNPCKLBW
+syntax keyword goasmOpcodeX86AVX    APUNPCKLLQ
+syntax keyword goasmOpcodeX86AVX    APUNPCKLQDQ
+syntax keyword goasmOpcodeX86AVX    APUNPCKLWL
+syntax keyword goasmOpcodeX86AVX    APUSHAL
+syntax keyword goasmOpcodeX86AVX    APUSHAW
+syntax keyword goasmOpcodeX86AVX    APUSHFL
+syntax keyword goasmOpcodeX86AVX    APUSHFQ
+syntax keyword goasmOpcodeX86AVX    APUSHFW
+syntax keyword goasmOpcodeX86AVX    APUSHL
+syntax keyword goasmOpcodeX86AVX    APUSHQ
+syntax keyword goasmOpcodeX86AVX    APUSHW
+syntax keyword goasmOpcodeX86AVX    APXOR
+syntax keyword goasmOpcodeX86AVX    AQUAD
+syntax keyword goasmOpcodeX86AVX    ARCLB
+syntax keyword goasmOpcodeX86AVX    ARCLL
+syntax keyword goasmOpcodeX86AVX    ARCLQ
+syntax keyword goasmOpcodeX86AVX    ARCLW
+syntax keyword goasmOpcodeX86AVX    ARCPPS
+syntax keyword goasmOpcodeX86AVX    ARCPSS
+syntax keyword goasmOpcodeX86AVX    ARCRB
+syntax keyword goasmOpcodeX86AVX    ARCRL
+syntax keyword goasmOpcodeX86AVX    ARCRQ
+syntax keyword goasmOpcodeX86AVX    ARCRW
+syntax keyword goasmOpcodeX86AVX    ARDFSBASEL
+syntax keyword goasmOpcodeX86AVX    ARDFSBASEQ
+syntax keyword goasmOpcodeX86AVX    ARDGSBASEL
+syntax keyword goasmOpcodeX86AVX    ARDGSBASEQ
+syntax keyword goasmOpcodeX86AVX    ARDMSR
+syntax keyword goasmOpcodeX86AVX    ARDPKRU
+syntax keyword goasmOpcodeX86AVX    ARDPMC
+syntax keyword goasmOpcodeX86AVX    ARDRANDL
+syntax keyword goasmOpcodeX86AVX    ARDRANDQ
+syntax keyword goasmOpcodeX86AVX    ARDRANDW
+syntax keyword goasmOpcodeX86AVX    ARDSEEDL
+syntax keyword goasmOpcodeX86AVX    ARDSEEDQ
+syntax keyword goasmOpcodeX86AVX    ARDSEEDW
+syntax keyword goasmOpcodeX86AVX    ARDTSC
+syntax keyword goasmOpcodeX86AVX    ARDTSCP
+syntax keyword goasmOpcodeX86AVX    AREP
+syntax keyword goasmOpcodeX86AVX    AREPN
+syntax keyword goasmOpcodeX86AVX    ARETFL
+syntax keyword goasmOpcodeX86AVX    ARETFQ
+syntax keyword goasmOpcodeX86AVX    ARETFW
+syntax keyword goasmOpcodeX86AVX    AROLB
+syntax keyword goasmOpcodeX86AVX    AROLL
+syntax keyword goasmOpcodeX86AVX    AROLQ
+syntax keyword goasmOpcodeX86AVX    AROLW
+syntax keyword goasmOpcodeX86AVX    ARORB
+syntax keyword goasmOpcodeX86AVX    ARORL
+syntax keyword goasmOpcodeX86AVX    ARORQ
+syntax keyword goasmOpcodeX86AVX    ARORW
+syntax keyword goasmOpcodeX86AVX    ARORXL
+syntax keyword goasmOpcodeX86AVX    ARORXQ
+syntax keyword goasmOpcodeX86AVX    AROUNDPD
+syntax keyword goasmOpcodeX86AVX    AROUNDPS
+syntax keyword goasmOpcodeX86AVX    AROUNDSD
+syntax keyword goasmOpcodeX86AVX    AROUNDSS
+syntax keyword goasmOpcodeX86AVX    ARSM
+syntax keyword goasmOpcodeX86AVX    ARSQRTPS
+syntax keyword goasmOpcodeX86AVX    ARSQRTSS
+syntax keyword goasmOpcodeX86AVX    ASAHF
+syntax keyword goasmOpcodeX86AVX    ASALB
+syntax keyword goasmOpcodeX86AVX    ASALL
+syntax keyword goasmOpcodeX86AVX    ASALQ
+syntax keyword goasmOpcodeX86AVX    ASALW
+syntax keyword goasmOpcodeX86AVX    ASARB
+syntax keyword goasmOpcodeX86AVX    ASARL
+syntax keyword goasmOpcodeX86AVX    ASARQ
+syntax keyword goasmOpcodeX86AVX    ASARW
+syntax keyword goasmOpcodeX86AVX    ASARXL
+syntax keyword goasmOpcodeX86AVX    ASARXQ
+syntax keyword goasmOpcodeX86AVX    ASBBB
+syntax keyword goasmOpcodeX86AVX    ASBBL
+syntax keyword goasmOpcodeX86AVX    ASBBQ
+syntax keyword goasmOpcodeX86AVX    ASBBW
+syntax keyword goasmOpcodeX86AVX    ASCASB
+syntax keyword goasmOpcodeX86AVX    ASCASL
+syntax keyword goasmOpcodeX86AVX    ASCASQ
+syntax keyword goasmOpcodeX86AVX    ASCASW
+syntax keyword goasmOpcodeX86AVX    ASETCC
+syntax keyword goasmOpcodeX86AVX    ASETCS
+syntax keyword goasmOpcodeX86AVX    ASETEQ
+syntax keyword goasmOpcodeX86AVX    ASETGE
+syntax keyword goasmOpcodeX86AVX    ASETGT
+syntax keyword goasmOpcodeX86AVX    ASETHI
+syntax keyword goasmOpcodeX86AVX    ASETLE
+syntax keyword goasmOpcodeX86AVX    ASETLS
+syntax keyword goasmOpcodeX86AVX    ASETLT
+syntax keyword goasmOpcodeX86AVX    ASETMI
+syntax keyword goasmOpcodeX86AVX    ASETNE
+syntax keyword goasmOpcodeX86AVX    ASETOC
+syntax keyword goasmOpcodeX86AVX    ASETOS
+syntax keyword goasmOpcodeX86AVX    ASETPC
+syntax keyword goasmOpcodeX86AVX    ASETPL
+syntax keyword goasmOpcodeX86AVX    ASETPS
+syntax keyword goasmOpcodeX86AVX    ASFENCE
+syntax keyword goasmOpcodeX86AVX    ASGDT
+syntax keyword goasmOpcodeX86AVX    ASHA1MSG1
+syntax keyword goasmOpcodeX86AVX    ASHA1MSG2
+syntax keyword goasmOpcodeX86AVX    ASHA1NEXTE
+syntax keyword goasmOpcodeX86AVX    ASHA1RNDS4
+syntax keyword goasmOpcodeX86AVX    ASHA256MSG1
+syntax keyword goasmOpcodeX86AVX    ASHA256MSG2
+syntax keyword goasmOpcodeX86AVX    ASHA256RNDS2
+syntax keyword goasmOpcodeX86AVX    ASHLB
+syntax keyword goasmOpcodeX86AVX    ASHLL
+syntax keyword goasmOpcodeX86AVX    ASHLQ
+syntax keyword goasmOpcodeX86AVX    ASHLW
+syntax keyword goasmOpcodeX86AVX    ASHLXL
+syntax keyword goasmOpcodeX86AVX    ASHLXQ
+syntax keyword goasmOpcodeX86AVX    ASHRB
+syntax keyword goasmOpcodeX86AVX    ASHRL
+syntax keyword goasmOpcodeX86AVX    ASHRQ
+syntax keyword goasmOpcodeX86AVX    ASHRW
+syntax keyword goasmOpcodeX86AVX    ASHRXL
+syntax keyword goasmOpcodeX86AVX    ASHRXQ
+syntax keyword goasmOpcodeX86AVX    ASHUFPD
+syntax keyword goasmOpcodeX86AVX    ASHUFPS
+syntax keyword goasmOpcodeX86AVX    ASIDT
+syntax keyword goasmOpcodeX86AVX    ASLDTL
+syntax keyword goasmOpcodeX86AVX    ASLDTQ
+syntax keyword goasmOpcodeX86AVX    ASLDTW
+syntax keyword goasmOpcodeX86AVX    ASMSWL
+syntax keyword goasmOpcodeX86AVX    ASMSWQ
+syntax keyword goasmOpcodeX86AVX    ASMSWW
+syntax keyword goasmOpcodeX86AVX    ASQRTPD
+syntax keyword goasmOpcodeX86AVX    ASQRTPS
+syntax keyword goasmOpcodeX86AVX    ASQRTSD
+syntax keyword goasmOpcodeX86AVX    ASQRTSS
+syntax keyword goasmOpcodeX86AVX    ASTAC
+syntax keyword goasmOpcodeX86AVX    ASTC
+syntax keyword goasmOpcodeX86AVX    ASTD
+syntax keyword goasmOpcodeX86AVX    ASTI
+syntax keyword goasmOpcodeX86AVX    ASTMXCSR
+syntax keyword goasmOpcodeX86AVX    ASTOSB
+syntax keyword goasmOpcodeX86AVX    ASTOSL
+syntax keyword goasmOpcodeX86AVX    ASTOSQ
+syntax keyword goasmOpcodeX86AVX    ASTOSW
+syntax keyword goasmOpcodeX86AVX    ASTRL
+syntax keyword goasmOpcodeX86AVX    ASTRQ
+syntax keyword goasmOpcodeX86AVX    ASTRW
+syntax keyword goasmOpcodeX86AVX    ASUBB
+syntax keyword goasmOpcodeX86AVX    ASUBL
+syntax keyword goasmOpcodeX86AVX    ASUBPD
+syntax keyword goasmOpcodeX86AVX    ASUBPS
+syntax keyword goasmOpcodeX86AVX    ASUBQ
+syntax keyword goasmOpcodeX86AVX    ASUBSD
+syntax keyword goasmOpcodeX86AVX    ASUBSS
+syntax keyword goasmOpcodeX86AVX    ASUBW
+syntax keyword goasmOpcodeX86AVX    ASWAPGS
+syntax keyword goasmOpcodeX86AVX    ASYSCALL
+syntax keyword goasmOpcodeX86AVX    ASYSENTER
+syntax keyword goasmOpcodeX86AVX    ASYSENTER64
+syntax keyword goasmOpcodeX86AVX    ASYSEXIT
+syntax keyword goasmOpcodeX86AVX    ASYSEXIT64
+syntax keyword goasmOpcodeX86AVX    ASYSRET
+syntax keyword goasmOpcodeX86AVX    ATESTB
+syntax keyword goasmOpcodeX86AVX    ATESTL
+syntax keyword goasmOpcodeX86AVX    ATESTQ
+syntax keyword goasmOpcodeX86AVX    ATESTW
+syntax keyword goasmOpcodeX86AVX    ATPAUSE
+syntax keyword goasmOpcodeX86AVX    ATZCNTL
+syntax keyword goasmOpcodeX86AVX    ATZCNTQ
+syntax keyword goasmOpcodeX86AVX    ATZCNTW
+syntax keyword goasmOpcodeX86AVX    AUCOMISD
+syntax keyword goasmOpcodeX86AVX    AUCOMISS
+syntax keyword goasmOpcodeX86AVX    AUD1
+syntax keyword goasmOpcodeX86AVX    AUD2
+syntax keyword goasmOpcodeX86AVX    AUMWAIT
+syntax keyword goasmOpcodeX86AVX    AUNPCKHPD
+syntax keyword goasmOpcodeX86AVX    AUNPCKHPS
+syntax keyword goasmOpcodeX86AVX    AUNPCKLPD
+syntax keyword goasmOpcodeX86AVX    AUNPCKLPS
+syntax keyword goasmOpcodeX86AVX    AUMONITOR
+syntax keyword goasmOpcodeX86AVX    AV4FMADDPS
+syntax keyword goasmOpcodeX86AVX    AV4FMADDSS
+syntax keyword goasmOpcodeX86AVX    AV4FNMADDPS
+syntax keyword goasmOpcodeX86AVX    AV4FNMADDSS
+syntax keyword goasmOpcodeX86AVX    AVADDPD
+syntax keyword goasmOpcodeX86AVX    AVADDPS
+syntax keyword goasmOpcodeX86AVX    AVADDSD
+syntax keyword goasmOpcodeX86AVX    AVADDSS
+syntax keyword goasmOpcodeX86AVX    AVADDSUBPD
+syntax keyword goasmOpcodeX86AVX    AVADDSUBPS
+syntax keyword goasmOpcodeX86AVX    AVAESDEC
+syntax keyword goasmOpcodeX86AVX    AVAESDECLAST
+syntax keyword goasmOpcodeX86AVX    AVAESENC
+syntax keyword goasmOpcodeX86AVX    AVAESENCLAST
+syntax keyword goasmOpcodeX86AVX    AVAESIMC
+syntax keyword goasmOpcodeX86AVX    AVAESKEYGENASSIST
+syntax keyword goasmOpcodeX86AVX    AVALIGND
+syntax keyword goasmOpcodeX86AVX    AVALIGNQ
+syntax keyword goasmOpcodeX86AVX    AVANDNPD
+syntax keyword goasmOpcodeX86AVX    AVANDNPS
+syntax keyword goasmOpcodeX86AVX    AVANDPD
+syntax keyword goasmOpcodeX86AVX    AVANDPS
+syntax keyword goasmOpcodeX86AVX    AVBLENDMPD
+syntax keyword goasmOpcodeX86AVX    AVBLENDMPS
+syntax keyword goasmOpcodeX86AVX    AVBLENDPD
+syntax keyword goasmOpcodeX86AVX    AVBLENDPS
+syntax keyword goasmOpcodeX86AVX    AVBLENDVPD
+syntax keyword goasmOpcodeX86AVX    AVBLENDVPS
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTF128
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTF32X2
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTF32X4
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTF32X8
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTF64X2
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTF64X4
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTI128
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTI32X2
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTI32X4
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTI32X8
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTI64X2
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTI64X4
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTSD
+syntax keyword goasmOpcodeX86AVX    AVBROADCASTSS
+syntax keyword goasmOpcodeX86AVX    AVCMPPD
+syntax keyword goasmOpcodeX86AVX    AVCMPPS
+syntax keyword goasmOpcodeX86AVX    AVCMPSD
+syntax keyword goasmOpcodeX86AVX    AVCMPSS
+syntax keyword goasmOpcodeX86AVX    AVCOMISD
+syntax keyword goasmOpcodeX86AVX    AVCOMISS
+syntax keyword goasmOpcodeX86AVX    AVCOMPRESSPD
+syntax keyword goasmOpcodeX86AVX    AVCOMPRESSPS
+syntax keyword goasmOpcodeX86AVX    AVCVTDQ2PD
+syntax keyword goasmOpcodeX86AVX    AVCVTDQ2PS
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2DQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2DQX
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2DQY
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2PS
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2PSX
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2PSY
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2QQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2UDQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2UDQX
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2UDQY
+syntax keyword goasmOpcodeX86AVX    AVCVTPD2UQQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPH2PS
+syntax keyword goasmOpcodeX86AVX    AVCVTPS2DQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPS2PD
+syntax keyword goasmOpcodeX86AVX    AVCVTPS2PH
+syntax keyword goasmOpcodeX86AVX    AVCVTPS2QQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPS2UDQ
+syntax keyword goasmOpcodeX86AVX    AVCVTPS2UQQ
+syntax keyword goasmOpcodeX86AVX    AVCVTQQ2PD
+syntax keyword goasmOpcodeX86AVX    AVCVTQQ2PS
+syntax keyword goasmOpcodeX86AVX    AVCVTQQ2PSX
+syntax keyword goasmOpcodeX86AVX    AVCVTQQ2PSY
+syntax keyword goasmOpcodeX86AVX    AVCVTSD2SI
+syntax keyword goasmOpcodeX86AVX    AVCVTSD2SIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTSD2SS
+syntax keyword goasmOpcodeX86AVX    AVCVTSD2USI
+syntax keyword goasmOpcodeX86AVX    AVCVTSD2USIL
+syntax keyword goasmOpcodeX86AVX    AVCVTSD2USIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTSI2SDL
+syntax keyword goasmOpcodeX86AVX    AVCVTSI2SDQ
+syntax keyword goasmOpcodeX86AVX    AVCVTSI2SSL
+syntax keyword goasmOpcodeX86AVX    AVCVTSI2SSQ
+syntax keyword goasmOpcodeX86AVX    AVCVTSS2SD
+syntax keyword goasmOpcodeX86AVX    AVCVTSS2SI
+syntax keyword goasmOpcodeX86AVX    AVCVTSS2SIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTSS2USI
+syntax keyword goasmOpcodeX86AVX    AVCVTSS2USIL
+syntax keyword goasmOpcodeX86AVX    AVCVTSS2USIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2DQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2DQX
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2DQY
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2QQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2UDQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2UDQX
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2UDQY
+syntax keyword goasmOpcodeX86AVX    AVCVTTPD2UQQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPS2DQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPS2QQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPS2UDQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTPS2UQQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTSD2SI
+syntax keyword goasmOpcodeX86AVX    AVCVTTSD2SIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTSD2USI
+syntax keyword goasmOpcodeX86AVX    AVCVTTSD2USIL
+syntax keyword goasmOpcodeX86AVX    AVCVTTSD2USIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTSS2SI
+syntax keyword goasmOpcodeX86AVX    AVCVTTSS2SIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTTSS2USI
+syntax keyword goasmOpcodeX86AVX    AVCVTTSS2USIL
+syntax keyword goasmOpcodeX86AVX    AVCVTTSS2USIQ
+syntax keyword goasmOpcodeX86AVX    AVCVTUDQ2PD
+syntax keyword goasmOpcodeX86AVX    AVCVTUDQ2PS
+syntax keyword goasmOpcodeX86AVX    AVCVTUQQ2PD
+syntax keyword goasmOpcodeX86AVX    AVCVTUQQ2PS
+syntax keyword goasmOpcodeX86AVX    AVCVTUQQ2PSX
+syntax keyword goasmOpcodeX86AVX    AVCVTUQQ2PSY
+syntax keyword goasmOpcodeX86AVX    AVCVTUSI2SD
+syntax keyword goasmOpcodeX86AVX    AVCVTUSI2SDL
+syntax keyword goasmOpcodeX86AVX    AVCVTUSI2SDQ
+syntax keyword goasmOpcodeX86AVX    AVCVTUSI2SS
+syntax keyword goasmOpcodeX86AVX    AVCVTUSI2SSL
+syntax keyword goasmOpcodeX86AVX    AVCVTUSI2SSQ
+syntax keyword goasmOpcodeX86AVX    AVDBPSADBW
+syntax keyword goasmOpcodeX86AVX    AVDIVPD
+syntax keyword goasmOpcodeX86AVX    AVDIVPS
+syntax keyword goasmOpcodeX86AVX    AVDIVSD
+syntax keyword goasmOpcodeX86AVX    AVDIVSS
+syntax keyword goasmOpcodeX86AVX    AVDPPD
+syntax keyword goasmOpcodeX86AVX    AVDPPS
+syntax keyword goasmOpcodeX86AVX    AVERR
+syntax keyword goasmOpcodeX86AVX    AVERW
+syntax keyword goasmOpcodeX86AVX    AVEXP2PD
+syntax keyword goasmOpcodeX86AVX    AVEXP2PS
+syntax keyword goasmOpcodeX86AVX    AVEXPANDPD
+syntax keyword goasmOpcodeX86AVX    AVEXPANDPS
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTF128
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTF32X4
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTF32X8
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTF64X2
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTF64X4
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTI128
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTI32X4
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTI32X8
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTI64X2
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTI64X4
+syntax keyword goasmOpcodeX86AVX    AVEXTRACTPS
+syntax keyword goasmOpcodeX86AVX    AVFIXUPIMMPD
+syntax keyword goasmOpcodeX86AVX    AVFIXUPIMMPS
+syntax keyword goasmOpcodeX86AVX    AVFIXUPIMMSD
+syntax keyword goasmOpcodeX86AVX    AVFIXUPIMMSS
+syntax keyword goasmOpcodeX86AVX    AVFMADD132PD
+syntax keyword goasmOpcodeX86AVX    AVFMADD132PS
+syntax keyword goasmOpcodeX86AVX    AVFMADD132SD
+syntax keyword goasmOpcodeX86AVX    AVFMADD132SS
+syntax keyword goasmOpcodeX86AVX    AVFMADD213PD
+syntax keyword goasmOpcodeX86AVX    AVFMADD213PS
+syntax keyword goasmOpcodeX86AVX    AVFMADD213SD
+syntax keyword goasmOpcodeX86AVX    AVFMADD213SS
+syntax keyword goasmOpcodeX86AVX    AVFMADD231PD
+syntax keyword goasmOpcodeX86AVX    AVFMADD231PS
+syntax keyword goasmOpcodeX86AVX    AVFMADD231SD
+syntax keyword goasmOpcodeX86AVX    AVFMADD231SS
+syntax keyword goasmOpcodeX86AVX    AVFMADDSUB132PD
+syntax keyword goasmOpcodeX86AVX    AVFMADDSUB132PS
+syntax keyword goasmOpcodeX86AVX    AVFMADDSUB213PD
+syntax keyword goasmOpcodeX86AVX    AVFMADDSUB213PS
+syntax keyword goasmOpcodeX86AVX    AVFMADDSUB231PD
+syntax keyword goasmOpcodeX86AVX    AVFMADDSUB231PS
+syntax keyword goasmOpcodeX86AVX    AVFMSUB132PD
+syntax keyword goasmOpcodeX86AVX    AVFMSUB132PS
+syntax keyword goasmOpcodeX86AVX    AVFMSUB132SD
+syntax keyword goasmOpcodeX86AVX    AVFMSUB132SS
+syntax keyword goasmOpcodeX86AVX    AVFMSUB213PD
+syntax keyword goasmOpcodeX86AVX    AVFMSUB213PS
+syntax keyword goasmOpcodeX86AVX    AVFMSUB213SD
+syntax keyword goasmOpcodeX86AVX    AVFMSUB213SS
+syntax keyword goasmOpcodeX86AVX    AVFMSUB231PD
+syntax keyword goasmOpcodeX86AVX    AVFMSUB231PS
+syntax keyword goasmOpcodeX86AVX    AVFMSUB231SD
+syntax keyword goasmOpcodeX86AVX    AVFMSUB231SS
+syntax keyword goasmOpcodeX86AVX    AVFMSUBADD132PD
+syntax keyword goasmOpcodeX86AVX    AVFMSUBADD132PS
+syntax keyword goasmOpcodeX86AVX    AVFMSUBADD213PD
+syntax keyword goasmOpcodeX86AVX    AVFMSUBADD213PS
+syntax keyword goasmOpcodeX86AVX    AVFMSUBADD231PD
+syntax keyword goasmOpcodeX86AVX    AVFMSUBADD231PS
+syntax keyword goasmOpcodeX86AVX    AVFNMADD132PD
+syntax keyword goasmOpcodeX86AVX    AVFNMADD132PS
+syntax keyword goasmOpcodeX86AVX    AVFNMADD132SD
+syntax keyword goasmOpcodeX86AVX    AVFNMADD132SS
+syntax keyword goasmOpcodeX86AVX    AVFNMADD213PD
+syntax keyword goasmOpcodeX86AVX    AVFNMADD213PS
+syntax keyword goasmOpcodeX86AVX    AVFNMADD213SD
+syntax keyword goasmOpcodeX86AVX    AVFNMADD213SS
+syntax keyword goasmOpcodeX86AVX    AVFNMADD231PD
+syntax keyword goasmOpcodeX86AVX    AVFNMADD231PS
+syntax keyword goasmOpcodeX86AVX    AVFNMADD231SD
+syntax keyword goasmOpcodeX86AVX    AVFNMADD231SS
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB132PD
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB132PS
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB132SD
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB132SS
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB213PD
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB213PS
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB213SD
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB213SS
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB231PD
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB231PS
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB231SD
+syntax keyword goasmOpcodeX86AVX    AVFNMSUB231SS
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPD
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPDX
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPDY
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPDZ
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPS
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPSX
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPSY
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSPSZ
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSSD
+syntax keyword goasmOpcodeX86AVX    AVFPCLASSSS
+syntax keyword goasmOpcodeX86AVX    AVGATHERDPD
+syntax keyword goasmOpcodeX86AVX    AVGATHERDPS
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF0DPD
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF0DPS
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF0QPD
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF0QPS
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF1DPD
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF1DPS
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF1QPD
+syntax keyword goasmOpcodeX86AVX    AVGATHERPF1QPS
+syntax keyword goasmOpcodeX86AVX    AVGATHERQPD
+syntax keyword goasmOpcodeX86AVX    AVGATHERQPS
+syntax keyword goasmOpcodeX86AVX    AVGETEXPPD
+syntax keyword goasmOpcodeX86AVX    AVGETEXPPS
+syntax keyword goasmOpcodeX86AVX    AVGETEXPSD
+syntax keyword goasmOpcodeX86AVX    AVGETEXPSS
+syntax keyword goasmOpcodeX86AVX    AVGETMANTPD
+syntax keyword goasmOpcodeX86AVX    AVGETMANTPS
+syntax keyword goasmOpcodeX86AVX    AVGETMANTSD
+syntax keyword goasmOpcodeX86AVX    AVGETMANTSS
+syntax keyword goasmOpcodeX86AVX    AVGF2P8AFFINEINVQB
+syntax keyword goasmOpcodeX86AVX    AVGF2P8AFFINEQB
+syntax keyword goasmOpcodeX86AVX    AVGF2P8MULB
+syntax keyword goasmOpcodeX86AVX    AVHADDPD
+syntax keyword goasmOpcodeX86AVX    AVHADDPS
+syntax keyword goasmOpcodeX86AVX    AVHSUBPD
+syntax keyword goasmOpcodeX86AVX    AVHSUBPS
+syntax keyword goasmOpcodeX86AVX    AVINSERTF128
+syntax keyword goasmOpcodeX86AVX    AVINSERTF32X4
+syntax keyword goasmOpcodeX86AVX    AVINSERTF32X8
+syntax keyword goasmOpcodeX86AVX    AVINSERTF64X2
+syntax keyword goasmOpcodeX86AVX    AVINSERTF64X4
+syntax keyword goasmOpcodeX86AVX    AVINSERTI128
+syntax keyword goasmOpcodeX86AVX    AVINSERTI32X4
+syntax keyword goasmOpcodeX86AVX    AVINSERTI32X8
+syntax keyword goasmOpcodeX86AVX    AVINSERTI64X2
+syntax keyword goasmOpcodeX86AVX    AVINSERTI64X4
+syntax keyword goasmOpcodeX86AVX    AVINSERTPS
+syntax keyword goasmOpcodeX86AVX    AVLDDQU
+syntax keyword goasmOpcodeX86AVX    AVLDMXCSR
+syntax keyword goasmOpcodeX86AVX    AVMASKMOVDQU
+syntax keyword goasmOpcodeX86AVX    AVMASKMOVPD
+syntax keyword goasmOpcodeX86AVX    AVMASKMOVPS
+syntax keyword goasmOpcodeX86AVX    AVMAXPD
+syntax keyword goasmOpcodeX86AVX    AVMAXPS
+syntax keyword goasmOpcodeX86AVX    AVMAXSD
+syntax keyword goasmOpcodeX86AVX    AVMAXSS
+syntax keyword goasmOpcodeX86AVX    AVMINPD
+syntax keyword goasmOpcodeX86AVX    AVMINPS
+syntax keyword goasmOpcodeX86AVX    AVMINSD
+syntax keyword goasmOpcodeX86AVX    AVMINSS
+syntax keyword goasmOpcodeX86AVX    AVMOVAPD
+syntax keyword goasmOpcodeX86AVX    AVMOVAPS
+syntax keyword goasmOpcodeX86AVX    AVMOVD
+syntax keyword goasmOpcodeX86AVX    AVMOVDDUP
+syntax keyword goasmOpcodeX86AVX    AVMOVDQA
+syntax keyword goasmOpcodeX86AVX    AVMOVDQA32
+syntax keyword goasmOpcodeX86AVX    AVMOVDQA64
+syntax keyword goasmOpcodeX86AVX    AVMOVDQU
+syntax keyword goasmOpcodeX86AVX    AVMOVDQU16
+syntax keyword goasmOpcodeX86AVX    AVMOVDQU32
+syntax keyword goasmOpcodeX86AVX    AVMOVDQU64
+syntax keyword goasmOpcodeX86AVX    AVMOVDQU8
+syntax keyword goasmOpcodeX86AVX    AVMOVHLPS
+syntax keyword goasmOpcodeX86AVX    AVMOVHPD
+syntax keyword goasmOpcodeX86AVX    AVMOVHPS
+syntax keyword goasmOpcodeX86AVX    AVMOVLHPS
+syntax keyword goasmOpcodeX86AVX    AVMOVLPD
+syntax keyword goasmOpcodeX86AVX    AVMOVLPS
+syntax keyword goasmOpcodeX86AVX    AVMOVMSKPD
+syntax keyword goasmOpcodeX86AVX    AVMOVMSKPS
+syntax keyword goasmOpcodeX86AVX    AVMOVNTDQ
+syntax keyword goasmOpcodeX86AVX    AVMOVNTDQA
+syntax keyword goasmOpcodeX86AVX    AVMOVNTPD
+syntax keyword goasmOpcodeX86AVX    AVMOVNTPS
+syntax keyword goasmOpcodeX86AVX    AVMOVQ
+syntax keyword goasmOpcodeX86AVX    AVMOVSD
+syntax keyword goasmOpcodeX86AVX    AVMOVSHDUP
+syntax keyword goasmOpcodeX86AVX    AVMOVSLDUP
+syntax keyword goasmOpcodeX86AVX    AVMOVSS
+syntax keyword goasmOpcodeX86AVX    AVMOVUPD
+syntax keyword goasmOpcodeX86AVX    AVMOVUPS
+syntax keyword goasmOpcodeX86AVX    AVMPSADBW
+syntax keyword goasmOpcodeX86AVX    AVMULPD
+syntax keyword goasmOpcodeX86AVX    AVMULPS
+syntax keyword goasmOpcodeX86AVX    AVMULSD
+syntax keyword goasmOpcodeX86AVX    AVMULSS
+syntax keyword goasmOpcodeX86AVX    AVORPD
+syntax keyword goasmOpcodeX86AVX    AVORPS
+syntax keyword goasmOpcodeX86AVX    AVP4DPWSSD
+syntax keyword goasmOpcodeX86AVX    AVP4DPWSSDS
+syntax keyword goasmOpcodeX86AVX    AVPABSB
+syntax keyword goasmOpcodeX86AVX    AVPABSD
+syntax keyword goasmOpcodeX86AVX    AVPABSQ
+syntax keyword goasmOpcodeX86AVX    AVPABSW
+syntax keyword goasmOpcodeX86AVX    AVPACKSSDW
+syntax keyword goasmOpcodeX86AVX    AVPACKSSWB
+syntax keyword goasmOpcodeX86AVX    AVPACKUSDW
+syntax keyword goasmOpcodeX86AVX    AVPACKUSWB
+syntax keyword goasmOpcodeX86AVX    AVPADDB
+syntax keyword goasmOpcodeX86AVX    AVPADDD
+syntax keyword goasmOpcodeX86AVX    AVPADDQ
+syntax keyword goasmOpcodeX86AVX    AVPADDSB
+syntax keyword goasmOpcodeX86AVX    AVPADDSW
+syntax keyword goasmOpcodeX86AVX    AVPADDUSB
+syntax keyword goasmOpcodeX86AVX    AVPADDUSW
+syntax keyword goasmOpcodeX86AVX    AVPADDW
+syntax keyword goasmOpcodeX86AVX    AVPALIGNR
+syntax keyword goasmOpcodeX86AVX    AVPAND
+syntax keyword goasmOpcodeX86AVX    AVPANDD
+syntax keyword goasmOpcodeX86AVX    AVPANDN
+syntax keyword goasmOpcodeX86AVX    AVPANDND
+syntax keyword goasmOpcodeX86AVX    AVPANDNQ
+syntax keyword goasmOpcodeX86AVX    AVPANDQ
+syntax keyword goasmOpcodeX86AVX    AVPAVGB
+syntax keyword goasmOpcodeX86AVX    AVPAVGW
+syntax keyword goasmOpcodeX86AVX    AVPBLENDD
+syntax keyword goasmOpcodeX86AVX    AVPBLENDMB
+syntax keyword goasmOpcodeX86AVX    AVPBLENDMD
+syntax keyword goasmOpcodeX86AVX    AVPBLENDMQ
+syntax keyword goasmOpcodeX86AVX    AVPBLENDMW
+syntax keyword goasmOpcodeX86AVX    AVPBLENDVB
+syntax keyword goasmOpcodeX86AVX    AVPBLENDW
+syntax keyword goasmOpcodeX86AVX    AVPBROADCASTB
+syntax keyword goasmOpcodeX86AVX    AVPBROADCASTD
+syntax keyword goasmOpcodeX86AVX    AVPBROADCASTMB2Q
+syntax keyword goasmOpcodeX86AVX    AVPBROADCASTMW2D
+syntax keyword goasmOpcodeX86AVX    AVPBROADCASTQ
+syntax keyword goasmOpcodeX86AVX    AVPBROADCASTW
+syntax keyword goasmOpcodeX86AVX    AVPCLMULQDQ
+syntax keyword goasmOpcodeX86AVX    AVPCMPB
+syntax keyword goasmOpcodeX86AVX    AVPCMPD
+syntax keyword goasmOpcodeX86AVX    AVPCMPEQB
+syntax keyword goasmOpcodeX86AVX    AVPCMPEQD
+syntax keyword goasmOpcodeX86AVX    AVPCMPEQQ
+syntax keyword goasmOpcodeX86AVX    AVPCMPEQW
+syntax keyword goasmOpcodeX86AVX    AVPCMPESTRI
+syntax keyword goasmOpcodeX86AVX    AVPCMPESTRM
+syntax keyword goasmOpcodeX86AVX    AVPCMPGTB
+syntax keyword goasmOpcodeX86AVX    AVPCMPGTD
+syntax keyword goasmOpcodeX86AVX    AVPCMPGTQ
+syntax keyword goasmOpcodeX86AVX    AVPCMPGTW
+syntax keyword goasmOpcodeX86AVX    AVPCMPISTRI
+syntax keyword goasmOpcodeX86AVX    AVPCMPISTRM
+syntax keyword goasmOpcodeX86AVX    AVPCMPQ
+syntax keyword goasmOpcodeX86AVX    AVPCMPUB
+syntax keyword goasmOpcodeX86AVX    AVPCMPUD
+syntax keyword goasmOpcodeX86AVX    AVPCMPUQ
+syntax keyword goasmOpcodeX86AVX    AVPCMPUW
+syntax keyword goasmOpcodeX86AVX    AVPCMPW
+syntax keyword goasmOpcodeX86AVX    AVPCOMPRESSB
+syntax keyword goasmOpcodeX86AVX    AVPCOMPRESSD
+syntax keyword goasmOpcodeX86AVX    AVPCOMPRESSQ
+syntax keyword goasmOpcodeX86AVX    AVPCOMPRESSW
+syntax keyword goasmOpcodeX86AVX    AVPCONFLICTD
+syntax keyword goasmOpcodeX86AVX    AVPCONFLICTQ
+syntax keyword goasmOpcodeX86AVX    AVPDPBUSD
+syntax keyword goasmOpcodeX86AVX    AVPDPBUSDS
+syntax keyword goasmOpcodeX86AVX    AVPDPWSSD
+syntax keyword goasmOpcodeX86AVX    AVPDPWSSDS
+syntax keyword goasmOpcodeX86AVX    AVPERM2F128
+syntax keyword goasmOpcodeX86AVX    AVPERM2I128
+syntax keyword goasmOpcodeX86AVX    AVPERMB
+syntax keyword goasmOpcodeX86AVX    AVPERMD
+syntax keyword goasmOpcodeX86AVX    AVPERMI2B
+syntax keyword goasmOpcodeX86AVX    AVPERMI2D
+syntax keyword goasmOpcodeX86AVX    AVPERMI2PD
+syntax keyword goasmOpcodeX86AVX    AVPERMI2PS
+syntax keyword goasmOpcodeX86AVX    AVPERMI2Q
+syntax keyword goasmOpcodeX86AVX    AVPERMI2W
+syntax keyword goasmOpcodeX86AVX    AVPERMILPD
+syntax keyword goasmOpcodeX86AVX    AVPERMILPS
+syntax keyword goasmOpcodeX86AVX    AVPERMPD
+syntax keyword goasmOpcodeX86AVX    AVPERMPS
+syntax keyword goasmOpcodeX86AVX    AVPERMQ
+syntax keyword goasmOpcodeX86AVX    AVPERMT2B
+syntax keyword goasmOpcodeX86AVX    AVPERMT2D
+syntax keyword goasmOpcodeX86AVX    AVPERMT2PD
+syntax keyword goasmOpcodeX86AVX    AVPERMT2PS
+syntax keyword goasmOpcodeX86AVX    AVPERMT2Q
+syntax keyword goasmOpcodeX86AVX    AVPERMT2W
+syntax keyword goasmOpcodeX86AVX    AVPERMW
+syntax keyword goasmOpcodeX86AVX    AVPEXPANDB
+syntax keyword goasmOpcodeX86AVX    AVPEXPANDD
+syntax keyword goasmOpcodeX86AVX    AVPEXPANDQ
+syntax keyword goasmOpcodeX86AVX    AVPEXPANDW
+syntax keyword goasmOpcodeX86AVX    AVPEXTRB
+syntax keyword goasmOpcodeX86AVX    AVPEXTRD
+syntax keyword goasmOpcodeX86AVX    AVPEXTRQ
+syntax keyword goasmOpcodeX86AVX    AVPEXTRW
+syntax keyword goasmOpcodeX86AVX    AVPGATHERDD
+syntax keyword goasmOpcodeX86AVX    AVPGATHERDQ
+syntax keyword goasmOpcodeX86AVX    AVPGATHERQD
+syntax keyword goasmOpcodeX86AVX    AVPGATHERQQ
+syntax keyword goasmOpcodeX86AVX    AVPHADDD
+syntax keyword goasmOpcodeX86AVX    AVPHADDSW
+syntax keyword goasmOpcodeX86AVX    AVPHADDW
+syntax keyword goasmOpcodeX86AVX    AVPHMINPOSUW
+syntax keyword goasmOpcodeX86AVX    AVPHSUBD
+syntax keyword goasmOpcodeX86AVX    AVPHSUBSW
+syntax keyword goasmOpcodeX86AVX    AVPHSUBW
+syntax keyword goasmOpcodeX86AVX    AVPINSRB
+syntax keyword goasmOpcodeX86AVX    AVPINSRD
+syntax keyword goasmOpcodeX86AVX    AVPINSRQ
+syntax keyword goasmOpcodeX86AVX    AVPINSRW
+syntax keyword goasmOpcodeX86AVX    AVPLZCNTD
+syntax keyword goasmOpcodeX86AVX    AVPLZCNTQ
+syntax keyword goasmOpcodeX86AVX    AVPMADD52HUQ
+syntax keyword goasmOpcodeX86AVX    AVPMADD52LUQ
+syntax keyword goasmOpcodeX86AVX    AVPMADDUBSW
+syntax keyword goasmOpcodeX86AVX    AVPMADDWD
+syntax keyword goasmOpcodeX86AVX    AVPMASKMOVD
+syntax keyword goasmOpcodeX86AVX    AVPMASKMOVQ
+syntax keyword goasmOpcodeX86AVX    AVPMAXSB
+syntax keyword goasmOpcodeX86AVX    AVPMAXSD
+syntax keyword goasmOpcodeX86AVX    AVPMAXSQ
+syntax keyword goasmOpcodeX86AVX    AVPMAXSW
+syntax keyword goasmOpcodeX86AVX    AVPMAXUB
+syntax keyword goasmOpcodeX86AVX    AVPMAXUD
+syntax keyword goasmOpcodeX86AVX    AVPMAXUQ
+syntax keyword goasmOpcodeX86AVX    AVPMAXUW
+syntax keyword goasmOpcodeX86AVX    AVPMINSB
+syntax keyword goasmOpcodeX86AVX    AVPMINSD
+syntax keyword goasmOpcodeX86AVX    AVPMINSQ
+syntax keyword goasmOpcodeX86AVX    AVPMINSW
+syntax keyword goasmOpcodeX86AVX    AVPMINUB
+syntax keyword goasmOpcodeX86AVX    AVPMINUD
+syntax keyword goasmOpcodeX86AVX    AVPMINUQ
+syntax keyword goasmOpcodeX86AVX    AVPMINUW
+syntax keyword goasmOpcodeX86AVX    AVPMOVB2M
+syntax keyword goasmOpcodeX86AVX    AVPMOVD2M
+syntax keyword goasmOpcodeX86AVX    AVPMOVDB
+syntax keyword goasmOpcodeX86AVX    AVPMOVDW
+syntax keyword goasmOpcodeX86AVX    AVPMOVM2B
+syntax keyword goasmOpcodeX86AVX    AVPMOVM2D
+syntax keyword goasmOpcodeX86AVX    AVPMOVM2Q
+syntax keyword goasmOpcodeX86AVX    AVPMOVM2W
+syntax keyword goasmOpcodeX86AVX    AVPMOVMSKB
+syntax keyword goasmOpcodeX86AVX    AVPMOVQ2M
+syntax keyword goasmOpcodeX86AVX    AVPMOVQB
+syntax keyword goasmOpcodeX86AVX    AVPMOVQD
+syntax keyword goasmOpcodeX86AVX    AVPMOVQW
+syntax keyword goasmOpcodeX86AVX    AVPMOVSDB
+syntax keyword goasmOpcodeX86AVX    AVPMOVSDW
+syntax keyword goasmOpcodeX86AVX    AVPMOVSQB
+syntax keyword goasmOpcodeX86AVX    AVPMOVSQD
+syntax keyword goasmOpcodeX86AVX    AVPMOVSQW
+syntax keyword goasmOpcodeX86AVX    AVPMOVSWB
+syntax keyword goasmOpcodeX86AVX    AVPMOVSXBD
+syntax keyword goasmOpcodeX86AVX    AVPMOVSXBQ
+syntax keyword goasmOpcodeX86AVX    AVPMOVSXBW
+syntax keyword goasmOpcodeX86AVX    AVPMOVSXDQ
+syntax keyword goasmOpcodeX86AVX    AVPMOVSXWD
+syntax keyword goasmOpcodeX86AVX    AVPMOVSXWQ
+syntax keyword goasmOpcodeX86AVX    AVPMOVUSDB
+syntax keyword goasmOpcodeX86AVX    AVPMOVUSDW
+syntax keyword goasmOpcodeX86AVX    AVPMOVUSQB
+syntax keyword goasmOpcodeX86AVX    AVPMOVUSQD
+syntax keyword goasmOpcodeX86AVX    AVPMOVUSQW
+syntax keyword goasmOpcodeX86AVX    AVPMOVUSWB
+syntax keyword goasmOpcodeX86AVX    AVPMOVW2M
+syntax keyword goasmOpcodeX86AVX    AVPMOVWB
+syntax keyword goasmOpcodeX86AVX    AVPMOVZXBD
+syntax keyword goasmOpcodeX86AVX    AVPMOVZXBQ
+syntax keyword goasmOpcodeX86AVX    AVPMOVZXBW
+syntax keyword goasmOpcodeX86AVX    AVPMOVZXDQ
+syntax keyword goasmOpcodeX86AVX    AVPMOVZXWD
+syntax keyword goasmOpcodeX86AVX    AVPMOVZXWQ
+syntax keyword goasmOpcodeX86AVX    AVPMULDQ
+syntax keyword goasmOpcodeX86AVX    AVPMULHRSW
+syntax keyword goasmOpcodeX86AVX    AVPMULHUW
+syntax keyword goasmOpcodeX86AVX    AVPMULHW
+syntax keyword goasmOpcodeX86AVX    AVPMULLD
+syntax keyword goasmOpcodeX86AVX    AVPMULLQ
+syntax keyword goasmOpcodeX86AVX    AVPMULLW
+syntax keyword goasmOpcodeX86AVX    AVPMULTISHIFTQB
+syntax keyword goasmOpcodeX86AVX    AVPMULUDQ
+syntax keyword goasmOpcodeX86AVX    AVPOPCNTB
+syntax keyword goasmOpcodeX86AVX    AVPOPCNTD
+syntax keyword goasmOpcodeX86AVX    AVPOPCNTQ
+syntax keyword goasmOpcodeX86AVX    AVPOPCNTW
+syntax keyword goasmOpcodeX86AVX    AVPOR
+syntax keyword goasmOpcodeX86AVX    AVPORD
+syntax keyword goasmOpcodeX86AVX    AVPORQ
+syntax keyword goasmOpcodeX86AVX    AVPROLD
+syntax keyword goasmOpcodeX86AVX    AVPROLQ
+syntax keyword goasmOpcodeX86AVX    AVPROLVD
+syntax keyword goasmOpcodeX86AVX    AVPROLVQ
+syntax keyword goasmOpcodeX86AVX    AVPRORD
+syntax keyword goasmOpcodeX86AVX    AVPRORQ
+syntax keyword goasmOpcodeX86AVX    AVPRORVD
+syntax keyword goasmOpcodeX86AVX    AVPRORVQ
+syntax keyword goasmOpcodeX86AVX    AVPSADBW
+syntax keyword goasmOpcodeX86AVX    AVPSCATTERDD
+syntax keyword goasmOpcodeX86AVX    AVPSCATTERDQ
+syntax keyword goasmOpcodeX86AVX    AVPSCATTERQD
+syntax keyword goasmOpcodeX86AVX    AVPSCATTERQQ
+syntax keyword goasmOpcodeX86AVX    AVPSHLDD
+syntax keyword goasmOpcodeX86AVX    AVPSHLDQ
+syntax keyword goasmOpcodeX86AVX    AVPSHLDVD
+syntax keyword goasmOpcodeX86AVX    AVPSHLDVQ
+syntax keyword goasmOpcodeX86AVX    AVPSHLDVW
+syntax keyword goasmOpcodeX86AVX    AVPSHLDW
+syntax keyword goasmOpcodeX86AVX    AVPSHRDD
+syntax keyword goasmOpcodeX86AVX    AVPSHRDQ
+syntax keyword goasmOpcodeX86AVX    AVPSHRDVD
+syntax keyword goasmOpcodeX86AVX    AVPSHRDVQ
+syntax keyword goasmOpcodeX86AVX    AVPSHRDVW
+syntax keyword goasmOpcodeX86AVX    AVPSHRDW
+syntax keyword goasmOpcodeX86AVX    AVPSHUFB
+syntax keyword goasmOpcodeX86AVX    AVPSHUFBITQMB
+syntax keyword goasmOpcodeX86AVX    AVPSHUFD
+syntax keyword goasmOpcodeX86AVX    AVPSHUFHW
+syntax keyword goasmOpcodeX86AVX    AVPSHUFLW
+syntax keyword goasmOpcodeX86AVX    AVPSIGNB
+syntax keyword goasmOpcodeX86AVX    AVPSIGND
+syntax keyword goasmOpcodeX86AVX    AVPSIGNW
+syntax keyword goasmOpcodeX86AVX    AVPSLLD
+syntax keyword goasmOpcodeX86AVX    AVPSLLDQ
+syntax keyword goasmOpcodeX86AVX    AVPSLLQ
+syntax keyword goasmOpcodeX86AVX    AVPSLLVD
+syntax keyword goasmOpcodeX86AVX    AVPSLLVQ
+syntax keyword goasmOpcodeX86AVX    AVPSLLVW
+syntax keyword goasmOpcodeX86AVX    AVPSLLW
+syntax keyword goasmOpcodeX86AVX    AVPSRAD
+syntax keyword goasmOpcodeX86AVX    AVPSRAQ
+syntax keyword goasmOpcodeX86AVX    AVPSRAVD
+syntax keyword goasmOpcodeX86AVX    AVPSRAVQ
+syntax keyword goasmOpcodeX86AVX    AVPSRAVW
+syntax keyword goasmOpcodeX86AVX    AVPSRAW
+syntax keyword goasmOpcodeX86AVX    AVPSRLD
+syntax keyword goasmOpcodeX86AVX    AVPSRLDQ
+syntax keyword goasmOpcodeX86AVX    AVPSRLQ
+syntax keyword goasmOpcodeX86AVX    AVPSRLVD
+syntax keyword goasmOpcodeX86AVX    AVPSRLVQ
+syntax keyword goasmOpcodeX86AVX    AVPSRLVW
+syntax keyword goasmOpcodeX86AVX    AVPSRLW
+syntax keyword goasmOpcodeX86AVX    AVPSUBB
+syntax keyword goasmOpcodeX86AVX    AVPSUBD
+syntax keyword goasmOpcodeX86AVX    AVPSUBQ
+syntax keyword goasmOpcodeX86AVX    AVPSUBSB
+syntax keyword goasmOpcodeX86AVX    AVPSUBSW
+syntax keyword goasmOpcodeX86AVX    AVPSUBUSB
+syntax keyword goasmOpcodeX86AVX    AVPSUBUSW
+syntax keyword goasmOpcodeX86AVX    AVPSUBW
+syntax keyword goasmOpcodeX86AVX    AVPTERNLOGD
+syntax keyword goasmOpcodeX86AVX    AVPTERNLOGQ
+syntax keyword goasmOpcodeX86AVX    AVPTEST
+syntax keyword goasmOpcodeX86AVX    AVPTESTMB
+syntax keyword goasmOpcodeX86AVX    AVPTESTMD
+syntax keyword goasmOpcodeX86AVX    AVPTESTMQ
+syntax keyword goasmOpcodeX86AVX    AVPTESTMW
+syntax keyword goasmOpcodeX86AVX    AVPTESTNMB
+syntax keyword goasmOpcodeX86AVX    AVPTESTNMD
+syntax keyword goasmOpcodeX86AVX    AVPTESTNMQ
+syntax keyword goasmOpcodeX86AVX    AVPTESTNMW
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKHBW
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKHDQ
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKHQDQ
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKHWD
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKLBW
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKLDQ
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKLQDQ
+syntax keyword goasmOpcodeX86AVX    AVPUNPCKLWD
+syntax keyword goasmOpcodeX86AVX    AVPXOR
+syntax keyword goasmOpcodeX86AVX    AVPXORD
+syntax keyword goasmOpcodeX86AVX    AVPXORQ
+syntax keyword goasmOpcodeX86AVX    AVRANGEPD
+syntax keyword goasmOpcodeX86AVX    AVRANGEPS
+syntax keyword goasmOpcodeX86AVX    AVRANGESD
+syntax keyword goasmOpcodeX86AVX    AVRANGESS
+syntax keyword goasmOpcodeX86AVX    AVRCP14PD
+syntax keyword goasmOpcodeX86AVX    AVRCP14PS
+syntax keyword goasmOpcodeX86AVX    AVRCP14SD
+syntax keyword goasmOpcodeX86AVX    AVRCP14SS
+syntax keyword goasmOpcodeX86AVX    AVRCP28PD
+syntax keyword goasmOpcodeX86AVX    AVRCP28PS
+syntax keyword goasmOpcodeX86AVX    AVRCP28SD
+syntax keyword goasmOpcodeX86AVX    AVRCP28SS
+syntax keyword goasmOpcodeX86AVX    AVRCPPS
+syntax keyword goasmOpcodeX86AVX    AVRCPSS
+syntax keyword goasmOpcodeX86AVX    AVREDUCEPD
+syntax keyword goasmOpcodeX86AVX    AVREDUCEPS
+syntax keyword goasmOpcodeX86AVX    AVREDUCESD
+syntax keyword goasmOpcodeX86AVX    AVREDUCESS
+syntax keyword goasmOpcodeX86AVX    AVRNDSCALEPD
+syntax keyword goasmOpcodeX86AVX    AVRNDSCALEPS
+syntax keyword goasmOpcodeX86AVX    AVRNDSCALESD
+syntax keyword goasmOpcodeX86AVX    AVRNDSCALESS
+syntax keyword goasmOpcodeX86AVX    AVROUNDPD
+syntax keyword goasmOpcodeX86AVX    AVROUNDPS
+syntax keyword goasmOpcodeX86AVX    AVROUNDSD
+syntax keyword goasmOpcodeX86AVX    AVROUNDSS
+syntax keyword goasmOpcodeX86AVX    AVRSQRT14PD
+syntax keyword goasmOpcodeX86AVX    AVRSQRT14PS
+syntax keyword goasmOpcodeX86AVX    AVRSQRT14SD
+syntax keyword goasmOpcodeX86AVX    AVRSQRT14SS
+syntax keyword goasmOpcodeX86AVX    AVRSQRT28PD
+syntax keyword goasmOpcodeX86AVX    AVRSQRT28PS
+syntax keyword goasmOpcodeX86AVX    AVRSQRT28SD
+syntax keyword goasmOpcodeX86AVX    AVRSQRT28SS
+syntax keyword goasmOpcodeX86AVX    AVRSQRTPS
+syntax keyword goasmOpcodeX86AVX    AVRSQRTSS
+syntax keyword goasmOpcodeX86AVX    AVSCALEFPD
+syntax keyword goasmOpcodeX86AVX    AVSCALEFPS
+syntax keyword goasmOpcodeX86AVX    AVSCALEFSD
+syntax keyword goasmOpcodeX86AVX    AVSCALEFSS
+syntax keyword goasmOpcodeX86AVX    AVSCATTERDPD
+syntax keyword goasmOpcodeX86AVX    AVSCATTERDPS
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF0DPD
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF0DPS
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF0QPD
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF0QPS
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF1DPD
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF1DPS
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF1QPD
+syntax keyword goasmOpcodeX86AVX    AVSCATTERPF1QPS
+syntax keyword goasmOpcodeX86AVX    AVSCATTERQPD
+syntax keyword goasmOpcodeX86AVX    AVSCATTERQPS
+syntax keyword goasmOpcodeX86AVX    AVSHUFF32X4
+syntax keyword goasmOpcodeX86AVX    AVSHUFF64X2
+syntax keyword goasmOpcodeX86AVX    AVSHUFI32X4
+syntax keyword goasmOpcodeX86AVX    AVSHUFI64X2
+syntax keyword goasmOpcodeX86AVX    AVSHUFPD
+syntax keyword goasmOpcodeX86AVX    AVSHUFPS
+syntax keyword goasmOpcodeX86AVX    AVSQRTPD
+syntax keyword goasmOpcodeX86AVX    AVSQRTPS
+syntax keyword goasmOpcodeX86AVX    AVSQRTSD
+syntax keyword goasmOpcodeX86AVX    AVSQRTSS
+syntax keyword goasmOpcodeX86AVX    AVSTMXCSR
+syntax keyword goasmOpcodeX86AVX    AVSUBPD
+syntax keyword goasmOpcodeX86AVX    AVSUBPS
+syntax keyword goasmOpcodeX86AVX    AVSUBSD
+syntax keyword goasmOpcodeX86AVX    AVSUBSS
+syntax keyword goasmOpcodeX86AVX    AVTESTPD
+syntax keyword goasmOpcodeX86AVX    AVTESTPS
+syntax keyword goasmOpcodeX86AVX    AVUCOMISD
+syntax keyword goasmOpcodeX86AVX    AVUCOMISS
+syntax keyword goasmOpcodeX86AVX    AVUNPCKHPD
+syntax keyword goasmOpcodeX86AVX    AVUNPCKHPS
+syntax keyword goasmOpcodeX86AVX    AVUNPCKLPD
+syntax keyword goasmOpcodeX86AVX    AVUNPCKLPS
+syntax keyword goasmOpcodeX86AVX    AVXORPD
+syntax keyword goasmOpcodeX86AVX    AVXORPS
+syntax keyword goasmOpcodeX86AVX    AVZEROALL
+syntax keyword goasmOpcodeX86AVX    AVZEROUPPER
+syntax keyword goasmOpcodeX86AVX    AWAIT
+syntax keyword goasmOpcodeX86AVX    AWBINVD
+syntax keyword goasmOpcodeX86AVX    AWORD
+syntax keyword goasmOpcodeX86AVX    AWRFSBASEL
+syntax keyword goasmOpcodeX86AVX    AWRFSBASEQ
+syntax keyword goasmOpcodeX86AVX    AWRGSBASEL
+syntax keyword goasmOpcodeX86AVX    AWRGSBASEQ
+syntax keyword goasmOpcodeX86AVX    AWRMSR
+syntax keyword goasmOpcodeX86AVX    AWRPKRU
+syntax keyword goasmOpcodeX86AVX    AXABORT
+syntax keyword goasmOpcodeX86AVX    AXACQUIRE
+syntax keyword goasmOpcodeX86AVX    AXADDB
+syntax keyword goasmOpcodeX86AVX    AXADDL
+syntax keyword goasmOpcodeX86AVX    AXADDQ
+syntax keyword goasmOpcodeX86AVX    AXADDW
+syntax keyword goasmOpcodeX86AVX    AXBEGIN
+syntax keyword goasmOpcodeX86AVX    AXCHGB
+syntax keyword goasmOpcodeX86AVX    AXCHGL
+syntax keyword goasmOpcodeX86AVX    AXCHGQ
+syntax keyword goasmOpcodeX86AVX    AXCHGW
+syntax keyword goasmOpcodeX86AVX    AXEND
+syntax keyword goasmOpcodeX86AVX    AXGETBV
+syntax keyword goasmOpcodeX86AVX    AXLAT
+syntax keyword goasmOpcodeX86AVX    AXORB
+syntax keyword goasmOpcodeX86AVX    AXORL
+syntax keyword goasmOpcodeX86AVX    AXORPD
+syntax keyword goasmOpcodeX86AVX    AXORPS
+syntax keyword goasmOpcodeX86AVX    AXORQ
+syntax keyword goasmOpcodeX86AVX    AXORW
+syntax keyword goasmOpcodeX86AVX    AXRELEASE
+syntax keyword goasmOpcodeX86AVX    AXRSTOR
+syntax keyword goasmOpcodeX86AVX    AXRSTOR64
+syntax keyword goasmOpcodeX86AVX    AXRSTORS
+syntax keyword goasmOpcodeX86AVX    AXRSTORS64
+syntax keyword goasmOpcodeX86AVX    AXSAVE
+syntax keyword goasmOpcodeX86AVX    AXSAVE64
+syntax keyword goasmOpcodeX86AVX    AXSAVEC
+syntax keyword goasmOpcodeX86AVX    AXSAVEC64
+syntax keyword goasmOpcodeX86AVX    AXSAVEOPT
+syntax keyword goasmOpcodeX86AVX    AXSAVEOPT64
+syntax keyword goasmOpcodeX86AVX    AXSAVES
+syntax keyword goasmOpcodeX86AVX    AXSAVES64
+syntax keyword goasmOpcodeX86AVX    AXSETBV
+syntax keyword goasmOpcodeX86AVX    AXTEST
+syntax keyword goasmOpcodeX86AVX    ALAST
 
 " link to defaults
-highlight default link goasmDirective            Preproc
-highlight default link goasmDirectiveStore       Type
-highlight default link goasmDirectiveMacro       Macro
-highlight default link goasmRegister             Identifier
-highlight default link goasmString               String
-highlight default link goasmCharacter            Character
-highlight default link goasmBinaryNumber         Constant
-highlight default link goasmOctalNumber          Constant
-highlight default link goasmHexNumber            Constant
-highlight default link goasmDecimalNumber        Constant
-highlight default link goasmSymbols              Function
-highlight default link goasmSymbolRef            Special
-highlight default link goasmSpecial              Special
-highlight default link goasmLabel                Function
-highlight default link goasmLocalLabel           Label
-highlight default link goasmOperator             Operator
-highlight default link goasmOpcode               Keyword
-highlight default link goasmComment              Comment
-highlight default link goasmCommentSingle        Comment
+highlight default link  goasmPseudoRegister                   Statement
+highlight default link  goasmRegisterLowByte                  Identifier
+highlight default link  goasmRegisterHiByte                   Identifier
+highlight default link  goasmRegister8bit                     Identifier
+highlight default link  goasmRegister16bit                    Identifier
+highlight default link  goasmRegister32bit                    Identifier
+highlight default link  goasmRegister64bit                    Identifier
+highlight default link  goasmVectorRegister128bit             Identifier
+highlight default link  goasmRegisterData                     Identifier
+highlight default link  goasmAegisterAddress                  Identifier
+highlight default link  goasmFegisterFloating                 Identifier
+highlight default link  goasmRegisterInstructionPointer16bit  Identifier
+highlight default link  goasmRegisterInstructionPointer32bit  Identifier
+highlight default link  goasmRegisterInstructionPointer64bit  Identifier
+highlight default link  goasmRegisterMMX	                    Identifier
+highlight default link  goasmRegisterSegment                  Identifier
+highlight default link  goasmRegisterSystem                   Identifier
+highlight default link  goasmRegisterDebug                    Identifier
+highlight default link  goasmRegisterTask                     Identifier
+highlight default link  goasmDirective                        Preproc
+highlight default link  goasmDirectiveStore                   Type
+" opcodes
+highlight default link  goasmOpcodeX86                        Keyword
+highlight default link  goasmOpcodeX86AVX                     Keyword
 
-highlight default link goasmOpcode               Statement
-highlight default link goasmOpcode_SSE           Statement
-highlight default link goasmOpcode_SSE2          Statement
-highlight default link goasmOpcode_X64_Base      Statement
-highlight default link goasmOpcode_X64_SSE2      Statement
-highlight default link goasmOpcode_X64_SSE42     Statement
-highlight default link goasmOpcode_SSE42         Statement
-highlight default link goasmOpcode_NEHALEM_Base  Statement
-highlight default link goasmOpcode_AMD_SSE5      Statement
-highlight default link goasmOpcode_P6_SSE        Statement
-highlight default link goasmOpcode_PRESCOTT_SSE3 Statement
-highlight default link goasmOpcode_KATMAI_MMX    Statement
-highlight default link goasmOpcode_KATMAI_Base   Statement
-highlight default link goasmOpcode_KATMAI_SSE    Statement
-highlight default link goasmOpcode_VMX           Statement
-highlight default link goasmOpcode_X64_VMX       Statement
-highlight default link goasmOpcode_SANDYBRIDGE_AVX Statement
-highlight default link goasmOpcode_PENT_3DNOW    Statement
-highlight default link goasmOpcode_SSE41         Statement
-highlight default link goasmOpcode_AMD_SSE4A     Statement
-highlight default link goasmOpcode_ARM_THUMB     Statement
-highlight default link goasmOpcode_AVR           Statement
-
-"-- initial mapping => Keyword
-func! s:MapOpcode (group, cpu, ext)
-  let himap = 'Keyword'
-
-  if exists('g:goasmDisableOpcodes')
-    if index(split(g:goasmDisableOpcodes), a:cpu) != -1
-      let himap = 'Error'
-    endif
-    if index(split(g:goasmDisableOpcodes), a:ext) != -1
-      let himap = 'Error'
-    endif
-  endif
-
-  if exists('b:goasmDisableOpcodes')
-    if index(split(b:goasmDisableOpcodes), a:cpu) != -1
-      let himap = 'Error'
-    endif
-    if index(split(b:goasmDisableOpcodes), a:ext) != -1
-      let himap = 'Error'
-    endif
-  endif
-
-  exe 'hi link '.a:group.' '.himap
-endf
-
-call <SID>MapOpcode('goasmOpcode_186_Base'       , '186'        , 'base')
-call <SID>MapOpcode('goasmOpcode_286_Base'       , '286'        , 'base')
-call <SID>MapOpcode('goasmOpcode_3862_Base'      , '3862'       , 'base')
-call <SID>MapOpcode('goasmOpcode_386_Base'       , '386'        , 'base')
-call <SID>MapOpcode('goasmOpcode_486_Base'       , '486'        , 'base')
-call <SID>MapOpcode('goasmOpcode_8086_Base'      , '8086'       , 'base')
-call <SID>MapOpcode('goasmOpcode_AMD_SSE4A'      , 'amd'        , 'sse4a')
-call <SID>MapOpcode('goasmOpcode_AMD_SSE5'       , 'amd'        , 'sse5')
-call <SID>MapOpcode('goasmOpcode_ARM_THUMB'      , 'arm'        , 'thumb')
-call <SID>MapOpcode('goasmOpcode_AVR'            , 'avr'        , 'base')
-call <SID>MapOpcode('goasmOpcode_FUTURE_FMA'     , 'future'     , 'fma')
-call <SID>MapOpcode('goasmOpcode_IA64_Base'      , 'ia64'       , 'base')
-call <SID>MapOpcode('goasmOpcode_KATMAI_Base'    , 'katmai'     , 'base')
-call <SID>MapOpcode('goasmOpcode_KATMAI_MMX'     , 'katmai'     , 'mmx')
-call <SID>MapOpcode('goasmOpcode_KATMAI_MMX2'    , 'katmai'     , 'mmx2')
-call <SID>MapOpcode('goasmOpcode_KATMAI_SSE'     , 'katmai'     , 'sse')
-call <SID>MapOpcode('goasmOpcode_NEHALEM_Base'   , 'nehalem'    , 'base')
-call <SID>MapOpcode('goasmOpcode_P6_Base'        , 'p6'         , 'base')
-call <SID>MapOpcode('goasmOpcode_P6_SSE'         , 'p6'         , 'sse')
-call <SID>MapOpcode('goasmOpcode_PENTM_Base'     , 'pentium_m'  , 'base')
-call <SID>MapOpcode('goasmOpcode_PENT_3DNOW'     , 'pentium'    , '3dnow')
-call <SID>MapOpcode('goasmOpcode_PENT_Base'      , 'pentium'    , 'base')
-call <SID>MapOpcode('goasmOpcode_PENT_MMX'       , 'pentium'    , 'mmx')
-call <SID>MapOpcode('goasmOpcode_PRESCOTT_Base'  , 'prescott'   , 'base')
-call <SID>MapOpcode('goasmOpcode_PRESCOTT_SSE3'  , 'prescott'   , 'sse3')
-call <SID>MapOpcode('goasmOpcode_SANDYBRIDGE_AVX', 'sandybridge', 'avx')
-call <SID>MapOpcode('goasmOpcode_X642_Base'      , 'x642'       , 'base')
-call <SID>MapOpcode('goasmOpcode_X64_Base'       , 'x64'        , 'base')
-call <SID>MapOpcode('goasmOpcode_X64_MMX'        , 'x64'        , 'mmx')
-call <SID>MapOpcode('goasmOpcode_X64_SSE'        , 'x64'        , 'sse')
-call <SID>MapOpcode('goasmOpcode_X64_SSE2'       , 'x64'        , 'sse2')
-call <SID>MapOpcode('goasmOpcode_X64_SSE41'      , 'x64'        , 'sse4.1')
-call <SID>MapOpcode('goasmOpcode_X64_SSE42'      , 'x64'        , 'sse4.2')
-call <SID>MapOpcode('goasmOpcode_X64_VMX'        , 'x64'        , 'vmx')
-call <SID>MapOpcode('goasmOpcode_X86_64_Base'    , 'x64'        , 'base')
 
 " support CPP preprocessor tags
-if !exists('g:goasmDisablePreproc') && !exists('b:goasmDisablePreproc')
+if !exists('g:goasm_disable_preproc') && !exists('b:goasm_disable_preproc')
   syntax case match
 
   syntax include @cPP syntax/c.vim
@@ -2008,19 +3353,25 @@ if !exists('g:goasmDisablePreproc') && !exists('b:goasmDisablePreproc')
   syntax region  cPPPreProc start=/^\s*#\s*\(if\|else\|endif\|define\|include\)/ end=/$/ contains=@cPP,cPPLineCont
 endif
 
-syn match   goasmBuildKeyword      display contained "+build"
+syntax match   goasmBuildKeyword      display contained "+build\|go:build"
 " Highlight the known values of GOOS, GOARCH, and other +build options.
-syn keyword goasmBuildDirectives   contained
-      \ appengine android darwin dragonfly freebsd linux nacl netbsd openbsd plan9
+syntax keyword goasmBuildDirectives   contained
+      \ android darwin dragonfly freebsd linux nacl netbsd openbsd plan9
       \ solaris windows 386 amd64 amd64p32 arm armbe arm64 arm64be ppc64
       \ ppc64le mips mipsle mips64 mips64le mips64p32 mips64p32le ppc
       \ s390 s390x sparc sparc64 cgo ignore race
-syn region  goasmBuildComment      matchgroup=goasmBuildCommentStart
+
+" Other words in the build directive are build tags not listed above, so
+" avoid highlighting them as comments by using a matchgroup just for the
+" start of the comment.
+" The rs=s+2 option lets the \s*+build portion be part of the inner region
+" instead of the matchgroup so it will be highlighted as a goBuildKeyword.
+syntax region  goasmBuildComment      matchgroup=goasmBuildCommentStart
       \ start="//\s*+build\s"rs=s+2 end="$"
       \ contains=goasmBuildKeyword,goasmBuildDirectives
-hi def link goasmBuildCommentStart Comment
-hi def link goasmBuildDirectives   Type
-hi def link goasmBuildKeyword      PreProc
+highlight default link  goasmBuildCommentStart Comment
+highlight default link  goasmBuildDirectives   Type
+highlight default link  goasmBuildKeyword      PreProc
 
 let b:current_syntax = "goasm"
 
